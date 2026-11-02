@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto'
 import '@testing-library/jest-dom/vitest'
 
 // jsdom lacks matchMedia; components only need a stable "no match" answer.
