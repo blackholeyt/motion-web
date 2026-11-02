@@ -1,0 +1,114 @@
+.card {
+  padding: 20px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.masthead {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px 0 12px;
+}
+
+.mastheadTop {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.mastheadBrand {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 4px;
+}
+
+.mastheadJournal {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: var(--secondary-text);
+}
+
+.mastheadRule {
+  position: relative;
+  height: 1px;
+  background: var(--border);
+}
+
+.mastheadRule::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -0.5px;
+  width: 36px;
+  height: 2px;
+  background: var(--accent, var(--action));
+}
+
+.mastheadCategory {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--accent, var(--action));
+}
+
+.continueButton {
+  width: 100%;
+  min-height: 54px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--action);
+  color: var(--on-action);
+  font-weight: 600;
+  transition: filter 0.1s, transform 0.1s;
+}
+
+.continueButton:active {
+  filter: brightness(0.94);
+  transform: scale(0.985);
+}
+
+.continueButton:disabled {
+  opacity: 0.5;
+}
+
+.sectionTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sectionTitle h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sectionTitle p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--secondary-text);
+}
+
+.empty h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text);
+}
+
+.empty p {
+  margin: 0;
+}

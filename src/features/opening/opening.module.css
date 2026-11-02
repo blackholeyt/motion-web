@@ -1,0 +1,123 @@
+.opening {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 36%, color-mix(in srgb, var(--action) 10%, transparent), var(--background) 72vmax);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.horizon {
+  position: absolute;
+  left: 12%;
+  width: 76%;
+  top: 60%;
+  height: 0.5px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--opening-detail) 17%, transparent), transparent);
+}
+
+.top {
+  position: absolute;
+  top: max(12%, calc(var(--safe-top) + 16px));
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  color: var(--secondary-text);
+}
+
+.marks {
+  display: flex;
+  gap: 7px;
+}
+
+.marks i {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.marks i:first-child {
+  width: 16px;
+  background: var(--action);
+}
+
+.marks i:last-child {
+  width: 6px;
+  background: color-mix(in srgb, var(--opening-detail) 15%, transparent);
+}
+
+.wordmark {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform: translate(-50%, -50%);
+}
+
+.tall .wordmark {
+  left: 50%;
+  top: 71%;
+  width: min(calc(100vw - 40px), 520px);
+}
+
+.wide .wordmark {
+  left: 72%;
+  top: 44%;
+  width: min(45vw, 520px);
+}
+
+.reduced .wordmark {
+  left: 50%;
+  top: 44%;
+  width: min(calc(100vw - 40px), 520px);
+}
+
+.letters {
+  display: flex;
+  justify-content: center;
+  height: 84px;
+  align-items: center;
+  overflow: hidden;
+  font-size: min(calc(min(100vw - 40px, 520px) / 5.1), 94px);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.wide .letters {
+  font-size: min(calc(min(45vw, 520px) / 5.1), 94px);
+}
+
+.letters span {
+  display: inline-block;
+  background: linear-gradient(var(--opening-wordmark-top), var(--opening-wordmark-bottom));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 3.5px;
+  color: var(--secondary-text);
+}

@@ -1,0 +1,92 @@
+/*
+ * Motion's semantic palette, ported 1:1 from MotionTheme.swift.
+ * Color reinforces labels and symbols; it never replaces them.
+ * Dark is the default; [data-theme] is set from the appearance setting.
+ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --background: #0d1114;
+  --surface: #171d21;
+  --text: #f4f7f6;
+  --secondary-text: #aebac1;
+  --border: #344249;
+  --action: #a5ddcb;
+  --on-accent: #10271f;
+  --achievement: #e4c58f;
+  --achievement-highlight: #f5e4c6;
+  --chart-history: #829b93;
+  --completed-surface: #1a332c;
+  --opening-wordmark-top: #ffffff;
+  --opening-wordmark-bottom: #a8a8a8;
+  --opening-detail: #ffffff;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --background: #f4f7f6;
+  --surface: #ffffff;
+  --text: #0d1114;
+  --secondary-text: #495a62;
+  --border: #cdd7d5;
+  --action: #00624f;
+  --on-accent: #ffffff;
+  --achievement: #72521c;
+  --achievement-highlight: #72521c;
+  --chart-history: #627a73;
+  --completed-surface: #e0f3eb;
+  --opening-wordmark-top: #263c42;
+  --opening-wordmark-bottom: #53676b;
+  --opening-detail: #455e58;
+}
+
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='dark'] {
+    --background: #050708;
+    --surface: #202a30;
+    --secondary-text: #dce5e9;
+    --border: #84979f;
+    --action: #c8f5e5;
+    --achievement: #ffe2ab;
+    --achievement-highlight: #fff2d9;
+    --chart-history: #b7cdc5;
+    --completed-surface: #244b3d;
+  }
+  :root[data-theme='light'] {
+    --background: #f4f7f6;
+    --surface: #ffffff;
+    --secondary-text: #495a62;
+    --border: #667a73;
+    --action: #004737;
+    --achievement: #513500;
+    --achievement-highlight: #513500;
+    --chart-history: #627a73;
+    --completed-surface: #e0f3eb;
+  }
+}
+
+:root {
+  /* Filled action surfaces stay light so their dark labels have stable contrast. */
+  --action-fill: #7bc9b2;
+  --action-highlight: #d7f2e7;
+  --on-action: #10271f;
+  --on-action-secondary: #294e41;
+  --action-gradient: linear-gradient(135deg, var(--action-highlight), var(--action-fill));
+
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-rounded: ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+
+  --radius-card: 24px;
+  --radius-start: 26px;
+  --radius-row: 20px;
+  --radius-choice: 18px;
+  --radius-button: 14px;
+  --radius-input: 10px;
+
+  --tap: 44px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}

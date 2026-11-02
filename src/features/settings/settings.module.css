@@ -1,0 +1,108 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 28px;
+  border-radius: var(--radius-button);
+  overflow: hidden;
+}
+
+.group h2 {
+  margin: 0 0 8px 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--secondary-text);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--surface);
+  text-align: left;
+}
+
+button.row {
+  color: var(--action);
+}
+
+.row select {
+  min-height: var(--tap);
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+  text-align: right;
+}
+
+.caption {
+  margin: 6px 4px 10px;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.segmented button {
+  min-height: var(--tap);
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--secondary-text);
+  font-weight: 500;
+}
+
+.segmented .selected {
+  background: color-mix(in srgb, var(--action) 18%, transparent);
+  color: var(--text);
+}
+
+.switch {
+  appearance: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  margin: 0;
+  border-radius: 16px;
+  background: var(--border);
+  transition: background 0.2s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.switch:checked {
+  background: var(--action);
+}
+
+.switch:checked::after {
+  transform: translateX(20px);
+}
+
+.version {
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+  text-align: center;
+}
