@@ -1,0 +1,253 @@
+.group {
+  margin-bottom: 24px;
+}
+
+.group h3 {
+  margin: 0 0 8px 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--secondary-text);
+}
+
+.groupBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background: var(--border);
+}
+
+.groupBody > * {
+  background: var(--surface);
+}
+
+.footer {
+  margin: 8px 4px 0;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 16px;
+  width: 100%;
+  border: 0;
+  text-align: left;
+}
+
+.row select {
+  min-height: var(--tap);
+  max-width: 60%;
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+  text-align: right;
+}
+
+.labelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.labelStack small {
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.rowButton.action {
+  color: var(--action);
+}
+
+.rowButton.destructive {
+  color: #ff6b6b;
+}
+
+:global([data-theme='light']) .rowButton.destructive {
+  color: #c62828;
+}
+
+.rowButton:disabled {
+  opacity: 0.45;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+}
+
+.field label {
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.field input,
+.field textarea {
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  font-size: 1.0625rem;
+}
+
+.field input:focus {
+  outline: none;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px 16px;
+}
+
+.stepper > div {
+  display: flex;
+  border-radius: 10px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+.stepper button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 36px;
+  border: 0;
+  background: transparent;
+}
+
+.stepper button + button {
+  border-left: 1px solid var(--border);
+}
+
+.stepper button:disabled {
+  opacity: 0.35;
+}
+
+.switch {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 51px;
+  height: 31px;
+  margin: 0;
+  border-radius: 16px;
+  background: var(--border);
+  transition: background 0.2s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.switch:checked {
+  background: var(--action);
+}
+
+.switch:checked::after {
+  transform: translateX(20px);
+}
+
+.menu {
+  position: relative;
+}
+
+.menu > button {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.menuList {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 35%);
+}
+
+.menuList button {
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  text-align: left;
+}
+
+.menuList button:hover {
+  background: color-mix(in srgb, var(--action) 10%, transparent);
+}
+
+.menuList button:disabled {
+  opacity: 0.4;
+}
+
+.menuList .destructive {
+  color: #ff6b6b;
+}
+
+.primary {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--action-fill);
+  color: var(--on-action);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primary:disabled {
+  opacity: 0.45;
+}
+
+.textButton {
+  min-height: var(--tap);
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--action);
+  font-size: 1.0625rem;
+}
+
+.textButton.strong {
+  font-weight: 600;
+}
+
+.textButton:disabled {
+  opacity: 0.4;
+}
