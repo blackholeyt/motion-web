@@ -1,9 +1,18 @@
 import { CalendarPlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useT } from '../../i18n'
-import { useProfile } from '../../store/profile'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db } from '../../data/db'
+import { live } from '../../data/repo'
+import type { Exercise } from '../../data/types'
+import { loadBests, trainingWeeks } from '../../domain/statistics'
+import { usePreferences, useProfile } from '../../store/profile'
+import { completedHistory, useProgress } from '../../store/progress'
 import { SectionTitle } from '../../ui/components'
-import { PhaseNotice } from '../../ui/PhaseNotice'
+import { GoalEditor } from '../exercises/GoalEditor'
+import { ProgressCard } from '../progress/ProgressCard'
+import { ConsistencyCard } from './ConsistencyCard'
+import { LoadBestsCard } from './LoadBestsCard'
 import { DraftLinks } from '../workout/DraftLinks'
 import { PastWorkoutPicker } from './PastWorkoutPicker'
 import { StartCard } from './StartCard'
@@ -16,6 +25,11 @@ export function DashboardScreen() {
   const [now, setNow] = useState(() => new Date())
   const [choosing, setChoosing] = useState(false)
   const [logging, setLogging] = useState(false)
+  const [goal, setGoal] = useState<Exercise | null>(null)
+  const preferences = usePreferences()
+  const progress = useProgress()
+  const library = useLiveQuery(async () => live(await db.exercises.toArray()), [])
+  const history = useLiveQuery(completedHistory, [])
 
   // Refresh once a minute, like the iOS TimelineView, so "Today" and due dates roll over.
   useEffect(() => {
@@ -38,8 +52,16 @@ export function DashboardScreen() {
           <CalendarPlus size={18} aria-hidden="true" /> {t('Log past workout')}
         </button>
       </div>
-      <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />
-      <PhaseNotice phase={3} />
+      {!preferences.quietMode && progress && <ProgressCard progress={progress} />}
+      <section className={styles.section}>
+        <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />
+        <ConsistencyCard weeks={trainingWeeks((history ?? []).map(({ workout }) => workout.performed_at), now)} />
+      </section>
+      <section className={styles.section}>
+        <SectionTitle title={t('Recorded load bests')} subtitle={t('Heaviest completed external-load working sets. Not a strength estimate. Tap to edit a load goal.')} />
+        <LoadBestsCard bests={loadBests(history ?? [], library ?? [], now)} library={library ?? []} unit={profile?.load_unit ?? 'kg'} onEdit={setGoal} />
+      </section>
+      <GoalEditor exercise={goal} onClose={() => setGoal(null)} />
       <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
       <PastWorkoutPicker open={logging} onClose={() => setLogging(false)} />
     </div>

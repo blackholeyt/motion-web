@@ -263,3 +263,9 @@
 .stack small {
   color: var(--secondary-text);
 }
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

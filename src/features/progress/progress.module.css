@@ -82,7 +82,7 @@
 }
 
 .goalFill {
-  background: linear-gradient(90deg, var(--chart-history), var(--text));
+  background: linear-gradient(90deg, var(--achievement), var(--achievement-highlight));
   transition: width 0.75s ease-in-out;
 }
 
