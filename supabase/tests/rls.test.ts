@@ -12,7 +12,7 @@ import { migratedDatabase } from './pgSupabase'
 
 const tables = [
   'profiles', 'exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises',
-  'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores',
+  'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores', 'legacy_imports',
 ] as const
 
 const A = '00000000-0000-4000-8000-00000000000a'
@@ -35,6 +35,7 @@ function row(table: (typeof tables)[number], id: string, user: string, extra: Re
     weight_rewards: { day: '2026-11-02', awarded_at: time, earned_xp: 25 },
     workout_awards: { workout_id: id2, earned_xp: 100 },
     sleep_scores: { day: '2026-11-02', score: 80 },
+    legacy_imports: { fingerprint: 'abc', file_name: 'Motion-Backup.json', source_format: 'json', exported_at: time, imported_at: time },
   }
   return { id, user_id: user, created_at: time, updated_at: time, deleted_at: null, ...columns[table], ...extra }
 }

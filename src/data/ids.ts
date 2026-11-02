@@ -18,6 +18,11 @@ export function stableID(kind: StableKind, key = 'singleton'): string {
   return uuidV5(namespace, `${kind}/${key}`)
 }
 
+/** Ids the iOS backup leaves out (routine entries) and import receipts, derived from their content. */
+export function derivedID(name: string): string {
+  return uuidV5(namespace, name)
+}
+
 export function uuidV5(namespaceID: string, name: string): string {
   const space = namespaceID.replace(/-/g, '').match(/../g)!.map((byte) => parseInt(byte, 16))
   const hash = sha1([...space, ...new TextEncoder().encode(name)]).slice(0, 16)

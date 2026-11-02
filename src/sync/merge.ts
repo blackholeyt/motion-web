@@ -9,7 +9,7 @@ import type { SyncConflict, SyncedRecord, SyncedTable, Workout } from '../data/t
 
 type Row = SyncedRecord & Record<string, unknown>
 
-const timestampColumns = ['created_at', 'updated_at', 'deleted_at', 'performed_at', 'draft_updated_at', 'recorded_at', 'awarded_at']
+const timestampColumns = ['created_at', 'updated_at', 'deleted_at', 'performed_at', 'draft_updated_at', 'recorded_at', 'awarded_at', 'exported_at', 'imported_at']
 
 /** Postgres returns "2026-11-02T10:00:00+00:00"; the app compares and sorts "…T10:00:00.000Z" strings. */
 export function fromServer(row: Record<string, unknown>): Row {

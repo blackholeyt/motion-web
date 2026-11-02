@@ -23,7 +23,7 @@ const configured = Boolean(url && publishable && secret)
 
 const tables = [
   'profiles', 'exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises',
-  'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores',
+  'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores', 'legacy_imports',
 ] as const
 
 const time = '2026-11-02T10:00:00.000Z'
@@ -41,6 +41,7 @@ const columns: Record<(typeof tables)[number], Record<string, unknown>> = {
   weight_rewards: { day: '2026-11-02', awarded_at: time, earned_xp: 25 },
   workout_awards: { workout_id: other, earned_xp: 100 },
   sleep_scores: { day: '2026-11-02', score: 80 },
+  legacy_imports: { fingerprint: 'abc', file_name: 'Motion-Backup.json', source_format: 'json', exported_at: time, imported_at: time, counts: {} },
 }
 const idFor = (table: string) => `aaaaaaaa-0000-4000-8000-${String(tables.indexOf(table as never)).padStart(12, '0')}`
 

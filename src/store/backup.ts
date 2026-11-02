@@ -4,7 +4,7 @@ import type { SyncedTable } from '../data/types'
 /*
  * JSON backup in the new web format (FullBackupSection.swift, export side). Every synced table is
  * included with its tombstones, so a later restore can merge without reviving deleted records.
- * Restoring and importing the iOS formats arrive with phase 5.
+ * The import of the iOS app's backup lives in src/import (phase 5a); restoring this web format is not built yet.
  */
 
 export const backupFormat = 'motion-web-backup'

@@ -5,6 +5,7 @@ import type {
   Blueprint,
   BodyWeight,
   Exercise,
+  LegacyImport,
   OutboxEntry,
   Profile,
   SetLog,
@@ -34,6 +35,7 @@ export class MotionDatabase extends Dexie {
   weight_rewards!: EntityTable<WeightReward, 'id'>
   workout_awards!: EntityTable<WorkoutAward, 'id'>
   sleep_scores!: EntityTable<SleepScore, 'id'>
+  legacy_imports!: EntityTable<LegacyImport, 'id'>
   outbox!: EntityTable<OutboxEntry, 'key'>
   sync_state!: EntityTable<SyncCursor, 'table'>
   conflicts!: EntityTable<SyncConflict, 'key'>
@@ -58,6 +60,7 @@ export class MotionDatabase extends Dexie {
     this.version(2)
       .stores({ sync_state: 'table', conflicts: 'key, table, record_id' })
       .upgrade(adoptStableIDs)
+    this.version(3).stores({ legacy_imports: 'id, fingerprint' })
   }
 
   table_<T extends SyncedRecord>(name: SyncedTable) {
@@ -96,6 +99,7 @@ export const syncedTables: SyncedTable[] = [
   'weight_rewards',
   'workout_awards',
   'sleep_scores',
+  'legacy_imports',
 ]
 
 const stableKeys: Record<StableKind, (record: SyncedRecord & Record<string, unknown>) => string | undefined> = {

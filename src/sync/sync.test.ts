@@ -1,6 +1,6 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import type { PGlite } from '@electric-sql/pglite'
 import Dexie from 'dexie'
@@ -25,6 +25,8 @@ import { hasGuestData } from './account'
 import { syncOnce } from './engine'
 import { mergeGuest } from './merge'
 import { applyCloudVersion } from './conflicts'
+import { readImportText, runImport } from '../import/importer'
+import { legacyBackup } from '../test/legacyBackup'
 
 const userA = '00000000-0000-4000-8000-00000000000a'
 const context: engine.WorkoutContext = { trackReps: true, globalRestSeconds: 90, unit: 'kg', locale: 'en-US', now: () => new Date() }
@@ -283,7 +285,11 @@ describe('ids and schema', () => {
   })
 
   it('has a cloud column for every field the app stores', async () => {
-    const sql = readFileSync(join(import.meta.dirname, '../../supabase/migrations/20261102120000_initial_schema.sql'), 'utf8')
+    const folder = join(import.meta.dirname, '../../supabase/migrations')
+    const sql = readdirSync(folder)
+      .sort()
+      .map((file) => readFileSync(join(folder, file), 'utf8'))
+      .join('\n')
     const columns = new Map<string, Set<string>>()
     for (const [, table, body] of sql.matchAll(/create table public\.(\w+) \(([\s\S]*?)\n\);/g)) {
       columns.set(table!, new Set([...body!.matchAll(/^\s+(\w+) /gm)].map((match) => match[1]!)))
@@ -298,6 +304,7 @@ describe('ids and schema', () => {
       const id = await engine.startFreestyle()
       await update('workouts', id, {})
       await grantWorkoutAward((await db.workouts.get(id))!, { base: 100, bonus: 0, records: 0, total: 100 } as never)
+      await runImport(await readImportText(JSON.stringify(legacyBackup()), 'Motion-Backup.json'))
     })
     for (const table of syncedTables) {
       const records = await sample.database.table(table).toArray()

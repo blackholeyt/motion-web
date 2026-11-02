@@ -200,6 +200,16 @@ export interface SleepScore extends SyncedRecord {
   score: number
 }
 
+/** Receipt of an imported iOS backup; the id derives from the file's fingerprint (phase 5a). */
+export interface LegacyImport extends SyncedRecord {
+  fingerprint: string
+  file_name: string
+  source_format: 'json' | 'csv'
+  exported_at: string
+  imported_at: string
+  counts: { file: Record<string, number>; added: Record<string, number> }
+}
+
 export interface OutboxEntry {
   key: string
   table: SyncedTable
@@ -239,3 +249,4 @@ export type SyncedTable =
   | 'weight_rewards'
   | 'workout_awards'
   | 'sleep_scores'
+  | 'legacy_imports'
