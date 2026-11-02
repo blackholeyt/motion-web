@@ -1,4 +1,5 @@
 import { db } from '../data/db'
+import { stableID } from '../data/ids'
 import { insertOne, live, update } from '../data/repo'
 import type { Blueprint, TrainingPlanRecord, Workout } from '../data/types'
 import { isCardioActivity } from '../domain/cardio'
@@ -14,7 +15,7 @@ export async function savePlan(schedule: TrainingSchedule) {
   if (!structurallyValid(schedule)) throw new Error('Review the training plan settings.')
   const existing = await currentPlan()
   if (existing) await update<TrainingPlanRecord>('training_plans', existing.id, { schedule })
-  else await insertOne<TrainingPlanRecord>('training_plans', { schedule })
+  else await insertOne<TrainingPlanRecord>('training_plans', { id: stableID('training_plans'), schedule })
 }
 
 /** TrainingPlanStore.problem with the same messages. */

@@ -23,7 +23,7 @@ export function stamp<T extends SyncedRecord>(draft: Draft<T>): T {
   } as T
 }
 
-async function enqueue(table: SyncedTable, ids: string[]) {
+export async function enqueue(table: SyncedTable, ids: string[]) {
   const queued_at = nowISO()
   await db.outbox.bulkPut(ids.map((record_id) => ({ key: `${table}:${record_id}`, table, record_id, queued_at })))
 }

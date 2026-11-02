@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../data/db'
+import { stableID } from '../data/ids'
 import { insertOne, live, softDelete, transaction, update } from '../data/repo'
 import type { BodyWeight, Profile, SleepScore, WeightReward } from '../data/types'
 import { claimGoal, validName } from '../domain/body'
@@ -39,9 +40,9 @@ export async function checkIn(kilograms: number, now = new Date()): Promise<Chec
     const day = dayKey(now)
     const existing = live(await db.body_weights.where('day').equals(day).toArray())[0]
     if (existing) await update<BodyWeight>('body_weights', existing.id, { kilograms, recorded_at: now.toISOString() })
-    else await insertOne<BodyWeight>('body_weights', { day, recorded_at: now.toISOString(), kilograms })
+    else await insertOne<BodyWeight>('body_weights', { id: stableID('body_weights', day), day, recorded_at: now.toISOString(), kilograms })
     const rewarded = (await db.weight_rewards.where('day').equals(day).count()) > 0
-    if (!rewarded) await insertOne<WeightReward>('weight_rewards', { day, awarded_at: now.toISOString(), earned_xp: XP.weightCheckIn })
+    if (!rewarded) await insertOne<WeightReward>('weight_rewards', { id: stableID('weight_rewards', day), day, awarded_at: now.toISOString(), earned_xp: XP.weightCheckIn })
     const achievedTarget = await claim(profile, kilograms, true)
     return { kilograms, date: now.toISOString(), earnedXP: rewarded ? 0 : XP.weightCheckIn, isCorrection: false, achievedTarget }
   })
@@ -78,7 +79,7 @@ export async function saveSleepScore(score: number | null, date: Date, now = new
     const entries = live(await db.sleep_scores.where('day').equals(day).toArray())
     if (score === null) return softDelete('sleep_scores', entries.map((entry) => entry.id))
     if (entries[0]) await update<SleepScore>('sleep_scores', entries[0].id, { score })
-    else await insertOne<SleepScore>('sleep_scores', { day, score })
+    else await insertOne<SleepScore>('sleep_scores', { id: stableID('sleep_scores', day), day, score })
     await softDelete('sleep_scores', entries.slice(1).map((entry) => entry.id))
   })
 }

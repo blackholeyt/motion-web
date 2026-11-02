@@ -207,6 +207,25 @@ export interface OutboxEntry {
   queued_at: string
 }
 
+/** Newest server synced_at already pulled for a table. */
+export interface SyncCursor {
+  table: SyncedTable
+  synced_at: string
+}
+
+/**
+ * A cloud version that was not applied because it would have replaced unsaved changes of a workout
+ * that is still open on this device. Kept until the user chooses a version.
+ */
+export interface SyncConflict {
+  key: string
+  table: SyncedTable
+  record_id: string
+  workout_id: string
+  remote: SyncedRecord
+  detected_at: string
+}
+
 export type SyncedTable =
   | 'profiles'
   | 'exercises'

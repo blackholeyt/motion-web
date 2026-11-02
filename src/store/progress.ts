@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../data/db'
+import { stableID } from '../data/ids'
 import { insertOne, live, update } from '../data/repo'
 import type { Workout, WorkoutAward } from '../data/types'
 import { buildRecap, progressFor, xpAward, type StoredWorkout, type WorkoutRecap, type XPAward } from '../domain/progress'
@@ -46,7 +47,7 @@ export async function grantWorkoutAward(workout: Workout, proposed: XPAward): Pr
   const saved = await db.workout_awards.where('workout_id').equals(workout.id).first()
   if (saved) return { xp: saved.earned_xp, granted: false }
   const xp = workout.earned_xp > 0 ? workout.earned_xp : proposed.total
-  await insertOne<WorkoutAward>('workout_awards', { workout_id: workout.id, earned_xp: xp })
+  await insertOne<WorkoutAward>('workout_awards', { id: stableID('workout_awards', workout.id), workout_id: workout.id, earned_xp: xp })
   await update<Workout>('workouts', workout.id, { earned_xp: xp })
   return { xp, granted: workout.earned_xp <= 0 }
 }
