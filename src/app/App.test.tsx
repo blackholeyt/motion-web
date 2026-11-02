@@ -12,11 +12,40 @@ describe('app shell', () => {
   it('shows the four tabs and switches between them', async () => {
     const { App } = await import('./App')
     render(<App />)
-    expect(screen.getByText('Your training, in perspective.', { normalizer: (s) => s.replace(/\s+/g, ' ') })).toBeInTheDocument()
+    // A first launch shows the introduction; it can be skipped entirely.
+    await userEvent.click(await screen.findByTestId('onboardingProfileSkip'))
+    await userEvent.click(await screen.findByTestId('onboardingExplore'))
+    expect(await screen.findByText('Your training, in perspective.', { normalizer: (s) => s.replace(/\s+/g, ' ') })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('link', { name: 'History' }))
     expect(screen.getByRole('heading', { name: 'The work you put in.' })).toBeInTheDocument()
     await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
     await userEvent.click(screen.getByRole('radio', { name: 'Light' }))
     expect(document.documentElement.dataset.theme).toBe('light')
+  })
+
+  it('creates the profile and a routine from a template in the introduction', async () => {
+    localStorage.clear()
+    const { freshDatabase } = await import('../test/db')
+    await freshDatabase()
+    const { App } = await import('./App')
+    render(<App />)
+    await userEvent.type(await screen.findByTestId('onboardingName'), 'Mathis')
+    await userEvent.click(screen.getByTestId('onboardingProfileContinue'))
+    await userEvent.click(screen.getByTestId('onboardingProfileContinue'))
+    await userEvent.type(screen.getByTestId('onboardingCurrentWeight'), '67,5')
+    await userEvent.click(screen.getByTestId('onboardingProfileContinue'))
+    await userEvent.click(screen.getByTestId('onboardingProfileContinue'))
+    await userEvent.click(await screen.findByTestId('onboardingWelcomeContinue'))
+    await userEvent.click(screen.getByTestId('onboardingTemplate'))
+    for (let page = 0; page < 8; page++) {
+      const next = screen.queryByTestId('onboardingPlanContinue')
+      if (!next) break
+      await userEvent.click(next)
+    }
+    await userEvent.click(screen.getByTestId('usePlan-full-quick'))
+    expect(await screen.findByDisplayValue('Full Body · Start Simple')).toBeInTheDocument()
+    const { db } = await import('../data/db')
+    expect((await db.profiles.toArray())[0]!.name).toBe('Mathis')
+    expect(await db.body_weights.count()).toBe(1)
   })
 })

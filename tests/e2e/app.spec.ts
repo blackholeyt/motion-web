@@ -2,6 +2,14 @@ import { expect, test } from '@playwright/test'
 
 test.use({ locale: 'en-US' })
 
+// These tests start after the introduction; tests/e2e/introduction.spec.ts covers it.
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    const key = 'motion.onboarding.v1.motion-local'
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ status: 'skipped', profileStepDone: true }))
+  })
+})
+
 test('opens with the opening animation, then shows the dashboard', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByTestId('opening')).toBeVisible()
@@ -17,7 +25,7 @@ test('navigates between the four tabs', async ({ page }) => {
   await page.getByRole('link', { name: 'History' }).click()
   await expect(page.getByRole('heading', { name: 'The work you put in.' })).toBeVisible()
   await page.getByRole('link', { name: 'Settings' }).click()
-  await page.getByRole('combobox').selectOption('de')
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('de')
   await expect(page.getByRole('link', { name: 'Verlauf' })).toBeVisible()
 })
 

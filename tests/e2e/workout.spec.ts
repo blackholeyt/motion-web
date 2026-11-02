@@ -2,6 +2,14 @@ import { expect, test, type Page } from '@playwright/test'
 
 test.use({ locale: 'en-US' })
 
+// These tests start after the introduction; tests/e2e/introduction.spec.ts covers it.
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => {
+    const key = 'motion.onboarding.v1.motion-local'
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ status: 'skipped', profileStepDone: true }))
+  })
+})
+
 async function openOffline(page: Page) {
   await page.goto('./')
   await page.waitForFunction(async () => (await navigator.serviceWorker.ready).active?.state === 'activated')

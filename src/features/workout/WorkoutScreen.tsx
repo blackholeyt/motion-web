@@ -11,6 +11,7 @@ import type { FinishReward } from '../../store/progress'
 import type { RecordAchievement } from '../../domain/progress'
 import { Celebration } from '../progress/Celebration'
 import { RecordNotice } from '../progress/RecordNotice'
+import { updateOnboarding, useOnboarding } from '../onboarding/state'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { ContinueButton } from '../../ui/components'
 import { SelectRow, TextButton } from '../../ui/controls'
@@ -49,6 +50,7 @@ export function WorkoutScreen() {
   const [reward, setReward] = useState<FinishReward | null>(null)
   const [record, setRecord] = useState<{ record: RecordAchievement; setID: string } | null>(null)
   const preferences = usePreferences()
+  const tips = useOnboarding()
   const [notes, setNotes] = useState<string | null>(null)
 
   // Keep the screen on while training, where the browser allows it.
@@ -79,7 +81,7 @@ export function WorkoutScreen() {
     )
   }
 
-  if (saved && reward && !preferences.quietMode) {
+  if (saved && reward && !preferences.quietMode && tips?.savedWorkoutTipDone !== false) {
     return (
       <Celebration
         recap={reward.recap}
@@ -98,7 +100,14 @@ export function WorkoutScreen() {
         <CheckCircle2 size={44} className={styles.savedIcon} aria-hidden="true" />
         <h1>{t('Workout saved.')}</h1>
         <p>{t('Next time, you can use these values as your starting point.')}</p>
-        <ContinueButton onClick={() => navigate(returnTo, { replace: true })}>{t('Continue')}</ContinueButton>
+        <ContinueButton
+          onClick={() => {
+            updateOnboarding({ savedWorkoutTipDone: true })
+            navigate(returnTo, { replace: true })
+          }}
+        >
+          {t('Continue')}
+        </ContinueButton>
       </div>
     )
   }
@@ -126,6 +135,7 @@ export function WorkoutScreen() {
       return
     }
     if (!result.completed && record?.setID === setID) setRecord(null)
+    if (result.completed) updateOnboarding({ firstSetTipDone: true })
     haptic(result.completed ? 'completion' : wasCompleted ? 'selection' : 'completion')
   }
   const finish = async () => {

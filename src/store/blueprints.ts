@@ -20,7 +20,7 @@ export async function entriesFor(blueprintID: string): Promise<BlueprintEntry[]>
     )
 }
 
-export async function createBlueprint(name: string, id = crypto.randomUUID()): Promise<Blueprint> {
+export async function createBlueprint(name: string, id: string = crypto.randomUUID()): Promise<Blueprint> {
   const existing = await db.blueprints.get(id)
   if (existing && existing.deleted_at === null) return existing
   return insertOne<Blueprint>('blueprints', { id, name: name.trim(), cardio_type: null, cardio_minutes: null, cardio_distance_km: null })

@@ -1,5 +1,5 @@
 import { ChevronDown, Ellipsis, Plus, Timer } from 'lucide-react'
-import { useState, type RefObject } from 'react'
+import { Fragment, useState, type RefObject } from 'react'
 import type { SupersetGroup } from '../../data/types'
 import { targetLabel } from '../../domain/guidance'
 import { needsReps, quantityLabel, supportsWeightComparisons } from '../../domain/measurement'
@@ -13,6 +13,8 @@ import * as engine from './engine'
 import { previousFor, type History, type Session } from './session'
 import { SetRow, type SetRowHandle } from './SetRow'
 import styles from './workout.module.css'
+import { LearningTip } from '../onboarding/LearningTip'
+import { updateOnboarding, useOnboarding } from '../onboarding/state'
 
 interface Props {
   group: ExerciseRows
@@ -36,6 +38,8 @@ const restChoices = [30, 45, 60, 90, 120, 180, 240, 300, 600]
 export function ExerciseSection({ group, session, history, context, isFirst, isLast, rowRefs, onError, onComplete, onRemoveSet, onReplace, onEnter, onAddSet }: Props) {
   const { t } = useT()
   const { exercise, rows } = group
+  const tips = useOnboarding()
+  const firstPrevious = session.rows.find((row) => previousFor(row, session, history) !== undefined)?.set.id
   const [options, setOptions] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState(false)
   const [confirmReplace, setConfirmReplace] = useState(false)
@@ -60,26 +64,33 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
         <span>{t('Done')}</span>
       </div>
       {rows.map((row) => (
-        <SetRow
-          key={row.set.id}
-          ref={(handle) => {
-            if (handle) rowRefs.current?.set(row.set.id, handle)
-            else rowRefs.current?.delete(row.set.id)
-          }}
-          row={row}
-          previous={previousFor(row, session, history)}
-          canCopyPrevious={engine.rowAbove(session, row) !== undefined}
-          context={context}
-          onInput={(quantity, reps) => run(engine.updateSetInput(workoutID, row.set.id, quantity, reps, context))}
-          onComplete={() => onComplete(row.set.id)}
-          onUseLast={() => run(engine.reuseValues(workoutID, row.set.id, { previous: previousFor(row, session, history) }, context))}
-          onCopyPrevious={() => run(engine.reuseValues(workoutID, row.set.id, { fromRowAbove: true }, context))}
-          onClear={() => run(engine.clearValues(workoutID, row.set.id, context))}
-          onClassify={() => run(engine.toggleWarmUp(workoutID, row.set.id, context))}
-          onSkip={() => run(engine.toggleSkip(workoutID, row.set.id, context))}
-          onRemove={() => onRemoveSet(row.set.id)}
-          onEnter={() => onEnter(row.set.id)}
-        />
+        <Fragment key={row.set.id}>
+          {tips && !tips.firstSetTipDone && session.rows[0]?.set.id === row.set.id && (
+            <LearningTip text="Enter what you did. Tap the checkmark to complete the set." onDismiss={() => updateOnboarding({ firstSetTipDone: true })} testID="firstSetTip" />
+          )}
+          {tips && !tips.previousValuesTipDone && firstPrevious === row.set.id && (
+            <LearningTip text="These were your last values. Use them or adjust them." onDismiss={() => updateOnboarding({ previousValuesTipDone: true })} testID="previousValuesTip" />
+          )}
+          <SetRow
+            ref={(handle) => {
+              if (handle) rowRefs.current?.set(row.set.id, handle)
+              else rowRefs.current?.delete(row.set.id)
+            }}
+            row={row}
+            previous={previousFor(row, session, history)}
+            canCopyPrevious={engine.rowAbove(session, row) !== undefined}
+            context={context}
+            onInput={(quantity, reps) => run(engine.updateSetInput(workoutID, row.set.id, quantity, reps, context))}
+            onComplete={() => onComplete(row.set.id)}
+            onUseLast={() => run(engine.reuseValues(workoutID, row.set.id, { previous: previousFor(row, session, history) }, context))}
+            onCopyPrevious={() => run(engine.reuseValues(workoutID, row.set.id, { fromRowAbove: true }, context))}
+            onClear={() => run(engine.clearValues(workoutID, row.set.id, context))}
+            onClassify={() => run(engine.toggleWarmUp(workoutID, row.set.id, context))}
+            onSkip={() => run(engine.toggleSkip(workoutID, row.set.id, context))}
+            onRemove={() => onRemoveSet(row.set.id)}
+            onEnter={() => onEnter(row.set.id)}
+          />
+        </Fragment>
       ))}
       <button type="button" className={styles.addSet} onClick={onAddSet} data-testid={`addSet-${exercise.exercise_name}`}>
         <Plus size={18} aria-hidden="true" /> {t('Add Set')}

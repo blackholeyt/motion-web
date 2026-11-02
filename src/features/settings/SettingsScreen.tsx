@@ -4,11 +4,17 @@ import { platform } from '../../platform'
 import { updateSettings, useSettings, type Appearance, type LanguageChoice } from '../../settings/deviceSettings'
 import { updatePreferences, usePreferences } from '../../store/profile'
 import { ScreenHeader } from '../../ui/ScreenHeader'
-import { Sheet } from '../../ui/Sheet'
+import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { Group, RowButton, SelectRow, TextButton, Toggle } from '../../ui/controls'
 import { useOpening } from '../opening/OpeningContext'
 import { RestNotificationSettings } from './RestNotificationSettings'
 import { ProfileSheet } from '../body/ProfileSheet'
+import { MiniDemo } from '../onboarding/MiniDemo'
+import { WorkoutPicker } from '../dashboard/WorkoutPicker'
+import { enterSandbox, useSandbox } from '../../app/sandbox'
+import { seedDemo } from '../demo/seed'
+import { useNavigate } from 'react-router-dom'
+import { exportBackup } from '../../store/backup'
 import { SleepScores } from '../body/SleepScores'
 import { WeightCelebration } from '../body/WeightCelebration'
 import { bodyWeightGoals, type BodyWeightGoal } from '../../domain/body'
@@ -28,10 +34,47 @@ export function SettingsScreen() {
   const [sleep, setSleep] = useState(false)
   const [goalPreview, setGoalPreview] = useState(false)
   const profile = useProfile()
+  const sandbox = useSandbox()
+  const navigate = useNavigate()
+  const [howItWorks, setHowItWorks] = useState(false)
+  const [choosing, setChoosing] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const enter = async (kind: 'demo' | 'onboardingTest') => {
+    try {
+      await enterSandbox(kind, kind === 'demo' ? () => seedDemo() : undefined)
+      navigate('/', { replace: true })
+    } catch (failure) {
+      setMessage((failure as Error).message)
+    }
+  }
+  const download = async () => {
+    try {
+      const file = await exportBackup()
+      const url = URL.createObjectURL(file)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = file.name
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (failure) {
+      setMessage((failure as Error).message)
+    }
+  }
+  if (howItWorks) return <MiniDemo onClose={() => setHowItWorks(false)} onStart={() => setChoosing(true)} />
   const rest = preferences.restTimerSeconds
   return (
     <>
       <ScreenHeader title={t('Settings')} />
+      <Group title={t('Help & Privacy')}>
+        <RowButton tone="plain" onClick={() => setHowItWorks(true)} testID="previewOnboarding">
+          {t('How it works')}
+        </RowButton>
+        {!sandbox && (
+          <RowButton tone="plain" onClick={() => enter('onboardingTest')} testID="testOnboarding">
+            {t('Test onboarding')}
+          </RowButton>
+        )}
+      </Group>
       <Group title={t('Local account')} footer={t('Stored on this device for now. Account sign-in and cloud backup arrive in a later version.')}>
         <RowButton tone="plain" onClick={() => setProfileOpen(true)} testID="openProfile">
           {t('Profile & body weight')}
@@ -125,6 +168,32 @@ export function SettingsScreen() {
           </span>
         </div>
       </Group>
+      {sandbox ? (
+        <Group title={t('Demo only')}>
+          <p className={styles.caption}>{t('All values are synthetic. Changes are discarded when you exit. Import and export are unavailable in the demo.')}</p>
+        </Group>
+      ) : (
+        <>
+          <Group
+            title={t('Demonstration')}
+            footer={t('Explore six weeks of synthetic training in a temporary demo. Your training, awards, settings and drafts stay separate.')}
+          >
+            <RowButton tone="plain" onClick={() => enter('demo')} testID="enterDemo">
+              {t('Explore demo')}
+            </RowButton>
+          </Group>
+          <Group
+            title={t('Backup')}
+            footer={t('Downloads all training, profile, body weight, sleep scores, plans and XP as a JSON file. Restoring backups and importing data from the iOS app arrive in a later version.')}
+          >
+            <RowButton tone="plain" onClick={download} testID="exportBackup">
+              {t('Export backup (JSON)')}
+            </RowButton>
+          </Group>
+        </>
+      )}
+      <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
+      <ConfirmDialog open={message !== null} title={t('Motion')} message={message ? t(message) : ''} onDismiss={() => setMessage(null)} actions={[{ label: t('OK'), role: 'cancel', onSelect: () => setMessage(null) }]} />
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
       <SleepScores open={sleep} onClose={() => setSleep(false)} />
       {goalPreview && (
