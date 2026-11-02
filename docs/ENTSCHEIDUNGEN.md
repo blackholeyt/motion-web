@@ -38,3 +38,11 @@
 | 6 | Zwei-Konten-Test | Zweimal: automatisch in CI gegen die echten Migrationen in einem eingebetteten Postgres (PGlite) und einmal gegen dein echtes Projekt (`npm run test:rls-live`). |
 | 7 | Logout | Konto-Datenbank bleibt geschlossen auf dem Gerät; beim nächsten Login mit demselben Konto ist sie sofort da. Löschen der lokalen Daten kommt mit „Konto löschen“ in Phase 6. |
 
+
+## Phase 5 (geplant am 02.11.2026)
+
+| Nr | Punkt | Entscheidung |
+|---|---|---|
+| 1 | Aufteilung | Phase 5a: Import von JSON und CSV v18 in der App, mit Vorschau, Prüfung, Fehlerbericht, Doppelschutz und Abschlussbericht. |
+| 2 | Ältere CSV-Formate (v1–v17, einfache Workout-CSV) | **Ändert Phase-0-Entscheidung 1** („alle CSV-Formate müssen in der App funktionieren“): Mathis' alte Datei wird einmalig außerhalb der App in v18/JSON umgewandelt und dann über den normalen Import eingelesen. Ein eingebauter Import für diese Formate (Phase 5b) wird nur gebaut, wenn er später gebraucht wird. Grund: deutlich weniger Aufwand bei gleichem Ergebnis für die vorhandenen Daten. |
+| 3 | Umgang mit der Datei | Die Datei bleibt auf dem Mac und kommt nie ins Repo, weil sie persönliche Trainingsdaten enthält. |

@@ -15,6 +15,16 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 
 - **Phase 4 (gebaut und eingerichtet, Abnahme auf Geräten offen):** Konto mit Google-Login oder 6-stelligem E-Mail-Code, Datenbank-Schema mit Row Level Security, Sync zwischen Geräten mit Warteschlange, „letzte Änderung gewinnt“ und Schutz offener Trainings, getrennte lokale Daten pro Konto, Sync-Status, tägliches Wachhalten von Supabase. Einrichtung: `docs/SUPABASE.md`.
 
+## Nächste Phasen (Plan, Stand 02.11.2026)
+Gearbeitet wird Phase für Phase; nach jeder Phase wartet die Arbeit auf dein OK.
+
+- **Vor Phase 5:** Abnahme von Phase 4 auf echten Geräten (macht Mathis selbst): beide Login-Wege in iPhone-Safari und in der installierten App, Änderung erscheint auf einem zweiten Gerät, offline Eingetragenes kommt später ohne Duplikate an.
+- **Phase 5a: Import der aktuellen Exporte.** JSON-Backup und CSV v18 der alten App (`Export Backup` / `Export CSV`), Prüfung nach den Regeln der alten App, Vorschau mit Anzahlen und Stichproben, Fehlerbericht, Schutz vor doppeltem Import (Fingerabdruck in `legacy_imports`, neue Migration und Gerätedatenbank Version 3), Abschlussbericht. Health-/Strava-Workouts werden übersprungen und gezählt, Entwürfe mitgenommen. Abnahme: Zahlen und Stichproben stimmen mit deinem echten Export überein. Details: `docs/IMPORT.md`, Abschnitt 4.
+- **Alte CSV-Datei von Mathis (statt Phase 5b):** Mathis legt die Datei auf den Mac (z. B. Downloads) und nennt den Namen; sie kommt nicht ins Repo. Ist sie schon v18, geht sie direkt durch den Import aus 5a. Ist sie älter (v1–v17 oder einfache Workout-CSV), wird sie einmalig mit einem kleinen Umwandlungsprogramm in v18/JSON gebracht und dann normal importiert. Entscheidung vom 02.11.2026, siehe `docs/ENTSCHEIDUNGEN.md`.
+- **Phase 5b (nur bei Bedarf):** eingebauter Import der älteren Formate v1–v17 und der einfachen Workout-CSV in der App, falls später jemand anderes solche Dateien mitbringt.
+- **Phase 6: Datenschutz und Konto.** Einwilligung beim ersten Start, Datenschutzerklärung und Impressum als markierte Entwürfe mit Platzhaltern, Export als JSON und CSV, Konto löschen (Cloud und Gerät) über eine serverseitige Funktion, Hinweis zum Vertrag zur Auftragsverarbeitung mit Supabase. Abnahme: nach dem Löschen nachweislich keine Daten des Kontos mehr in den Tabellen.
+- **Phase 7: Abschluss.** Kompletter Durchlauf (neues Konto, Installation, Offline-Training, Sync, zweites Gerät, Export, Konto löschen), Prüfung auf iPhone, Android und Desktop, Repo-Historie auf Geheimnisse prüfen, README für Einrichtung und Betrieb, ehrliche Liste aller Abweichungen in `docs/PARITAET.md`.
+
 ## Entwickeln
 Voraussetzung: Node.js 26 (siehe `.node-version`).
 

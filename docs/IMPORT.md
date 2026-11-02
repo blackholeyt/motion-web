@@ -49,7 +49,9 @@ Quellen: `MotionBackup.swift`, `MotionBackupStore.swift`, `MotionBackupValidatio
 
 **Wichtig zur alten App:** Wurde sie mit einem kostenlosen Apple-Account aus Xcode installiert, startet sie nach etwa 7 Tagen nicht mehr, bis man sie erneut aus Xcode installiert. Die Daten bleiben dabei erhalten. Für den Export muss die App also noch starten. Am sichersten exportierst du das Backup bald einmal und hebst die Datei auf.
 
-## 4. Geplanter Import in der Web-App (Phase 5)
+## 4. Geplanter Import in der Web-App (Phase 5a)
+
+**Aufteilung seit 02.11.2026:** Phase 5a baut den Import für JSON und CSV v18. Ältere Dateien von Mathis werden einmalig außerhalb der App in v18/JSON umgewandelt. Ein eingebauter Import für v1–v17 und die einfache Workout-CSV kommt nur bei Bedarf (Phase 5b). Siehe README, „Nächste Phasen“.
 1. Datei wählen (JSON oder CSV v18). Die CSV wird intern in dasselbe JSON zurückverwandelt.
 2. Prüfung mit den Regeln der alten App. Bei einem Fehler wird nichts importiert, und ein verständlicher Fehlerbericht erscheint.
 3. **Vorschau** mit Anzahlen: Workouts, Entwürfe, Sätze, Übungen, Routinen, Körpergewicht, Schlafwerte, XP-Belege, Rekorde. Dazu Stichproben, z. B. die letzten 3 Workouts mit Sätzen.
