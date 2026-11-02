@@ -8,6 +8,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 
 ## Stand
 - **Phase 0 (fertig):** Analyse der alten iOS-App, siehe `docs/`.
+- **Live:** https://motion-web.pages.dev
 - **Phase 1 (fertig):** Grundgerüst mit Design-System, Navigation, Startanimation, Einstellungen für Darstellung und Sprache, PWA mit Offline-Start, Tests und CI. Die Trainingsfunktionen folgen ab Phase 2.
 
 ## Entwickeln

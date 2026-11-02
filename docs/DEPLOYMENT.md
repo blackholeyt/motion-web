@@ -38,7 +38,7 @@ Quellen:
    - Build output directory: `dist`
    - Unter „Environment variables“: Variable `NODE_VERSION`, Wert `26`
 7. **„Save and Deploy“** klicken. Der erste Build dauert 1–3 Minuten.
-8. Schick mir die angezeigte Adresse, dann prüfe ich die Live-Version.
+8. Fertig. Die Live-Version läuft unter **https://motion-web.pages.dev** (eingerichtet am 02.11.2026).
 
 Danach baut Cloudflare bei jedem Push auf `main` automatisch neu. Die GitHub-Action „CI“ prüft parallel Typen, Unit-Tests und Browser-Tests.
 
@@ -56,4 +56,9 @@ Die Adresse in Chrome öffnen, im Menü (⋮) **„App installieren“** bzw. **
 ```bash
 npm run build
 npx vite preview --port 4173
+```
+
+## Live-Version testen
+```bash
+E2E_BASE_URL=https://motion-web.pages.dev/ npm run test:e2e
 ```
