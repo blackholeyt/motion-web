@@ -291,3 +291,32 @@
     transition: none;
   }
 }
+
+.trophy {
+  align-self: center;
+  color: var(--achievement);
+}
+
+.centered {
+  align-items: center;
+  text-align: center;
+}
+
+.bigWeight {
+  font-size: 2.125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigXPSmall {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--action);
+}
+
+.rule {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}

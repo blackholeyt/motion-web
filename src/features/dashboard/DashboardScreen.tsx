@@ -11,6 +11,8 @@ import { completedHistory, useProgress } from '../../store/progress'
 import { SectionTitle } from '../../ui/components'
 import { GoalEditor } from '../exercises/GoalEditor'
 import { ProgressCard } from '../progress/ProgressCard'
+import { BodyWeightCard } from '../body/BodyWeightCard'
+import { SleepCard } from '../body/SleepCard'
 import { ConsistencyCard } from './ConsistencyCard'
 import { LoadBestsCard } from './LoadBestsCard'
 import { DraftLinks } from '../workout/DraftLinks'
@@ -53,6 +55,8 @@ export function DashboardScreen() {
         </button>
       </div>
       {!preferences.quietMode && progress && <ProgressCard progress={progress} />}
+      {preferences.bodyWeightTrackingVisible && <BodyWeightCard />}
+      <SleepCard now={now} />
       <section className={styles.section}>
         <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />
         <ConsistencyCard weeks={trainingWeeks((history ?? []).map(({ workout }) => workout.performed_at), now)} />
