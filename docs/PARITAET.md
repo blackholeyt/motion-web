@@ -11,6 +11,10 @@ Die Spalte „Phase“ zeigt, wann die Funktion gebaut wird. Die Spalte „Test�
 - Nr. 78: In Phase 3 kommt nur der **Export** im neuen JSON-Format (Einstellungen → Sicherung). Wiederherstellen folgt mit Phase 5.
 - Nr. 82: Markierte Beispieldaten kann es im Web nur durch den Import alter Daten geben. Das Entfernen kommt deshalb mit dem Import in Phase 5.
 - Nr. 10/61: Die Texte sagen ehrlich „vorerst auf diesem Gerät, Konto und Cloud-Sicherung folgen“.
+- Nr. 10: Mit eingerichteter Cloud sagt der Text „… ein optionales Konto zur Sicherung kannst du in den Einstellungen anlegen“.
+
+**Phase 4:** Konto, Sync und Sync-Status sind gebaut (siehe „Neu durch die Web-Version“). Tests: `supabase/tests/rls.test.ts` (Zwei-Konten-Test, 62 Prüfungen), `src/sync/sync.test.ts` (zwei Geräte, offline ohne Duplikate, Löschungen, letzte Änderung gewinnt, offene Trainings, Gastdaten, Datenbank-Update), `supabase/tests/rls.live.test.ts` (gegen dein Projekt).
+
 - Trainings, die in Phase 2 abgeschlossen wurden, bekommen nachträglich keine XP (wie in der iOS-App: XP nur für neu abgeschlossene Trainings).
 
 Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).

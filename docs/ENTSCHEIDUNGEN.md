@@ -25,3 +25,16 @@
 | 6 | JSON-Sicherung | Phase 3 liefert den Export im neuen Format; Wiederherstellen und Import der alten Formate in Phase 5. |
 | 7 | Alte Beispieldaten entfernen | Verschoben auf Phase 5, weil markierte Beispieldaten nur über den Import ins Web kommen können. |
 | 8 | Schlaf | Nur der manuell eingetragene Apple-Schlafindex; Dauer und Phasen aus Health bleiben nativ. |
+
+## Phase 4 (gebaut am 02.11.2026, Einrichtung und Abnahme offen)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Gastdaten beim ersten Login | Rückfrage mit „Ins Konto übernehmen“ / „Nur auf diesem Gerät behalten“ (Phase-0-Entscheidung 4). |
+| 2 | Konflikte bei offenen Trainings | Gerät behält seinen Stand, Cloud-Version wird Konfliktkopie, Auswahl unter Einstellungen → Konto (siehe `DATENMODELL.md`, Abschnitt 6). |
+| 3 | Abgleich | Kein Realtime-Kanal, sondern Abgleich nach jeder Änderung (1,5 s verzögert), beim Zurückkehren in die App, bei wiederhergestellter Verbindung und alle 30 s, solange die App sichtbar ist. Spart Verbindungen im Gratis-Tarif. |
+| 4 | Schlüssel | Publishable Key statt des alten `anon`-Schlüssels, weil Supabase die alten bis Ende 2026 ablöst. |
+| 5 | Ohne Cloud-Einstellungen | Die App läuft weiter rein lokal und zeigt keinen Konto-Bereich. So bleibt die Live-Version bis zur Einrichtung unverändert. |
+| 6 | Zwei-Konten-Test | Zweimal: automatisch in CI gegen die echten Migrationen in einem eingebetteten Postgres (PGlite) und einmal gegen dein echtes Projekt (`npm run test:rls-live`). |
+| 7 | Logout | Konto-Datenbank bleibt geschlossen auf dem Gerät; beim nächsten Login mit demselben Konto ist sie sofort da. Löschen der lokalen Daten kommt mit „Konto löschen“ in Phase 6. |
+

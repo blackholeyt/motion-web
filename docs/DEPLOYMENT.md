@@ -40,6 +40,8 @@ Quellen:
 7. **„Save and Deploy“** klicken. Der erste Build dauert 1–3 Minuten.
 8. Fertig. Die Live-Version läuft unter **https://motion-web.pages.dev** (eingerichtet am 02.11.2026).
 
+Für Konto und Sync braucht der Build zwei weitere Variablen (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`), siehe `SUPABASE.md`, Schritt 8. Ohne sie läuft die App rein lokal.
+
 Danach baut Cloudflare bei jedem Push auf `main` automatisch neu. Die GitHub-Action „CI“ prüft parallel Typen, Unit-Tests und Browser-Tests.
 
 ## Auf dem iPhone installieren
