@@ -1,4 +1,6 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
+import { db, onDatabaseChange } from '../data/db'
+import { GuestDataPrompt } from '../features/account/GuestDataPrompt'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { BlueprintDetailScreen } from '../features/blueprints/BlueprintDetailScreen'
 import { BlueprintsScreen } from '../features/blueprints/BlueprintsScreen'
@@ -18,13 +20,12 @@ import { AppShell } from './AppShell'
 import { DemoBanner } from '../features/demo/DemoBanner'
 import { Onboarding } from '../features/onboarding/Onboarding'
 import { loadOnboarding, needsIntroduction, useOnboarding } from '../features/onboarding/state'
-import { useSandbox } from './sandbox'
 
 // Hash routing works from any static host, offline and inside a future Capacitor shell.
 export function App() {
   useApplyTheme()
   const { language } = useT()
-  const sandbox = useSandbox()
+  const database = useSyncExternalStore(onDatabaseChange, () => db.name)
   useEffect(() => {
     document.documentElement.lang = language
   }, [language])
@@ -32,7 +33,7 @@ export function App() {
     <HashRouter>
       <OpeningProvider>
         <DemoBanner />
-        <IntroductionGate key={sandbox?.database.name ?? 'personal'}>
+        <IntroductionGate key={database}>
           <Routes>
             <Route element={<AppShell />}>
               <Route index element={<DashboardScreen />} />
@@ -48,6 +49,7 @@ export function App() {
             <Route path="cardio" element={<CardioScreen />} />
           </Routes>
         </IntroductionGate>
+        <GuestDataPrompt />
         <InstallHint />
         <UpdateNotice />
       </OpeningProvider>
