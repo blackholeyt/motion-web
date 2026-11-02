@@ -240,3 +240,12 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 | HealthWorkoutReceipt | entfällt in V1 | kommt mit der nativen App zurück |
 | OnboardingRecord | Dexie `onboarding` | wird nicht importiert |
 | Health-Archiv, Ernährung, Schrittziel | entfällt in V1 | in `SPAETER_NATIV.md` |
+
+---
+
+## 4. Umsetzung in Phase 2
+
+- Datenbank: `src/data/db.ts` (Dexie, Version 1), Typen in `src/data/types.ts`.
+- Jede Änderung läuft über `src/data/repo.ts`: Dort werden `updated_at` gesetzt, gelöschte Datensätze weich gelöscht (`deleted_at`) und der Datensatz in die Warteschlange `outbox` gelegt. Die Sync in Phase 4 lädt genau diese Einträge hoch.
+- `set_logs` enthalten zusätzlich `workout_id`, damit ein Training mit einer Abfrage geladen werden kann.
+- Geräteeinstellungen (Darstellung, Startanimation, Sprache, Installationshinweis) liegen vorerst in `localStorage`. Trainingseinstellungen (Wiederholungen, Pause, Haptik, Mitteilungen) liegen im Profil und werden später synchronisiert.

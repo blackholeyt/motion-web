@@ -9,7 +9,8 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 ## Stand
 - **Phase 0 (fertig):** Analyse der alten iOS-App, siehe `docs/`.
 - **Live:** https://motion-web.pages.dev
-- **Phase 1 (fertig):** Grundgerüst mit Design-System, Navigation, Startanimation, Einstellungen für Darstellung und Sprache, PWA mit Offline-Start, Tests und CI. Die Trainingsfunktionen folgen ab Phase 2.
+- **Phase 1 (fertig):** Grundgerüst mit Design-System, Navigation, Startanimation, Einstellungen für Darstellung und Sprache, PWA mit Offline-Start, Tests und CI.
+- **Phase 2 (fertig):** Lokaler Kern ohne Konto: Routinen, Übungskatalog, Starter-Vorlagen, Trainingsplan, Training aufzeichnen mit Pausen-Timer, Supersätzen und Rückgängig, offene Trainings, Training nachtragen und Verlauf. Alles wird sofort auf dem Gerät gespeichert (IndexedDB).
 
 ## Entwickeln
 Voraussetzung: Node.js 26 (siehe `.node-version`).
@@ -26,13 +27,17 @@ npm run dev
 | `npm run preview` | Build lokal ansehen (inkl. Offline-Funktion) |
 | `npm test` | Unit-Tests (Vitest) |
 | `npm run test:e2e` | Browser-Tests (Playwright: Chrome mobil/Desktop, WebKit iPhone). Einmalig vorher: `npx playwright install chromium webkit` |
+| `node scripts/missing-translations.mjs` | Zeigt Texte ohne deutsche Übersetzung |
 | `npm run icons` | App-Icons aus `design/app-icon-1024.png` neu erzeugen (macOS) |
 
 ## Aufbau
 | Ordner | Inhalt |
 |---|---|
 | `src/app` | App-Rahmen, Navigation, Routen |
-| `src/features` | Bildschirme und Fachlogik je Bereich |
+| `src/data` | Lokale Datenbank (Dexie), Datentypen, Schreib-Helfer mit Sync-Warteschlange |
+| `src/domain` | Reine Fachlogik aus der iOS-App (Einheiten, Ziele, Trainingsplan, Timer, Sätze, Katalog) |
+| `src/store` | Lesen und Schreiben je Bereich (Profil, Routinen, Plan, Verlauf) |
+| `src/features` | Bildschirme je Bereich |
 | `src/ui` | Design-System (Farben, Komponenten) |
 | `src/i18n` | Englisch/Deutsch |
 | `src/platform` | Gerätefunktionen hinter eigenen Schnittstellen (für Capacitor später) |

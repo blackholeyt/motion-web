@@ -7,6 +7,8 @@
 
 Die Spalte „Phase“ zeigt, wann die Funktion gebaut wird. Den Testhinweis ergänze ich in Phase 3 für jede Zeile.
 
+**Stand nach Phase 2:** Alle Zeilen mit Phase 1 und 2 sind gebaut, ausgenommen die Bereiche, die laut Tabelle erst in Phase 3 kommen (Rekorde, XP, Level, Feiern, Übungsbibliothek bearbeiten, PR-Ziele, Cardio, Körpergewicht, Schlaf, Einführung, Demo). Workouts aus Phase 2 bekommen deshalb noch keine XP.
+
 Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 
 | Nr | Funktion | Quelle (alt) | Status | Phase | Anmerkung |
