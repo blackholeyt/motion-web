@@ -8,6 +8,9 @@ import { parseWeightText, quantityText, repsText, setIsValid, setUnit, startsRes
 import { sameName, supportsLogging } from '../../domain/catalogue'
 import { entriesFor, isStartable } from '../../store/blueprints'
 import { advancePlanFor } from '../../store/plan'
+import { buildRecap, topWeights, type RecordAchievement } from '../../domain/progress'
+import { improves } from '../../domain/measurement'
+import { completedHistory, prepareStrengthReward, storedWorkout, type FinishReward } from '../../store/progress'
 import { loadSession, type Session } from './session'
 
 /*
@@ -306,6 +309,7 @@ export interface CompletionResult {
   startedRest: boolean
   error?: string
   errorValues?: string[]
+  record?: RecordAchievement
 }
 
 export async function toggleCompletion(workoutID: string, setID: string, context: WorkoutContext): Promise<CompletionResult> {
@@ -338,7 +342,8 @@ export async function toggleCompletion(workoutID: string, setID: string, context
     else if (allDone || !wasCompleted) rest = timer.cancel(rest)
     await update<Workout>('workouts', workoutID, { rest_timer: rest })
     await normalize(workoutID, context)
-    return { completed: !wasCompleted, startedRest: begins }
+    const record = wasCompleted ? undefined : await registerRecord(workoutID, setID)
+    return { completed: !wasCompleted, startedRest: begins, record }
   })
 }
 
@@ -514,6 +519,35 @@ export async function changeLoadUnit(workoutID: string, unit: WeightUnit, contex
   })
 }
 
+// MARK: - Records
+
+/**
+ * ActiveWorkoutEngine.registerRecord: a recorded load above the all-time best of a PR-tracked
+ * exercise. The first completed workout only sets the baseline; each new high is acknowledged once.
+ */
+async function registerRecord(workoutID: string, setID: string): Promise<RecordAchievement | undefined> {
+  const session = await loadSession(workoutID)
+  if (!session) return undefined
+  const row = session.rows.find(({ set }) => set.id === setID)
+  if (!row || row.set.is_warm_up || !row.set.is_completed || row.exercise.measurement !== 'Load & reps' || row.exercise.is_history_only) return undefined
+  const source = row.exercise.exercise_id ? await db.exercises.get(row.exercise.exercise_id) : undefined
+  if (!source?.is_pr_tracked || source.deleted_at !== null) return undefined
+  const history = (await completedHistory()).filter((stored) => stored.workout.performed_at < session.workout.performed_at)
+  const current = await storedWorkout(session.workout)
+  const recap = buildRecap(current, history, [source])
+  if (!recap.records.some((record) => record.id === source.id)) return undefined
+  let baseline: number | undefined
+  for (const stored of history) {
+    const weight = topWeights(stored).get(source.id)
+    if (weight !== undefined) baseline = Math.max(baseline ?? weight, weight)
+  }
+  if (baseline === undefined) return undefined
+  const previous = Math.max(baseline, row.exercise.acknowledged_record_kg ?? baseline)
+  if (!improves(row.set.weight_kg, previous)) return undefined
+  await update<WorkoutExercise>('workout_exercises', row.exercise.id, { acknowledged_record_kg: row.set.weight_kg })
+  return { id: source.id, name: row.exercise.exercise_name, previous, weight: row.set.weight_kg, goal: source.goal_weight_kg }
+}
+
 // MARK: - Rest
 
 export function restSeconds(exercise: WorkoutExercise, context: WorkoutContext): number {
@@ -572,20 +606,20 @@ export function finishCounts(session: Session) {
 }
 
 /**
- * Saves the session as completed and advances the training plan in one transaction.
- * Workout XP and the recap are calculated from phase 3 onward.
+ * Saves the session as completed, grants its XP once and advances the training plan,
+ * all in one transaction. Returns null when the session cannot be finished.
  */
-export async function finishWorkout(workoutID: string, context: WorkoutContext): Promise<boolean> {
+export async function finishWorkout(workoutID: string, context: WorkoutContext): Promise<FinishReward | null> {
   return transaction(async () => {
     await normalize(workoutID, context)
     const session = await loadSession(workoutID)
-    if (!session) return false
-    if (session.workout.is_completed) return true
-    if (!canFinish(session, context)) return false
+    if (!session || session.workout.is_completed) return null
+    if (!canFinish(session, context)) return null
+    const reward = await prepareStrengthReward(session.workout)
     const completed = { ...session.workout, is_completed: true }
     await advancePlanFor(completed, clock(context))
     await update<Workout>('workouts', workoutID, { is_completed: true, rest_timer: timer.cancel(timer.restored(session.workout.rest_timer)) })
-    return true
+    return reward
   })
 }
 

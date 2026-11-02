@@ -6,7 +6,11 @@ import type { WeightUnit } from '../../data/types'
 import { useT } from '../../i18n'
 import { platform } from '../../platform'
 import { useHaptics } from '../../store/hooks'
-import { updateProfile } from '../../store/profile'
+import { updateProfile, usePreferences } from '../../store/profile'
+import type { FinishReward } from '../../store/progress'
+import type { RecordAchievement } from '../../domain/progress'
+import { Celebration } from '../progress/Celebration'
+import { RecordNotice } from '../progress/RecordNotice'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { ContinueButton } from '../../ui/components'
 import { SelectRow, TextButton } from '../../ui/controls'
@@ -42,6 +46,9 @@ export function WorkoutScreen() {
   const [confirmFinish, setConfirmFinish] = useState(false)
   const [notifications, setNotifications] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [reward, setReward] = useState<FinishReward | null>(null)
+  const [record, setRecord] = useState<{ record: RecordAchievement; setID: string } | null>(null)
+  const preferences = usePreferences()
   const [notes, setNotes] = useState<string | null>(null)
 
   // Keep the screen on while training, where the browser allows it.
@@ -69,6 +76,19 @@ export function WorkoutScreen() {
         <p>{t('This draft has been removed.')}</p>
         <TextButton onClick={() => navigate('/')}>{t('Continue')}</TextButton>
       </div>
+    )
+  }
+
+  if (saved && reward && !preferences.quietMode) {
+    return (
+      <Celebration
+        recap={reward.recap}
+        award={reward.award}
+        totalXP={reward.totalXP}
+        records={reward.recap.records}
+        unit={context.unit}
+        onContinue={() => navigate(returnTo, { replace: true })}
+      />
     )
   }
 
@@ -100,6 +120,12 @@ export function WorkoutScreen() {
     })
     if (!result) return
     if (result.error) return setError({ message: result.error, values: result.errorValues })
+    if (result.record) {
+      setRecord({ record: result.record, setID })
+      haptic('success')
+      return
+    }
+    if (!result.completed && record?.setID === setID) setRecord(null)
     haptic(result.completed ? 'completion' : wasCompleted ? 'selection' : 'completion')
   }
   const finish = async () => {
@@ -111,9 +137,11 @@ export function WorkoutScreen() {
   }
   const save = async () => {
     setConfirmFinish(false)
-    if (await engine.finishWorkout(id, context)) {
+    const result = await engine.finishWorkout(id, context)
+    if (result) {
       platform.notifications.cancel(`motion.rest.${id}`)
       haptic('success')
+      setReward(result)
       setSaved(true)
     }
   }
@@ -199,6 +227,9 @@ export function WorkoutScreen() {
             </button>
           )}
         </div>
+        {record && session.rows.some(({ set }) => set.id === record.setID && set.is_completed) && (
+          <RecordNotice record={record.record} unit={context.unit} onDismiss={() => setRecord(null)} />
+        )}
         {session.exercises.map((group, index) => (
           <ExerciseSection
             key={group.exercise.id}

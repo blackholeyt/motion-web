@@ -12,7 +12,8 @@ export interface Session {
   rows: Row[]
 }
 
-export const identityKey = (exercise: WorkoutExercise) => exercise.exercise_id ?? `unlinked-${exercise.id}`
+import { identityKey } from '../../domain/progress'
+export { identityKey }
 
 export async function loadSession(workoutID: string): Promise<Session | null> {
   const workout = await db.workouts.get(workoutID)

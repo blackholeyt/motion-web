@@ -7,6 +7,9 @@ import { quantityText, repsText } from '../../domain/sets'
 import * as engine from './engine'
 import { loadHistory, loadSession, previousFor, identityKey } from './session'
 import { db } from '../../data/db'
+import { update } from '../../data/repo'
+import type { Exercise } from '../../data/types'
+import { totalXP } from '../../store/progress'
 
 const context: engine.WorkoutContext = { trackReps: true, globalRestSeconds: 90, unit: 'kg', locale: 'en-US', now: () => new Date('2026-11-02T10:00:00Z') }
 
@@ -78,7 +81,7 @@ describe('workout engine', () => {
       const setID = await enter(first, index, weight, '8')
       await engine.toggleCompletion(first, setID, context)
     }
-    expect(await engine.finishWorkout(first, context)).toBe(true)
+    expect(await engine.finishWorkout(first, context)).not.toBeNull()
     const second = await engine.startFromBlueprint(blueprint)
     const session = (await loadSession(second))!
     const history = await loadHistory(new Set(session.exercises.map(({ exercise }) => identityKey(exercise))), null, second)
@@ -132,5 +135,28 @@ describe('workout engine', () => {
     expect(session.exercises[0]!.exercise.is_history_only).toBe(true)
     await expect(engine.addExercise(id, { customName: 'sled push', sets: 1 }, context)).rejects.toThrow('already in your workout')
     await expect(engine.addExercise(id, { customName: 'bench press', sets: 1 }, context)).rejects.toThrow('existing exercise')
+  })
+
+  it('grants XP once, acknowledges a load record in session and celebrates it at finish', async () => {
+    const { blueprint, bench } = await benchBlueprint(1)
+    await update<Exercise>('exercises', bench.id, { is_pr_tracked: true, goal_weight_kg: 100 })
+    await updateEntry((await entriesFor(blueprint.id))[0]!.entry, { guidance: { minimumReps: 8, maximumReps: 12, progression: 'Build external load', notes: '' } })
+    const first = await engine.startFromBlueprint(blueprint, { now: new Date('2026-11-01T10:00:00Z') })
+    const baseline = await engine.toggleCompletion(first, await enter(first, 0, '50', '8'), context)
+    expect(baseline.record).toBeUndefined()
+    const opening = (await engine.finishWorkout(first, context))!
+    expect(opening.award?.total).toBe(100)
+    expect(opening.recap.comparableCount).toBeNull()
+    expect(await engine.finishWorkout(first, context)).toBeNull()
+    expect(await totalXP()).toBe(100)
+
+    const second = await engine.startFromBlueprint(blueprint, { now: new Date('2026-11-02T10:00:00Z') })
+    const result = await engine.toggleCompletion(second, await enter(second, 0, '55', '8'), context)
+    expect(result.record).toMatchObject({ previous: 50, weight: 55, goal: 100 })
+    const reward = (await engine.finishWorkout(second, context))!
+    expect(reward.recap.records).toHaveLength(1)
+    expect(reward.award).toMatchObject({ records: 1, recordXP: 75, improvementXP: 0, total: 175 })
+    expect(reward.totalXP).toBe(275)
+    expect(await db.workout_awards.count()).toBe(2)
   })
 })
