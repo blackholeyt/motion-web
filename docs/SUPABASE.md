@@ -11,13 +11,13 @@ Solange die Schritte nicht erledigt sind, läuft Motion wie bisher **ohne Konto*
 | Backups | Im Gratis-Tarif **keine automatischen Backups**. Supabase empfiehlt eigenen Export mit `supabase db dump` (siehe `BETRIEB.md`) | https://supabase.com/docs/guides/platform/backups |
 | Region | Frankfurt heißt `Central EU (Frankfurt)`, technisch `eu-central-1` | https://supabase.com/docs/guides/platform/regions |
 | E-Mail-Code | Code statt Link: In der Vorlage **„Magic Link“** `{{ .Token }}` statt des Links einsetzen. Code gilt standardmäßig 1 Stunde, neuer Code frühestens nach 60 Sekunden | https://supabase.com/docs/guides/auth/auth-email-passwordless |
-| Code-Länge | Die Doku spricht von „six-digit code“, nennt aber keine Einstellung dafür. Die App akzeptiert 6 bis 10 Ziffern, falls Supabase etwas anderes schickt | ebd. |
+| Code-Länge | Einstellbar unter Sign In / Providers → Email → „Email OTP length“; neue Projekte stehen auf **8**, Motion nutzt **6**. Die App akzeptiert 6 bis 10 Ziffern | Dashboard, geprüft am 02.11.2026 |
 | Mail-Limit | Mit dem eingebauten Mailversand nur 2 Mails pro Stunde, deshalb eigenes SMTP. Nach dem Speichern eines eigenen SMTP gilt zunächst **30 Mails pro Stunde** (in den Rate-Limits änderbar) | https://supabase.com/docs/guides/auth/auth-smtp, https://supabase.com/docs/guides/auth/rate-limits |
 | Schlüssel | Neue Projekte haben einen **Publishable Key** (`sb_publishable_…`, darf ins Frontend) und einen **Secret Key** (`sb_secret_…`, nie ins Frontend). Die alten `anon`/`service_role`-Schlüssel werden laut Supabase bis Ende 2026 abgelöst; Motion nimmt deshalb den Publishable Key | https://supabase.com/docs/guides/api/api-keys |
 | Google | OAuth-Client vom Typ „Web application“; bei „Authorized redirect URIs“ die Callback-Adresse aus dem Supabase-Dashboard eintragen | https://supabase.com/docs/guides/auth/social-login/auth-google |
-| Brevo | **Nicht geprüft:** Die Preis- und Hilfeseiten von Brevo ließen sich nicht automatisch lesen. Laut meinem Wissensstand: Gratis-Tarif 300 Mails pro Tag, SMTP-Server `smtp-relay.brevo.com`, Port 587. **Bitte im Brevo-Dashboard bestätigen** (Schritt 4) | – |
+| Mailversand | Statt Brevo (verlangt eine Postadresse) ein eigenes Gmail-Konto mit App-Passwort, siehe Schritt 4 | – |
 
-**Abweichung vom Auftrag:** keine. Einziger Hinweis: Der Auftrag nennt „Brevo“ als Beispiel; dessen Bedingungen konnte ich nicht aus der offiziellen Doku bestätigen.
+**Abweichung vom Auftrag:** Der Auftrag nennt Brevo als Beispiel. Weil Brevo eine Postadresse verlangt, läuft der Versand über Gmail (deine Entscheidung vom 02.11.2026).
 
 ---
 
@@ -45,21 +45,23 @@ Spätere Änderungen kommen als neue Dateien in `supabase/migrations/` und werde
    - **Secret key** (`sb_secret_…`): nur für den Zwei-Konten-Test auf deinem Mac (Schritt 7). Nirgends sonst eintragen.
 3. Falls keine Publishable/Secret Keys angezeigt werden: **Create new API keys** klicken.
 
-## 4. E-Mail-Versand über Brevo (SMTP)
-1. https://www.brevo.com registrieren (Gratis-Tarif). **Bitte prüfe auf der Preisseite das Tageslimit des Gratis-Tarifs** und sag mir, falls es von 300 abweicht.
-2. Absender bestätigen: **Senders, Domains & Dedicated IPs → Senders → Add a sender**. Am einfachsten deine eigene E-Mail-Adresse; Brevo schickt einen Bestätigungslink.
-   - Hinweis: Mails von einer Gmail- oder GMX-Adresse über fremde Server landen öfter im Spam. Eine eigene Domain wäre besser, ist für dich und Freunde aber nicht nötig.
-3. **SMTP & API → SMTP**: Dort stehen Server, Port und Login. **Generate a new SMTP key** und den Schlüssel kopieren.
-4. In Supabase: **Authentication → Emails → SMTP Settings → Enable custom SMTP**:
-   - Sender email: die bestätigte Absenderadresse
+## 4. E-Mail-Versand über Gmail (SMTP)
+Brevo verlangt bei der Registrierung eine Postadresse. Deshalb läuft der Versand über ein eigenes Gmail-Konto nur für Motion (eingerichtet am 02.11.2026: `motion.web.support@gmail.com`). Google erlaubt laut eigener Hilfe bis etwa 500 Mails pro Tag. Supabase weist darauf hin, dass Gmail eigentlich für private Mails gedacht ist; für dich und Freunde reicht es.
+
+1. Im Gmail-Konto die **Bestätigung in zwei Schritten** einschalten: https://myaccount.google.com/signinoptions/twosv
+2. **App-Passwort** erstellen: https://myaccount.google.com/apppasswords (die Seite steht in keinem Menü). Name `Supabase Motion`. Das 16-stellige Passwort in den Passwort-Manager.
+3. In Supabase **Authentication → Emails → SMTP Settings → Enable custom SMTP**:
+   - Sender email und Username: die Gmail-Adresse
    - Sender name: `Motion`
-   - Host / Port / Username: aus Brevo (laut meinem Stand `smtp-relay.brevo.com`, `587`)
-   - Password: der SMTP-Schlüssel aus Brevo
-5. Speichern.
+   - Host: `smtp.gmail.com`, Port: `587`
+   - Password: das App-Passwort ohne Leerzeichen
+4. Speichern.
+
+Das App-Passwort lässt sich unter derselben Google-Seite jederzeit widerrufen; dann ein neues erstellen und in Supabase eintragen.
 
 ## 5. Sechsstelligen Code statt Link einstellen
-1. **Authentication → Emails → Templates → Magic Link**.
-2. Betreff: `Dein Motion-Code`
+1. **Authentication → Emails → Templates → Magic link or OTP**.
+2. Betreff: `Dein Motion-Code: {{ .Token }}`
 3. Inhalt ersetzen durch:
    ```html
    <h2>Dein Code für Motion</h2>
@@ -68,7 +70,8 @@ Spätere Änderungen kommen als neue Dateien in `supabase/migrations/` und werde
    <p>Der Code gilt eine Stunde. Wenn du dich nicht anmelden wolltest, ignoriere diese E-Mail.</p>
    ```
 4. Dasselbe in der Vorlage **Confirm signup** eintragen (neue Konten bekommen sonst einen Link).
-5. Speichern. Wichtig: In keiner der beiden Vorlagen darf `{{ .ConfirmationURL }}` stehen bleiben, sonst kommt wieder ein Link.
+5. **Authentication → Sign In / Providers → Email → Email OTP length** auf `6` stellen (stand bei neuen Projekten auf 8) und speichern.
+6. Wichtig: In keiner der beiden Vorlagen darf `{{ .ConfirmationURL }}` stehen bleiben, sonst kommt wieder ein Link.
 
 ## 6. Adressen freigeben (URL Configuration)
 **Authentication → URL Configuration**:

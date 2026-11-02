@@ -49,5 +49,5 @@ Im Zweifel frag mich vorher. Ein Wiederherstellen in ein Projekt mit vorhandenen
 | Wann | Was |
 |---|---|
 | monatlich | Backup erstellen; Lauf „Keep Supabase awake“ grün? |
-| bei Fehlermeldungen beim Anmelden | Supabase-Projekt pausiert? Brevo-Tageslimit erreicht? |
+| bei Fehlermeldungen beim Anmelden | Supabase-Projekt pausiert? Gmail-Tageslimit erreicht oder App-Passwort widerrufen? |
 | bis Ende 2026 | Supabase löst die alten `anon`-Schlüssel ab. Motion nutzt schon den Publishable Key; nichts zu tun |
