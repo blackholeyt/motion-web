@@ -5,12 +5,16 @@ import { useNavigate } from 'react-router-dom'
 import { useT } from '../../i18n'
 import { createBlueprint, entriesFor } from '../../store/blueprints'
 import { useBlueprints, useHaptics } from '../../store/hooks'
-import { PhaseNotice } from '../../ui/PhaseNotice'
 import { Sheet } from '../../ui/Sheet'
 import { Group, TextButton, TextRow } from '../../ui/controls'
 import { TrainingPlanEditor } from '../plan/TrainingPlanEditor'
 import { ExerciseLibrary } from '../exercises/ExerciseLibrary'
 import { PRGoals } from '../exercises/PRGoals'
+import { CardioLibrary } from '../cardio/CardioLibrary'
+import { CardioBlueprintForm } from '../cardio/CardioBlueprintSheet'
+import { draftValid, newCardioDraft } from '../../domain/cardio'
+import { createCardioBlueprint } from '../../store/cardio'
+import { useProfile } from '../../store/profile'
 import styles from './blueprints.module.css'
 
 type Section = 'blueprints' | 'goals' | 'exercises' | 'cardio'
@@ -56,7 +60,7 @@ export function BlueprintsScreen() {
       {section === 'blueprints' && <BlueprintList onPlan={() => setPlanning(true)} />}
       {section === 'goals' && <PRGoals />}
       {section === 'exercises' && <ExerciseLibrary creating={newExercise} onCreated={() => setNewExercise(false)} />}
-      {section === 'cardio' && <PhaseNotice phase={3} />}
+      {section === 'cardio' && <CardioLibrary />}
       <NewBlueprintSheet open={creating} onClose={() => setCreating(false)} />
       <TrainingPlanEditor open={planning} onClose={() => setPlanning(false)} />
     </>
@@ -84,7 +88,7 @@ function BlueprintList({ onPlan }: { onPlan: () => void }) {
         <Shuffle size={20} aria-hidden="true" /> <span>{t('Start Freestyle')}</span>
       </button>
       {(blueprints ?? []).map((blueprint) => (
-        <button key={blueprint.id} type="button" className={styles.blueprint} onClick={() => navigate(`/blueprints/${blueprint.id}`)}>
+        <button key={blueprint.id} type="button" className={styles.blueprint} onClick={() => navigate(blueprint.cardio_type ? `/cardio?blueprint=${blueprint.id}` : `/blueprints/${blueprint.id}`, { state: { returnTo: '/blueprints' } })}>
           <span className={styles.blueprintName}>{blueprint.name}</span>
           <span className={styles.blueprintDetail}>{blueprint.cardio_type ? t(blueprint.cardio_type) : t('{0} exercises', [counts?.[blueprint.id] ?? 0])}</span>
         </button>
@@ -99,12 +103,20 @@ function NewBlueprintSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const haptic = useHaptics()
   const [name, setName] = useState('')
   const [cardio, setCardio] = useState(false)
+  const unit = useProfile()?.distance_unit ?? 'km'
+  const [draft, setDraft] = useState(() => newCardioDraft(unit))
   const close = () => {
     setName('')
     setCardio(false)
+    setDraft(newCardioDraft(unit))
     onClose()
   }
   const save = async () => {
+    if (cardio) {
+      await createCardioBlueprint(name, draft)
+      haptic('action')
+      return close()
+    }
     const blueprint = await createBlueprint(name)
     haptic('action')
     close()
@@ -117,7 +129,7 @@ function NewBlueprintSheet({ open, onClose }: { open: boolean; onClose: () => vo
       title={t('New Blueprint')}
       leading={<TextButton onClick={close}>{t('Cancel')}</TextButton>}
       trailing={
-        <TextButton strong onClick={save} disabled={!name.trim() || cardio} testID="saveBlueprint">
+        <TextButton strong onClick={save} disabled={!name.trim() || (cardio && !draftValid(draft))} testID="saveBlueprint">
           {t('Save')}
         </TextButton>
       }
@@ -132,7 +144,7 @@ function NewBlueprintSheet({ open, onClose }: { open: boolean; onClose: () => vo
           </button>
         ))}
       </div>
-      {cardio && <PhaseNotice phase={3} />}
+      {cardio && <CardioBlueprintForm name={name} onName={setName} draft={draft} onDraft={setDraft} hideName />}
     </Sheet>
   )
 }

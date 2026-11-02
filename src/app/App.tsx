@@ -9,6 +9,7 @@ import { OpeningProvider } from '../features/opening/OpeningContext'
 import { SettingsScreen } from '../features/settings/SettingsScreen'
 import { StartWorkout } from '../features/workout/StartWorkout'
 import { WorkoutScreen } from '../features/workout/WorkoutScreen'
+import { CardioScreen } from '../features/cardio/CardioScreen'
 import { useT } from '../i18n'
 import { InstallHint } from '../pwa/InstallHint'
 import { UpdateNotice } from '../pwa/UpdateNotice'
@@ -37,6 +38,7 @@ export function App() {
           </Route>
           <Route path="workout/new" element={<StartWorkout />} />
           <Route path="workout/:id" element={<WorkoutScreen />} />
+          <Route path="cardio" element={<CardioScreen />} />
         </Routes>
         <InstallHint />
         <UpdateNotice />

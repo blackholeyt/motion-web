@@ -46,7 +46,10 @@ export function StartCard({ now, onChoose }: { now: Date; onChoose: () => void }
   const entry = ticket && state?.entries.find((candidate) => candidate.id === ticket.entryID)
   const blueprint = entry && blueprints.find((candidate) => candidate.id === entry.blueprintID)
 
-  const launch = (blueprintID: string) => navigate(`/workout/new?blueprint=${blueprintID}`, { state: { planTicket: ticket, returnTo: '/' } })
+  const launch = (blueprintID: string) => {
+    const cardio = blueprints.find((candidate) => candidate.id === blueprintID)?.cardio_type
+    navigate(cardio ? `/cardio?blueprint=${blueprintID}` : `/workout/new?blueprint=${blueprintID}`, { state: { planTicket: ticket, returnTo: '/' } })
+  }
 
   return (
     <div className={styles.startCard}>

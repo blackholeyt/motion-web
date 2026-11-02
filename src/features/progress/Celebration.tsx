@@ -18,11 +18,13 @@ export interface CelebrationProps {
   unit: WeightUnit
   /** Overrides the "{name} · {n} sets completed" line, e.g. for cardio. */
   detail?: string
+  /** Replaces the comparison note, e.g. for cardio. */
+  note?: string
   onContinue: () => void
 }
 
 /** PersonalRecordCelebration.swift (WorkoutCelebrationView) with the XP reward on top. */
-export function Celebration({ recap, award, totalXP, records, unit, detail, onContinue }: CelebrationProps) {
+export function Celebration({ recap, award, totalXP, records, unit, detail, note, onContinue }: CelebrationProps) {
   const { t, locale } = useT()
   const haptic = useHaptics()
   const load = (kg: number) => loadLabel(unit, kg, locale)
@@ -80,7 +82,8 @@ export function Celebration({ recap, award, totalXP, records, unit, detail, onCo
             <CalendarCheck size={18} aria-hidden="true" /> {t('Training recorded on {0} distinct days in the 28 days ending with this session.', [recap.consistencyDays])}
           </p>
         )}
-        {recap && (
+        {note && <p className={styles.caption}>{note}</p>}
+        {recap && !note && (
           <p className={styles.caption}>
             {recap.comparableCount === null
               ? t('First recorded session: a baseline, not an improvement claim.')

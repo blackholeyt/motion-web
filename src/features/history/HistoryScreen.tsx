@@ -6,6 +6,8 @@ import { live } from '../../data/repo'
 import type { Workout } from '../../data/types'
 import { useT } from '../../i18n'
 import { useCompletedWorkouts } from '../../store/hooks'
+import { useProfile } from '../../store/profile'
+import { cardioSummary } from '../../domain/cardio'
 import { EmptyState } from '../../ui/components'
 import { DraftLinks } from '../workout/DraftLinks'
 import { HistoryEditor } from './HistoryEditor'
@@ -34,6 +36,7 @@ export function HistoryScreen() {
 
 function HistoryRow({ workout, onOpen }: { workout: Workout; onOpen: () => void }) {
   const { t, locale } = useT()
+  const distanceUnit = useProfile()?.distance_unit ?? 'km'
   const summary = useLiveQuery(async () => {
     const exercises = live(await db.workout_exercises.where('workout_id').equals(workout.id).toArray()).sort((a, b) => a.sort_order - b.sort_order)
     const sets = live(await db.set_logs.where('workout_id').equals(workout.id).toArray()).filter((set) => set.is_completed)
@@ -55,7 +58,11 @@ function HistoryRow({ workout, onOpen }: { workout: Workout; onOpen: () => void 
       <span className={styles.body}>
         <strong className={styles.name}>{t(workout.name)}</strong>
         <small className={styles.muted}>{format({ weekday: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</small>
-        {summary && <span className={styles.muted}>{t('{0} exercises · {1} working · {2} warm-up', [summary.exercises, summary.working, summary.warmUp])}</span>}
+        {workout.cardio_type ? (
+          <span className={styles.muted}>{cardioSummary(workout, distanceUnit, locale, t)}</span>
+        ) : (
+          summary && <span className={styles.muted}>{t('{0} exercises · {1} working · {2} warm-up', [summary.exercises, summary.working, summary.warmUp])}</span>
+        )}
         {workout.notes?.trim() && (
           <span className={styles.notes}>
             <NotebookText size={14} aria-hidden="true" /> {workout.notes}

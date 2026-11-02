@@ -1,16 +1,15 @@
-import { ArrowRight, Dumbbell, Shuffle, Sparkles } from 'lucide-react'
+import { ArrowRight, Dumbbell, Footprints, Shuffle, Sparkles } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../../i18n'
 import { entriesFor, isStartable } from '../../store/blueprints'
 import { useBlueprints } from '../../store/hooks'
-import { PhaseNotice } from '../../ui/PhaseNotice'
 import { Sheet } from '../../ui/Sheet'
 import { TextButton } from '../../ui/controls'
 import styles from './dashboard.module.css'
 
-/** DashboardBlueprintPicker.swift ("Start workout"). Cardio sessions arrive in phase 3. */
+/** DashboardBlueprintPicker.swift ("Start workout"). */
 export function WorkoutPicker({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useT()
   const navigate = useNavigate()
@@ -45,7 +44,17 @@ export function WorkoutPicker({ open, onClose }: { open: boolean; onClose: () =>
           ))}
         </div>
         {cardio ? (
-          <PhaseNotice phase={3} />
+          <>
+            <Choice title={t('Freestyle cardio')} subtitle={t('Choose an activity and log your session')} icon={<Footprints size={24} />} prominent onClick={() => go('/cardio')} testID="Freestyle cardio" />
+            <div className={styles.pickerHead}>
+              <span>{t('YOUR BLUEPRINTS')}</span>
+              <TextButton onClick={() => go('/blueprints')}>{t('Manage')}</TextButton>
+            </div>
+            {blueprints.length === 0 && <p className={styles.emptyBox}>{t('No cardio blueprints yet. Start freestyle or create a plan in Blueprints.')}</p>}
+            {blueprints.map((blueprint) => (
+              <Choice key={blueprint.id} title={blueprint.name} subtitle={t(blueprint.cardio_type ?? 'Cardio')} icon={<Footprints size={24} />} onClick={() => go(`/cardio?blueprint=${blueprint.id}`)} testID={`chooseBlueprint-${blueprint.name}`} />
+            ))}
+          </>
         ) : (
           <>
             <Choice title={t('Freestyle strength')} subtitle={t('Build your session as you go')} icon={<Shuffle size={24} />} prominent onClick={() => go('/workout/new?freestyle=1')} testID="Freestyle strength" />
