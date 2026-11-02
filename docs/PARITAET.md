@@ -13,7 +13,7 @@ Die Spalte „Phase“ zeigt, wann die Funktion gebaut wird. Die Spalte „Test�
 - Nr. 10/61: Die Texte sagen ehrlich „vorerst auf diesem Gerät, Konto und Cloud-Sicherung folgen“.
 - Nr. 10: Mit eingerichteter Cloud sagt der Text „… ein optionales Konto zur Sicherung kannst du in den Einstellungen anlegen“.
 
-**Phase 4:** Konto, Sync und Sync-Status sind gebaut (siehe „Neu durch die Web-Version“). Tests: `supabase/tests/rls.test.ts` (Zwei-Konten-Test, 62 Prüfungen), `src/sync/sync.test.ts` (zwei Geräte, offline ohne Duplikate, Löschungen, letzte Änderung gewinnt, offene Trainings, Gastdaten, Datenbank-Update), `supabase/tests/rls.live.test.ts` (gegen dein Projekt).
+**Phase 4:** Konto, Sync und Sync-Status sind gebaut (siehe „Neu durch die Web-Version“). Tests: `supabase/tests/rls.test.ts` (Zwei-Konten-Test, 62 Prüfungen), `src/sync/sync.test.ts` (zwei Geräte, offline ohne Duplikate, Löschungen, letzte Änderung gewinnt, offene Trainings, Gastdaten, Datenbank-Update), `supabase/tests/rls.live.test.ts` (gegen dein Projekt: am 02.11.2026 bestanden, 13/13, Test-Konten danach nachweislich gelöscht). Lokal getestet am 02.11.2026: Anmeldung mit E-Mail-Code und mit Google, Sicherung in der Cloud. Offen: iPhone (Safari und installierte App), zweites Gerät, Offline-Abgleich auf echten Geräten.
 
 - Trainings, die in Phase 2 abgeschlossen wurden, bekommen nachträglich keine XP (wie in der iOS-App: XP nur für neu abgeschlossene Trainings).
 
