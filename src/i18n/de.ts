@@ -368,6 +368,8 @@ export const de: Record<string, string> = {
   'Enter an exercise name.': 'Gib einen Übungsnamen ein.',
   'That name is already in your library.': 'Dieser Name ist schon in deiner Bibliothek.',
   // Phase 4: account and sync
+  'Sign-in did not work': 'Anmeldung hat nicht geklappt',
+  'The sign-in with Google could not be completed. Try again, or sign in with an e-mail code. Details: {0}': 'Die Anmeldung mit Google konnte nicht abgeschlossen werden. Versuch es noch einmal oder melde dich mit einem E-Mail-Code an. Details: {0}',
   'No registration needed. Your training is saved on this device first; you can add an optional account for backup in Settings.': 'Keine Registrierung nötig. Dein Training wird zuerst auf diesem Gerät gespeichert; ein optionales Konto zur Sicherung kannst du in den Einstellungen anlegen.',
   'Motion cannot reach the server right now. Try again in a moment.': 'Motion erreicht den Server gerade nicht. Versuch es gleich noch einmal.',
   'Too many attempts. Wait a minute and try again.': 'Zu viele Versuche. Warte eine Minute und versuch es dann noch einmal.',

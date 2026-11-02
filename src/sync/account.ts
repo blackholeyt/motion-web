@@ -24,13 +24,15 @@ interface AccountState {
   account: Account | null
   /** First login on a device whose guest database holds training: the user decides what happens to it. */
   guestDecision: Account | null
+  /** A Google sign-in that came back with an error instead of a session. */
+  signInError: string | null
 }
 
 const storageKey = 'motion.account.v1'
 const guestName = 'motion-local'
 export const accountDatabaseName = (id: string) => `motion-${id}`
 
-let state: AccountState = { account: readStored(), guestDecision: null }
+let state: AccountState = { account: readStored(), guestDecision: null, signInError: null }
 const listeners = new Set<() => void>()
 
 function setState(change: Partial<AccountState>) {
@@ -75,11 +77,25 @@ export function restoreAccount() {
 /** Follows the auth session: sign-in by e-mail code, by Google redirect, or a session restored at launch. */
 export function startAccount() {
   if (!cloudConfigured) return
+  takeRedirectError()
   if (state.account) startSync(db, state.account.id)
   supabase().auth.onAuthStateChange((event, session) => {
     // Supabase must not be called from inside this callback, so the work runs right after it.
     if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) setTimeout(() => void signedIn(session.user))
   })
+}
+
+/** Supabase reports a failed Google sign-in in the address; it is shown once and removed from the address. */
+function takeRedirectError() {
+  const query = new URLSearchParams(location.search)
+  const description = query.get('error_description')
+  if (!description) return
+  setState({ signInError: description })
+  history.replaceState(history.state, '', `${location.pathname}${location.hash}`)
+}
+
+export function dismissSignInError() {
+  setState({ signInError: null })
 }
 
 const onboardingKey = (name: string) => `motion.onboarding.v1.${name}`
@@ -159,7 +175,7 @@ async function closeAccount() {
   const previous = db
   store(null)
   setDatabase(new MotionDatabase(guestName))
-  setState({ account: null, guestDecision: null })
+  setState({ account: null, guestDecision: null, signInError: null })
   previous.close()
   await ensureProfile()
 }
