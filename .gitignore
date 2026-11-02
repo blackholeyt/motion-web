@@ -28,3 +28,6 @@ npm-debug.log*
 !.vscode/extensions.json
 .idea/
 *.swp
+
+# TypeScript-Build-Cache
+*.tsbuildinfo
