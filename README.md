@@ -7,13 +7,44 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - Später optional per Capacitor als native App im App Store
 
 ## Stand
+- **Phase 0 (fertig):** Analyse der alten iOS-App, siehe `docs/`.
+- **Phase 1 (fertig):** Grundgerüst mit Design-System, Navigation, Startanimation, Einstellungen für Darstellung und Sprache, PWA mit Offline-Start, Tests und CI. Die Trainingsfunktionen folgen ab Phase 2.
 
-Phase 0: Analyse der bestehenden iOS-App. Die Ergebnisse stehen in `docs/`:
+## Entwickeln
+Voraussetzung: Node.js 26 (siehe `.node-version`).
 
-- `docs/FUNKTIONEN.md`: alle Bildschirme, Funktionen und Regeln der alten App
-- `docs/PARITAET.md`: jede Funktion mit Status für die Web-Version
-- `docs/DATENMODELL.md`: altes Modell, neues Modell und Zuordnung
-- `docs/DESIGN.md`: Farben, Schriften, Abstände, Komponenten, Animationen
-- `docs/IMPORT.md`: wie die alten Daten in die Web-App kommen
+```bash
+npm install
+npm run dev
+```
 
-Einrichtung, Deployment und Betrieb werden hier ergänzt, sobald es App-Code gibt.
+| Befehl | Zweck |
+|---|---|
+| `npm run dev` | Entwicklungsserver |
+| `npm run build` | Typprüfung und Produktions-Build nach `dist/` |
+| `npm run preview` | Build lokal ansehen (inkl. Offline-Funktion) |
+| `npm test` | Unit-Tests (Vitest) |
+| `npm run test:e2e` | Browser-Tests (Playwright: Chrome mobil/Desktop, WebKit iPhone). Einmalig vorher: `npx playwright install chromium webkit` |
+| `npm run icons` | App-Icons aus `design/app-icon-1024.png` neu erzeugen (macOS) |
+
+## Aufbau
+| Ordner | Inhalt |
+|---|---|
+| `src/app` | App-Rahmen, Navigation, Routen |
+| `src/features` | Bildschirme und Fachlogik je Bereich |
+| `src/ui` | Design-System (Farben, Komponenten) |
+| `src/i18n` | Englisch/Deutsch |
+| `src/platform` | Gerätefunktionen hinter eigenen Schnittstellen (für Capacitor später) |
+| `src/pwa` | Installationshinweis, Updates |
+| `docs` | Analyse, Entscheidungen, Deployment, Plattformgrenzen |
+
+## Dokumente
+- `docs/FUNKTIONEN.md`: alle Funktionen der alten App
+- `docs/PARITAET.md`: Status jeder Funktion
+- `docs/DATENMODELL.md`: Datenmodell alt/neu
+- `docs/DESIGN.md`: Design-Werte
+- `docs/IMPORT.md`: Import der alten Daten
+- `docs/ENTSCHEIDUNGEN.md`: getroffene Entscheidungen
+- `docs/DEPLOYMENT.md`: Cloudflare Pages und Installation auf dem Handy
+- `docs/PLATTFORM.md`: was im Web auf iPhone und Android geht und was nicht
+- `docs/IDEEN.md`: nicht beauftragte Ideen
