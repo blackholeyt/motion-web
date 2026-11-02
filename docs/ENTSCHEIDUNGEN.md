@@ -26,7 +26,7 @@
 | 7 | Alte Beispieldaten entfernen | Verschoben auf Phase 5, weil markierte Beispieldaten nur über den Import ins Web kommen können. |
 | 8 | Schlaf | Nur der manuell eingetragene Apple-Schlafindex; Dauer und Phasen aus Health bleiben nativ. |
 
-## Phase 4 (gebaut am 02.11.2026, Einrichtung und Abnahme offen)
+## Phase 4 (gebaut und eingerichtet am 02.11.2026, Abnahme auf Geräten offen)
 
 | Nr | Punkt | Umsetzung |
 |---|---|---|

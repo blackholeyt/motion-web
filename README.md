@@ -13,7 +13,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - **Phase 2 (fertig):** Lokaler Kern ohne Konto: Routinen, Übungskatalog, Starter-Vorlagen, Trainingsplan, Training aufzeichnen mit Pausen-Timer, Supersätzen und Rückgängig, offene Trainings, Training nachtragen und Verlauf. Alles wird sofort auf dem Gerät gespeichert (IndexedDB).
 - **Phase 3 (fertig):** Rekorde mit Hinweis im Training, XP, Level und Ränge, Feier-Bildschirme, Level-Karte, Kalenderwochen und Gewichtsrekorde auf der Übersicht, Übungsbibliothek mit Bearbeiten und Verlaufsverknüpfungen, Rekordziele, Ausdauer (Cardio) mit Plan-Abgleich, Profil mit drei Einheiten, Körpergewicht mit Tages-XP und Zielfeier, Apple-Schlafindex (manuell), Quiet Mode, Einführung mit Mini-Demo und Lerntipps, Demo-Modus und Einführungstest in eigener Wegwerf-Datenbank, Export der Sicherung als JSON.
 
-- **Phase 4 (gebaut, Einrichtung offen):** Konto mit Google-Login oder 6-stelligem E-Mail-Code, Datenbank-Schema mit Row Level Security, Sync zwischen Geräten mit Warteschlange, „letzte Änderung gewinnt“ und Schutz offener Trainings, getrennte lokale Daten pro Konto, Sync-Status, tägliches Wachhalten von Supabase. Einrichtung: `docs/SUPABASE.md`.
+- **Phase 4 (gebaut und eingerichtet, Abnahme auf Geräten offen):** Konto mit Google-Login oder 6-stelligem E-Mail-Code, Datenbank-Schema mit Row Level Security, Sync zwischen Geräten mit Warteschlange, „letzte Änderung gewinnt“ und Schutz offener Trainings, getrennte lokale Daten pro Konto, Sync-Status, tägliches Wachhalten von Supabase. Einrichtung: `docs/SUPABASE.md`.
 
 ## Entwickeln
 Voraussetzung: Node.js 26 (siehe `.node-version`).
