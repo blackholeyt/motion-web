@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { latestDraft } from '../workout/engine'
 import { getSettings } from '../../settings/deviceSettings'
 import { OpeningAnimation } from './OpeningAnimation'
 
@@ -10,8 +11,14 @@ const OpeningContext = createContext<OpeningState>({ show: () => {} })
 
 /** Shows the opening once per cold launch when enabled; Settings can preview it. */
 export function OpeningProvider({ children }: { children: ReactNode }) {
-  // Unfinished workouts arrive in phase 2; until then only the setting decides.
-  const [presentation, setPresentation] = useState<number | null>(() => (getSettings().openingAnimation ? Date.now() : null))
+  // Cold-launch welcome, skipped when unfinished workouts exist (AppLaunchView.swift).
+  const [presentation, setPresentation] = useState<number | null>(() => (getSettings().openingAnimation && !hasDraftsHint() ? Date.now() : null))
+  useEffect(() => {
+    void latestDraft().then((draft) => {
+      rememberDrafts(!!draft)
+      if (draft) setPresentation(null)
+    })
+  }, [])
   const show = useCallback(() => setPresentation(Date.now()), [])
   const finish = useCallback(() => setPresentation(null), [])
   return (
@@ -25,3 +32,20 @@ export function OpeningProvider({ children }: { children: ReactNode }) {
 }
 
 export const useOpening = () => useContext(OpeningContext)
+
+// IndexedDB answers asynchronously; a cached hint avoids flashing the opening over a draft.
+const hintKey = 'motion.has-drafts'
+function hasDraftsHint() {
+  try {
+    return localStorage.getItem(hintKey) === '1'
+  } catch {
+    return false
+  }
+}
+function rememberDrafts(value: boolean) {
+  try {
+    localStorage.setItem(hintKey, value ? '1' : '0')
+  } catch {
+    // Storage can be unavailable in private browsing; the opening then simply shows.
+  }
+}
