@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import '@testing-library/jest-dom/vitest'
 
 // jsdom lacks matchMedia; components only need a stable "no match" answer.
-if (!window.matchMedia) {
+if (typeof window !== 'undefined' && !window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({
       matches: false,
