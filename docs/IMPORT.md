@@ -62,7 +62,12 @@ Quellen: `MotionBackup.swift`, `MotionBackupStore.swift`, `MotionBackupValidatio
 
 ## 5. Entscheidungen
 
-Am 02.11.2026 entschieden: JSON als Standard und CSV v18 dazu, keine älteren CSV-Versionen, alte Health- und Strava-Workouts schreibgeschützt mitnehmen, Entwürfe mitnehmen. Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
+Am 02.11.2026 entschieden:
+- Der CSV-Import muss auf jeden Fall funktionieren, für alle CSV-Formate der alten App (v18, v1–v17 und die einfache Workout-CSV). JSON wird zusätzlich unterstützt.
+- Health- und Strava-Workouts werden vorerst übersprungen; der Bericht nennt ihre Anzahl.
+- Entwürfe werden mitgenommen.
+
+Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 1. Importweg A (JSON) als Standard? CSV v18 wird ohne Mehraufwand mitunterstützt.
 2. Hast du noch ältere CSV-Dateien (v1–v17) oder die einfache Workout-CSV, die importiert werden müssen?
 3. Was passiert mit **früher aus Apple Health oder Strava importierten Workouts**, die in deinen Daten stehen?

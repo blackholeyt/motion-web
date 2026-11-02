@@ -79,7 +79,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 66 | Schlafdauer und -phasen aus Apple Health (18) | `SleepStore.swift`, `SleepViews.swift` | später nativ | – | |
 | 67 | Schritte und Tagesziel (18) | `StepsStore.swift`, `StepsViews.swift` | später nativ | – | Schrittziel-Einstellung aus dem Backup wird aufbewahrt |
 | 68 | Ernährung aus Health (18) | `Nutrition*.swift` | später nativ | – | |
-| 69 | Import von Apple-Workouts und Strava, Herzfrequenz-Diagramm (18) | `HealthWorkout*.swift`, `StravaHealthSettingsView.swift` | später nativ | – | alte importierte Einträge: siehe offene Frage in `IMPORT.md` |
+| 69 | Import von Apple-Workouts und Strava, Herzfrequenz-Diagramm (18) | `HealthWorkout*.swift`, `StravaHealthSettingsView.swift` | später nativ | – | alte importierte Einträge werden beim Import vorerst übersprungen |
 | 70 | Health-Archiv im Backup (18) | `HealthBackupArchive.swift` | später nativ | – | |
 | 71 | Einstellungen: Darstellung Dunkel/Hell/System (11) | `SettingsView.swift`, `MotionTheme.swift` | übernehmen | 1 | |
 | 72 | Einstellungen: Sprache (11) | `SettingsView.swift` | Web-Anpassung nötig | 1 | Web kann keine iOS-Einstellungen öffnen; eigene Sprachwahl Englisch/Deutsch in der App |
@@ -90,7 +90,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 77 | Hilfe & Datenschutz (12) | `HelpPrivacyView.swift` | Web-Anpassung nötig | 6 | Texte zu Konto, Cloud und Health neu; Links zu Datenschutz und Impressum |
 | 78 | JSON-Backup exportieren (13) | `MotionBackupStore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 3/6 | Download statt Datei-Dialog; neues Format plus Import des alten Formats |
 | 79 | JSON-Backup importieren mit Vorschau und Zusammenführung (13) | `MotionBackupRestore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 5 | Upload statt Datei-Dialog; Regeln gleich |
-| 80 | CSV exportieren und importieren (13) | `CompleteCSVCodec.swift`, `WorkoutCSVImporter.swift`, `MotionBackupCSV.swift` | Web-Anpassung nötig | 5/6 | v18 vollständig; ältere Versionen nach deiner Antwort |
+| 80 | CSV exportieren und importieren (13) | `CompleteCSVCodec.swift`, `WorkoutCSVImporter.swift`, `MotionBackupCSV.swift` | Web-Anpassung nötig | 5/6 | Pflicht: alle alten CSV-Formate (v1–v18 und einfache Workout-CSV) importierbar |
 | 81 | Demo-Modus mit synthetischen Daten (14) | `DemoSession.swift`, `SampleDataStore.swift` | übernehmen | 3 | eigene temporäre IndexedDB |
 | 82 | Alte Beispieldaten entfernen (14) | `SettingsView.swift`, `SampleDataStore.swift` | übernehmen | 3 | betrifft nur importierte Daten, falls vorhanden |
 | 83 | Haptik-Ereignisse mit Drosselung (15) | `MotionHaptics.swift` | Web-Anpassung nötig | 2 | `src/platform/haptics`; iPhone ohne Wirkung |
