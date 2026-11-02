@@ -1,4 +1,5 @@
 import { FlaskConical } from 'lucide-react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { exitSandbox, useSandbox } from '../../app/sandbox'
 import { useT } from '../../i18n'
@@ -9,6 +10,11 @@ export function DemoBanner() {
   const { t } = useT()
   const sandbox = useSandbox()
   const navigate = useNavigate()
+  // Full-screen views (celebrations, introduction) leave room for the banner.
+  useEffect(() => {
+    document.documentElement.style.setProperty('--banner-height', sandbox ? '61px' : '0px')
+    if (sandbox) window.scrollTo(0, 0)
+  }, [sandbox])
   if (!sandbox) return null
   const leave = async () => {
     await exitSandbox()
