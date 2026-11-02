@@ -1,0 +1,72 @@
+.dateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 8px 16px;
+}
+
+.dateRow input {
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 8px 4px 16px;
+}
+
+.entry button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.entry button:disabled {
+  opacity: 0.3;
+}
+
+.number {
+  width: 20px;
+  color: var(--secondary-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.name {
+  flex: 1;
+}
+
+.next {
+  color: var(--action);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+}
+
+.previewRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.problem {
+  display: inline-flex;
+  gap: 8px;
+  color: var(--secondary-text);
+}
+
+.muted {
+  font-size: 0.8125rem;
+  color: var(--secondary-text);
+}

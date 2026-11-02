@@ -1,0 +1,134 @@
+.screen {
+  padding-bottom: 120px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 -8px 8px;
+}
+
+.top button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.empty {
+  margin: 0;
+  padding: 14px 16px;
+  color: var(--secondary-text);
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0 8px;
+}
+
+.entry > p,
+.entry > small,
+.entry > button:last-of-type {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.entryHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 16px;
+}
+
+.entryHead strong {
+  font-size: 1.0625rem;
+}
+
+.crown {
+  color: var(--achievement);
+}
+
+.entryTools {
+  margin-left: auto;
+  display: flex;
+}
+
+.entryTools button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.entryTools button:disabled {
+  opacity: 0.3;
+}
+
+.measurement {
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.hint {
+  margin: 4px 0;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.target {
+  margin: 6px 0 2px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.noteText {
+  margin: 2px 0;
+  font-size: 0.9375rem;
+}
+
+.startBar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--safe-bottom) + 64px);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px calc(var(--safe-right) + 20px) 12px calc(var(--safe-left) + 20px);
+  background: color-mix(in srgb, var(--background) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.startBar p {
+  margin: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+@media (min-width: 768px) {
+  .startBar {
+    left: 220px;
+    bottom: 0;
+    padding-bottom: calc(var(--safe-bottom) + 16px);
+  }
+}
+
+.notes {
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: var(--surface);
+  resize: vertical;
+}
+
+.error {
+  color: #ff6b6b;
+  font-size: 0.9375rem;
+}
