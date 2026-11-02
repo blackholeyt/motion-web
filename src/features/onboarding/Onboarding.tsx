@@ -5,13 +5,13 @@ import { planMovements, planEquipment, shortlist, starterPlans, type PlanEquipme
 import { useT } from '../../i18n'
 import { createBlueprint } from '../../store/blueprints'
 import { copyStarterPlan } from '../../store/library'
-import { ConfirmDialog } from '../../ui/Sheet'
 import { exitSandbox, useSandbox } from '../../app/sandbox'
 import { Choice, Continue, OnboardingPage, Quiet } from './OnboardingPage'
 import { MiniDemo } from './MiniDemo'
 import { OnboardingProfile } from './OnboardingProfile'
 import { updateOnboarding, type OnboardingIntent, type OnboardingProgress } from './state'
 import { cloudConfigured } from '../../sync/client'
+import { ImportSheet } from '../import/ImportSheet'
 import styles from './onboarding.module.css'
 
 /** ProfileGateView + OnboardingView.swift: the introduction shown before the app. */
@@ -98,17 +98,11 @@ function Welcome() {
       )}
       {page === 2 && (
         <div className={styles.choices}>
-          <Choice title={t('Restore backup')} icon={CalendarClock} onClick={() => setBackup(true)} />
+          <Choice title={t('Restore backup')} icon={CalendarClock} onClick={() => setBackup(true)} testID="onboardingRestore" />
           <Choice title={t('Cardio')} icon={Footprints} onClick={() => finish('/cardio')} />
         </div>
       )}
-      <ConfirmDialog
-        open={backup}
-        title={t('Restore backup')}
-        message={t('Importing your data from the iOS app arrives in a later version. Start now; your backup can be added afterwards without losing anything.')}
-        onDismiss={() => setBackup(false)}
-        actions={[{ label: t('OK'), role: 'cancel', onSelect: () => setBackup(false) }]}
-      />
+      <ImportSheet open={backup} onClose={() => setBackup(false)} onImported={() => void finish('/')} />
     </OnboardingPage>
   )
 }

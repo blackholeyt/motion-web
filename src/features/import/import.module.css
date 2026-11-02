@@ -1,0 +1,102 @@
+.file {
+  display: none;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+}
+
+.lead {
+  margin: 0;
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--secondary-text);
+}
+
+.notice {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+
+.failure {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.failure p {
+  margin: 6px 0 0;
+  font-size: 0.875rem;
+  color: var(--secondary-text);
+}
+
+.counts {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: var(--radius-button);
+  overflow: hidden;
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.counts th,
+.counts td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+
+.counts thead th {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--secondary-text);
+}
+
+.counts tbody th {
+  text-align: left;
+  font-weight: 400;
+}
+
+.counts tbody tr:last-child th,
+.counts tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.issue,
+.sample {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+}
+
+.sampleHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sampleLine {
+  display: flex;
+  flex-direction: column;
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+}

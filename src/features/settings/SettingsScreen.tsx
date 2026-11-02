@@ -20,6 +20,7 @@ import { WeightCelebration } from '../body/WeightCelebration'
 import { bodyWeightGoals, type BodyWeightGoal } from '../../domain/body'
 import { updateProfile, useProfile } from '../../store/profile'
 import { AccountGroup } from '../account/AccountGroup'
+import { ImportSheet } from '../import/ImportSheet'
 import styles from './settings.module.css'
 
 const appearances: Appearance[] = ['dark', 'light', 'system']
@@ -40,6 +41,7 @@ export function SettingsScreen() {
   const [howItWorks, setHowItWorks] = useState(false)
   const [choosing, setChoosing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
   const enter = async (kind: 'demo' | 'onboardingTest') => {
     try {
       await enterSandbox(kind, kind === 'demo' ? () => seedDemo() : undefined)
@@ -192,12 +194,16 @@ export function SettingsScreen() {
           </Group>
           <Group
             title={t('Backup')}
-            footer={t('Downloads all training, profile, body weight, sleep scores, plans and XP as a JSON file. Restoring backups and importing data from the iOS app arrive in a later version.')}
+            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. Export downloads all training, profile, body weight, sleep scores, plans and XP as a JSON file.')}
           >
+            <RowButton tone="plain" onClick={() => setImporting(true)} testID="importBackup">
+              {t('Import from the iOS app')}
+            </RowButton>
             <RowButton tone="plain" onClick={download} testID="exportBackup">
               {t('Export backup (JSON)')}
             </RowButton>
           </Group>
+          <ImportSheet open={importing} onClose={() => setImporting(false)} />
         </>
       )}
       <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
