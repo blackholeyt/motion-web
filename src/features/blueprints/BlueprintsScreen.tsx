@@ -9,6 +9,8 @@ import { PhaseNotice } from '../../ui/PhaseNotice'
 import { Sheet } from '../../ui/Sheet'
 import { Group, TextButton, TextRow } from '../../ui/controls'
 import { TrainingPlanEditor } from '../plan/TrainingPlanEditor'
+import { ExerciseLibrary } from '../exercises/ExerciseLibrary'
+import { PRGoals } from '../exercises/PRGoals'
 import styles from './blueprints.module.css'
 
 type Section = 'blueprints' | 'goals' | 'exercises' | 'cardio'
@@ -19,12 +21,19 @@ export function BlueprintsScreen() {
   const [section, setSection] = useState<Section>('blueprints')
   const [creating, setCreating] = useState(false)
   const [planning, setPlanning] = useState(false)
+  const [newExercise, setNewExercise] = useState(false)
   return (
     <>
       <header className={styles.header}>
         <h1>{t(titles[section])}</h1>
-        {section === 'blueprints' && (
-          <button type="button" className={styles.plus} aria-label={t('Create blueprint')} onClick={() => setCreating(true)}>
+        {(section === 'blueprints' || section === 'exercises') && (
+          <button
+            type="button"
+            className={styles.plus}
+            aria-label={t(section === 'blueprints' ? 'Create blueprint' : 'New Exercise')}
+            onClick={() => (section === 'blueprints' ? setCreating(true) : setNewExercise(true))}
+            data-testid={section === 'blueprints' ? 'createBlueprint' : 'newExercise'}
+          >
             <Plus size={24} />
           </button>
         )}
@@ -44,7 +53,10 @@ export function BlueprintsScreen() {
           ))}
         </div>
       </nav>
-      {section === 'blueprints' ? <BlueprintList onPlan={() => setPlanning(true)} /> : <PhaseNotice phase={3} />}
+      {section === 'blueprints' && <BlueprintList onPlan={() => setPlanning(true)} />}
+      {section === 'goals' && <PRGoals />}
+      {section === 'exercises' && <ExerciseLibrary creating={newExercise} onCreated={() => setNewExercise(false)} />}
+      {section === 'cardio' && <PhaseNotice phase={3} />}
       <NewBlueprintSheet open={creating} onClose={() => setCreating(false)} />
       <TrainingPlanEditor open={planning} onClose={() => setPlanning(false)} />
     </>

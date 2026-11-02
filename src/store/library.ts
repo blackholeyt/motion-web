@@ -1,7 +1,7 @@
 import { db } from '../data/db'
-import { insertOne, live, transaction, update } from '../data/repo'
-import type { Blueprint, BlueprintExercise, Exercise, Guidance } from '../data/types'
-import { sameName, type CatalogueMovement } from '../domain/catalogue'
+import { insertOne, live, softDelete, transaction, update } from '../data/repo'
+import type { Blueprint, BlueprintExercise, Exercise, Guidance, Workout, WorkoutExercise } from '../data/types'
+import { sameName, supportsLogging, type CatalogueMovement } from '../domain/catalogue'
 import { planMovements, type StarterPlan } from '../domain/starterPlans'
 
 export async function libraryExercises(): Promise<Exercise[]> {
@@ -93,4 +93,70 @@ export async function copyStarterPlan(plan: StarterPlan, id: string): Promise<Bl
     }
     return blueprint
   })
+}
+
+export class LibraryError extends Error {}
+
+/** ExerciseLibraryView "New Exercise": unique names, history only until tracking is turned on. */
+export async function createLibraryExercise(name: string): Promise<Exercise> {
+  const trimmed = name.trim()
+  if ((await libraryExercises()).some((exercise) => sameName(exercise.name, trimmed))) throw new LibraryError('That name already exists.')
+  return createExercise(trimmed)
+}
+
+export interface HistorySnapshot {
+  snapshot: WorkoutExercise
+  workout: Workout
+}
+
+/** Completed history entries of a workout exercise, newest first. */
+async function snapshots(filter: (snapshot: WorkoutExercise) => boolean): Promise<HistorySnapshot[]> {
+  const workouts = new Map(live(await db.workouts.toArray()).filter((workout) => workout.is_completed).map((workout) => [workout.id, workout]))
+  return live(await db.workout_exercises.toArray())
+    .filter((snapshot) => workouts.has(snapshot.workout_id) && filter(snapshot))
+    .map((snapshot) => ({ snapshot, workout: workouts.get(snapshot.workout_id)! }))
+    .sort((a, b) => b.workout.performed_at.localeCompare(a.workout.performed_at))
+}
+
+/** ExerciseEditor candidates: history-only entries that are unlinked or already share this identity. */
+export const historyCandidates = (exercise: Exercise) =>
+  snapshots((snapshot) => snapshot.is_history_only && (snapshot.exercise_id === exercise.id || snapshot.exercise_id === null))
+
+/** ExerciseHistoryMappingView: progress-tracked entries whose identity can be reviewed. */
+export const linkableSnapshots = () => snapshots((snapshot) => !snapshot.is_history_only)
+
+export type ExerciseMetadata = Pick<Exercise, 'equipment' | 'muscle' | 'measurement' | 'guidance' | 'track_progress'>
+
+/**
+ * ExerciseEditor.save with ExerciseTracking.promote: only explicitly selected entries join this
+ * identity; names and earned XP stay unchanged.
+ */
+export async function saveExercise(exercise: Exercise, name: string, metadata: ExerciseMetadata, selected: string[]) {
+  const trimmed = name.trim()
+  if (!trimmed) throw new LibraryError('Enter an exercise name.')
+  await transaction(async () => {
+    if ((await libraryExercises()).some((other) => other.id !== exercise.id && sameName(other.name, trimmed))) {
+      throw new LibraryError('That name is already in your library.')
+    }
+    await update<Exercise>('exercises', exercise.id, { name: trimmed, ...metadata })
+    if (!metadata.track_progress || !supportsLogging(metadata)) return
+    const allowed = new Set((await historyCandidates(exercise)).map(({ snapshot }) => snapshot.id))
+    for (const id of selected) {
+      if (allowed.has(id)) await update<WorkoutExercise>('workout_exercises', id, { exercise_id: exercise.id, is_history_only: false })
+    }
+  })
+}
+
+/** Removes the exercise from the library and every routine; past history is preserved. */
+export async function deleteExercise(exercise: Exercise) {
+  await transaction(async () => {
+    const entries = live(await db.blueprint_exercises.where('exercise_id').equals(exercise.id).toArray())
+    await softDelete('blueprint_exercises', entries.map((entry) => entry.id))
+    await softDelete('exercises', [exercise.id])
+  })
+}
+
+/** ExerciseIdentity.map: an explicit choice links a history entry, or leaves it unlinked. */
+export async function linkSnapshot(snapshotID: string, exerciseID: string | null) {
+  await update<WorkoutExercise>('workout_exercises', snapshotID, { exercise_id: exerciseID })
 }
