@@ -249,3 +249,13 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 - Jede Änderung läuft über `src/data/repo.ts`: Dort werden `updated_at` gesetzt, gelöschte Datensätze weich gelöscht (`deleted_at`) und der Datensatz in die Warteschlange `outbox` gelegt. Die Sync in Phase 4 lädt genau diese Einträge hoch.
 - `set_logs` enthalten zusätzlich `workout_id`, damit ein Training mit einer Abfrage geladen werden kann.
 - Geräteeinstellungen (Darstellung, Startanimation, Sprache, Installationshinweis) liegen vorerst in `localStorage`. Trainingseinstellungen (Wiederholungen, Pause, Haptik, Mitteilungen) liegen im Profil und werden später synchronisiert.
+
+## 5. Ergänzungen in Phase 3
+- XP: `workouts.earned_xp` plus ein Beleg in `workout_awards` pro Training. Der Beleg wird nie gelöscht; ein erneut abgeschlossenes oder wiederhergestelltes Training bekommt dadurch keine XP doppelt. Die Gesamt-XP sind die Summe aus `earned_xp` aller nicht gelöschten, abgeschlossenen Trainings und allen `weight_rewards`.
+- Körpergewicht: ein Eintrag pro Kalendertag (`body_weights.day`), Tages-XP in `weight_rewards` (bleibt beim Löschen der Messung erhalten). Gefeierte Gewichtsziele stehen in `profiles.celebrated_weight_goals` als `richtung:gramm`.
+- Schlaf: ein manueller Wert pro Tag in `sleep_scores`.
+- Cardio: `workouts.cardio_*` in kg/km/Sekunden; Plan-Abgleich am selben Tag wird in `training_plans.schedule.consumed` als `cardio/JJJJ-MM-TT` vermerkt.
+- Einführung und Lerntipps sind **Gerätezustand** und liegen nicht in der Datenbank, sondern in `localStorage` (`motion.onboarding.v1.<Datenbankname>`). Sie werden nicht synchronisiert und nicht gesichert, wie in der iOS-App.
+- Demo und Einführungstest laufen in einer eigenen IndexedDB (`motion-demo-…`, `motion-onboardingTest-…`), die beim Beenden gelöscht wird. Übrig gebliebene werden beim nächsten Start entfernt.
+- Sicherung: `motion-web-backup` Version 1 enthält alle zwölf Tabellen inklusive gelöschter Einträge (Grabsteine).
+

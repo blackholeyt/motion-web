@@ -11,6 +11,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - **Live:** https://motion-web.pages.dev
 - **Phase 1 (fertig):** Grundgerüst mit Design-System, Navigation, Startanimation, Einstellungen für Darstellung und Sprache, PWA mit Offline-Start, Tests und CI.
 - **Phase 2 (fertig):** Lokaler Kern ohne Konto: Routinen, Übungskatalog, Starter-Vorlagen, Trainingsplan, Training aufzeichnen mit Pausen-Timer, Supersätzen und Rückgängig, offene Trainings, Training nachtragen und Verlauf. Alles wird sofort auf dem Gerät gespeichert (IndexedDB).
+- **Phase 3 (fertig):** Rekorde mit Hinweis im Training, XP, Level und Ränge, Feier-Bildschirme, Level-Karte, Kalenderwochen und Gewichtsrekorde auf der Übersicht, Übungsbibliothek mit Bearbeiten und Verlaufsverknüpfungen, Rekordziele, Ausdauer (Cardio) mit Plan-Abgleich, Profil mit drei Einheiten, Körpergewicht mit Tages-XP und Zielfeier, Apple-Schlafindex (manuell), Quiet Mode, Einführung mit Mini-Demo und Lerntipps, Demo-Modus und Einführungstest in eigener Wegwerf-Datenbank, Export der Sicherung als JSON.
 
 ## Entwickeln
 Voraussetzung: Node.js 26 (siehe `.node-version`).
@@ -33,11 +34,11 @@ npm run dev
 ## Aufbau
 | Ordner | Inhalt |
 |---|---|
-| `src/app` | App-Rahmen, Navigation, Routen |
+| `src/app` | App-Rahmen, Navigation, Routen, Wegwerf-Datenbanken für Demo und Einführungstest (`sandbox.ts`) |
 | `src/data` | Lokale Datenbank (Dexie), Datentypen, Schreib-Helfer mit Sync-Warteschlange |
 | `src/domain` | Reine Fachlogik aus der iOS-App (Einheiten, Ziele, Trainingsplan, Timer, Sätze, Katalog) |
 | `src/store` | Lesen und Schreiben je Bereich (Profil, Routinen, Plan, Verlauf) |
-| `src/features` | Bildschirme je Bereich |
+| `src/features` | Bildschirme je Bereich (u. a. `progress`, `body`, `cardio`, `onboarding`, `demo`) |
 | `src/ui` | Design-System (Farben, Komponenten) |
 | `src/i18n` | Englisch/Deutsch |
 | `src/platform` | Gerätefunktionen hinter eigenen Schnittstellen (für Capacitor später) |
