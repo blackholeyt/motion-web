@@ -1,0 +1,104 @@
+.sheet {
+  position: fixed;
+  z-index: 50;
+  left: calc(var(--safe-left) + 12px);
+  right: calc(var(--safe-right) + 12px);
+  bottom: calc(var(--safe-bottom) + 76px);
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-row);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 35%);
+}
+
+.sheet p {
+  margin: 10px 0;
+  color: var(--secondary-text);
+  font-size: 0.9375rem;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sheetHeader h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.icon {
+  border-radius: 10px;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin: -8px -10px -8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--secondary-text);
+}
+
+.steps {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9375rem;
+}
+
+.inlineIcon {
+  margin-left: 6px;
+  vertical-align: -3px;
+  color: var(--action);
+}
+
+.secondary {
+  width: 100%;
+  min-height: var(--tap);
+  border: 0;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--action) 12%, transparent);
+  color: var(--action);
+  font-weight: 600;
+}
+
+.toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  top: calc(var(--safe-top) + 12px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.875rem;
+}
+
+.toast button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--action);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .sheet {
+    bottom: calc(var(--safe-bottom) + 24px);
+  }
+}
