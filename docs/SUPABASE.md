@@ -37,6 +37,13 @@ Solange die Schritte nicht erledigt sind, läuft Motion wie bisher **ohne Konto*
 
 Spätere Änderungen kommen als neue Dateien in `supabase/migrations/` und werden genauso eingespielt, immer in Reihenfolge des Dateinamens.
 
+| Datei | Phase | Inhalt |
+|---|---|---|
+| `20261102120000_initial_schema.sql` | 4 | 12 Tabellen, RLS, Schreibregel, Wachhalten |
+| `20261102180000_legacy_imports.sql` | 5a | Tabelle `legacy_imports` (Belege importierter iOS-Sicherungen), RLS wie oben. Danach zeigt der Table Editor 13 Tabellen. |
+
+**Wichtig:** Die App lädt Importbelege in `legacy_imports` hoch. Fehlt die Tabelle in der Cloud, meldet der Sync-Status einen Fehler, bis die Migration eingespielt ist (die anderen Tabellen werden vorher trotzdem hochgeladen).
+
 ## 3. Schlüssel abholen
 1. **Project Settings → API Keys**.
 2. Notiere:

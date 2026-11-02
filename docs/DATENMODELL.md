@@ -273,3 +273,10 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 - **Datenbanken pro Konto (2.4):** Gast `motion-local`, Konto `motion-<user_id>`. Welches Konto angemeldet ist, steht in `localStorage` (`motion.account.v1`), nicht im Login-Token. Ein abgelaufenes Token im Funkloch schaltet also nie mitten im Training auf die Gast-Datenbank um; die App zeigt dann „Anmeldung abgelaufen“ und speichert weiter lokal.
 - **Erster Login mit Gastdaten:** Hat das Gerät schon Daten (mehr als das automatische Profil), fragt die App „Ins Konto übernehmen“ oder „Nur auf diesem Gerät behalten“. Beim Übernehmen lädt sie zuerst den Cloud-Stand (falls online) und führt dann pro Datensatz nach „letzte Änderung gewinnt“ zusammen. Danach ist die Gast-Datenbank leer.
 - **Logout:** warnt, wenn noch Änderungen warten. Die Konto-Datenbank bleibt auf dem Gerät (für den nächsten Login mit demselben Konto), wird aber geschlossen; das Gerät zeigt danach die Gast-Datenbank.
+
+## 7. Ergänzungen in Phase 5a (Import)
+- **Neue Tabelle `legacy_imports`** (Gerät und Cloud): fingerprint (SHA-256 der Sicherung mit sortierten Schlüsseln), file_name, source_format (`json`/`csv`), exported_at, imported_at, counts jsonb (`file` und `added`). Die ID ist eine UUIDv5 aus dem Fingerabdruck, sodass zwei Geräte für dieselbe Datei eine Zeile ergeben.
+- **Gerätedatenbank Version 3:** Tabelle `legacy_imports` mit Index auf `fingerprint`. Keine Datenumstellung.
+- **Cloud-Migration** `supabase/migrations/20261102180000_legacy_imports.sql` mit denselben fünf Grundspalten, `synced_at`, Schreibregel und RLS wie alle anderen Tabellen.
+- Routineneinträge aus der alten App bekommen die ID `UUIDv5("blueprint_exercises/<Routine>/<Übung>")` (siehe Zuordnung in Abschnitt 3).
+- Regeln und Umrechnungen: `IMPORT.md`, Abschnitt 6.

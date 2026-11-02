@@ -76,3 +76,34 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
    - (a) als schreibgeschützte Verlaufseinträge mitnehmen (Name, Datum, Dauer, Distanz; die Herzfrequenzdaten werden aufbewahrt, aber erst in der nativen App angezeigt)
    - (b) weglassen
 4. **Offene Entwürfe** (unfertige Workouts) mitnehmen? Mein Vorschlag: ja.
+
+## 6. Umsetzung in Phase 5a (02.11.2026)
+
+**Wo:** Einstellungen → Sicherung → „Import aus der iOS-App“ und in der Einführung auf Seite 3 → „Restore backup“. Im Demo-Modus und im Einführungstest gesperrt.
+
+**Code:** `src/import/csv.ts` (CSV-Parser und v18-Decoder wie `CompleteCSVCodec.swift`), `src/import/legacyBackup.ts` (Struktur und Prüfregeln wie `MotionBackupValidation.swift`), `src/import/importer.ts` (Vorschau und Übernahme wie `MotionBackupRestore.swift`), Oberfläche `src/features/import/ImportSheet.tsx`.
+
+**Ablauf**
+1. Datei wählen. JSON oder CSV wird am Inhalt erkannt, nicht an der Endung. Größen: JSON bis 32 MB, CSV bis 64 MB.
+2. Prüfung: zuerst Dateityp und Version, dann die vollständige Struktur, dann die Regeln der alten App. Anders als die alte App sammelt der Import **alle** Probleme (höchstens 50) mit Fundstelle, z. B. „Training 4 › Übung 1 › Satz 3: ungültiger Satz“. Ältere Motion-CSV (v1–v17) und die einfache Workout-CSV bekommen eine eigene Meldung.
+3. Vorschau: Tabelle „In der Datei / Neu / Schon vorhanden“ für Trainings, Entwürfe, erledigte Sätze, Übungen, Routinen, Körpergewicht, Schlafwerte, XP-Belege, Übungen mit Rekord und XP. Dazu die 3 neuesten Trainings mit Übungen und Sätzen. Es wird noch nichts geschrieben.
+4. Import in **einer** Transaktion: entweder alles Neue oder nichts. Alles Neue kommt in die Sync-Warteschlange.
+5. Abschlussbericht mit denselben Spalten.
+
+**Regeln**
+- Abgleich über die IDs der Datei (in Kleinbuchstaben, weil Swift UUIDs groß schreibt und Postgres sie klein zurückgibt). Vorhandene Datensätze bleiben unverändert, auch gelöschte (sie werden nicht wiederbelebt).
+- Körpergewicht, Tages-XP und Schlafwerte bekommen die stabile Tages-ID der Web-App. Ein Tag, der hier schon existiert, bleibt unverändert.
+- Routineneinträge haben in der alten App keine ID; sie bekommen eine feste ID aus Routine und Übung.
+- Keine neuen XP: Trainings behalten `earnedXP`, XP-Belege kommen aus der Datei. Ein vorhandener Beleg gewinnt. Ein abgeschlossenes Training ohne Beleg bekommt einen mit seinen XP aus der Datei.
+- Health- und Strava-Workouts (`healthWorkoutID` gesetzt) werden übersprungen und gezählt. Ihre XP-Belege werden wie in der alten App übernommen; sie zählen nicht zu den Gesamt-XP, weil die Web-App XP aus den Trainings summiert.
+- Entwürfe kommen mit Pausentimer, Rückgängig-Verlauf und unfertigen Eingaben.
+- Profil (Name, Einheiten, Zielgewicht, Erstelldatum) und Trainingseinstellungen (Quiet Mode, Körpergewicht anzeigen, Haptik, Wiederholungen, Pausendauer, Körpergewicht-Ziel) werden übernommen, gefeierte Gewichtsziele zusammengeführt. Darstellung und Startanimation gelten danach für dieses Gerät. Benachrichtigungen bleiben, wie sie sind.
+- Der Trainingsplan wird nur übernommen, wenn dieses Gerät keinen hat. Tage in verbrauchten Plan-Slots werden ins Web-Format umgerechnet.
+- Zeitpunkte: Sekunden seit 2001 → ISO-Zeit (UTC). Kalendertage: `1-2026-11-2` → `2026-11-02`. Tage außerhalb des gregorianischen Kalenders (Ära 0, Monat 13) brechen den Import mit Fehlerbericht ab.
+- **Doppelschutz:** Fingerabdruck = SHA-256 der Sicherung mit sortierten Schlüsseln. JSON- und CSV-Export derselben Sicherung haben also denselben Fingerabdruck. Der Beleg liegt in `legacy_imports` (Gerätedatenbank Version 3, Cloud-Migration `20261102180000_legacy_imports.sql`) und wird mitsynchronisiert. Bei bekannter Datei erscheint ein Hinweis; ein erneuter Import ist erlaubt und fügt nichts doppelt hinzu.
+- Verwendet ein neues Training Übungs- oder Satz-IDs, die hier schon zu einem anderen Training gehören, bricht der Import ab (wie in der alten App).
+- Nicht übernommen: Health-Archiv, Ernährung, Health-Belege, Schrittziel. Sie werden nur als vorhandene Objekte geprüft, nicht im Detail.
+
+**Tests:** `src/import/importer.test.ts` (Lesen, Prüfung, Umrechnung, Übernahme, Doppelschutz, Konflikt), `tests/e2e/import.spec.ts` (Ablauf im Browser auf Chrome mobil/Desktop und iPhone-WebKit). Testdaten im Format der alten App: `src/test/legacyBackup.ts`.
+
+**Abnahme (offen):** Mathis exportiert in der alten App „Export Backup“ und importiert die Datei. Die Zahlen und Stichproben müssen zur alten App passen.

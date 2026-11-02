@@ -13,6 +13,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - **Phase 2 (fertig):** Lokaler Kern ohne Konto: Routinen, Übungskatalog, Starter-Vorlagen, Trainingsplan, Training aufzeichnen mit Pausen-Timer, Supersätzen und Rückgängig, offene Trainings, Training nachtragen und Verlauf. Alles wird sofort auf dem Gerät gespeichert (IndexedDB).
 - **Phase 3 (fertig):** Rekorde mit Hinweis im Training, XP, Level und Ränge, Feier-Bildschirme, Level-Karte, Kalenderwochen und Gewichtsrekorde auf der Übersicht, Übungsbibliothek mit Bearbeiten und Verlaufsverknüpfungen, Rekordziele, Ausdauer (Cardio) mit Plan-Abgleich, Profil mit drei Einheiten, Körpergewicht mit Tages-XP und Zielfeier, Apple-Schlafindex (manuell), Quiet Mode, Einführung mit Mini-Demo und Lerntipps, Demo-Modus und Einführungstest in eigener Wegwerf-Datenbank, Export der Sicherung als JSON.
 
+- **Phase 5a (gebaut, Abnahme mit deinem echten Export offen):** Import der Sicherung aus der iOS-App als JSON („Export Backup“) oder CSV v18 („Export CSV“) unter Einstellungen → Sicherung und in der Einführung („Restore backup“). Prüfung nach den Regeln der alten App mit Fehlerbericht, Vorschau mit Anzahlen und den letzten Trainings, Schutz vor doppeltem Import, Abschlussbericht. Neue Cloud-Tabelle `legacy_imports`: Migration `supabase/migrations/20261102180000_legacy_imports.sql` muss einmal im SQL Editor eingespielt werden (`docs/SUPABASE.md`, Schritt 2). Details: `docs/IMPORT.md`, Abschnitt 6.
 - **Phase 4 (gebaut und eingerichtet, Abnahme auf Geräten offen):** Konto mit Google-Login oder 6-stelligem E-Mail-Code, Datenbank-Schema mit Row Level Security, Sync zwischen Geräten mit Warteschlange, „letzte Änderung gewinnt“ und Schutz offener Trainings, getrennte lokale Daten pro Konto, Sync-Status, tägliches Wachhalten von Supabase. Einrichtung: `docs/SUPABASE.md`.
 
 ## Nächste Phasen (Plan, Stand 02.11.2026)
@@ -55,6 +56,7 @@ npm run dev
 | `src/ui` | Design-System (Farben, Komponenten) |
 | `src/i18n` | Englisch/Deutsch |
 | `src/sync` | Supabase-Verbindung, Konto und lokale Datenbank pro Konto, Sync-Engine, Konflikte |
+| `src/import` | Import der iOS-Sicherung: CSV-Decoder, Prüfung, Übernahme (Oberfläche in `src/features/import`) |
 | `src/platform` | Gerätefunktionen hinter eigenen Schnittstellen (für Capacitor später) |
 | `src/pwa` | Installationshinweis, Updates |
 | `docs` | Analyse, Entscheidungen, Deployment, Plattformgrenzen |

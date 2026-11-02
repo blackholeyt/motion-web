@@ -46,3 +46,7 @@
 | 1 | Aufteilung | Phase 5a: Import von JSON und CSV v18 in der App, mit Vorschau, Prüfung, Fehlerbericht, Doppelschutz und Abschlussbericht. |
 | 2 | Ältere CSV-Formate (v1–v17, einfache Workout-CSV) | **Ändert Phase-0-Entscheidung 1** („alle CSV-Formate müssen in der App funktionieren“): Mathis' alte Datei wird einmalig außerhalb der App in v18/JSON umgewandelt und dann über den normalen Import eingelesen. Ein eingebauter Import für diese Formate (Phase 5b) wird nur gebaut, wenn er später gebraucht wird. Grund: deutlich weniger Aufwand bei gleichem Ergebnis für die vorhandenen Daten. |
 | 3 | Umgang mit der Datei | Die Datei bleibt auf dem Mac und kommt nie ins Repo, weil sie persönliche Trainingsdaten enthält. |
+| 4 | Fehlerbericht | Umgesetzt am 02.11.2026: Statt beim ersten Fehler abzubrechen (alte App), sammelt der Import bis zu 50 Probleme mit Fundstelle. Importiert wird bei jedem Fehler nichts. |
+| 5 | Erneuter Import derselben Datei | Hinweis mit Datum des ersten Imports, Import bleibt möglich und fügt nichts doppelt hinzu (Abgleich über IDs). |
+| 6 | Gelöschte Datensätze | Ein Datensatz, der hier gelöscht wurde, wird durch einen Import nicht wiederbelebt. |
+| 7 | Unbekannte Kalendertage | Ära 0 oder Monat 13 (nicht-gregorianischer Kalender auf dem iPhone) brechen den Import mit Fehlerbericht ab, statt Tage falsch umzurechnen. |
