@@ -32,7 +32,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 19 | Wochen-Diagramm „Consistency“ (4.2) | `DashboardComponents.swift`, `DashboardStatistics.swift` | übernehmen | 3 | |
 | 20 | Bestwerte „Recorded load bests“ mit Zielbalken (4.2) | `DashboardComponents.swift` | übernehmen | 3 | |
 | 21 | Blueprint-Liste, Anlegen (Kraft/Cardio), Löschen (5.2) | `BlueprintListView.swift`, `CardioViews.swift` | übernehmen | 2 | |
-| 22 | Gratis-Limit 3 Blueprints mit Paywall (5.2, 16) | `ProGate.swift` | später nativ | – | Käufe gehen im Web nicht; in V1 kein Limit (Vorschlag, offene Frage) |
+| 22 | Gratis-Limit 3 Blueprints mit Paywall (5.2, 16) | `ProGate.swift` | später nativ | – | Käufe gehen im Web nicht; in V1 kein Limit (entschieden, siehe `ENTSCHEIDUNGEN.md`) |
 | 23 | Blueprint-Detail: Name, Reihenfolge, Sätze, Aufwärmsätze, Superset (5.3) | `BlueprintDetailView.swift`, `TrainingStructureControls.swift` | übernehmen | 2 | Sortieren per Ziehen bzw. Knöpfe |
 | 24 | Ziele, Pause, Notizen, Progression pro Routine-Übung (5.4) | `RoutineGuidance*.swift` | übernehmen | 2 | |
 | 25 | Starter-Vorlagen, Auswahl und Kopie (5.5) | `StarterPlans.swift`, `PlanChooser.swift` | übernehmen | 2 | |
