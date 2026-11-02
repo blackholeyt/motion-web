@@ -19,6 +19,7 @@ import { SleepScores } from '../body/SleepScores'
 import { WeightCelebration } from '../body/WeightCelebration'
 import { bodyWeightGoals, type BodyWeightGoal } from '../../domain/body'
 import { updateProfile, useProfile } from '../../store/profile'
+import { AccountGroup } from '../account/AccountGroup'
 import styles from './settings.module.css'
 
 const appearances: Appearance[] = ['dark', 'light', 'system']
@@ -62,6 +63,16 @@ export function SettingsScreen() {
   }
   if (howItWorks) return <MiniDemo onClose={() => setHowItWorks(false)} onStart={() => setChoosing(true)} />
   const rest = preferences.restTimerSeconds
+  const profileRows = (
+    <>
+      <RowButton tone="plain" onClick={() => setProfileOpen(true)} testID="openProfile">
+        {t('Profile & body weight')}
+      </RowButton>
+      <RowButton tone="plain" onClick={() => setSleep(true)}>
+        {t('Sleep scores')}
+      </RowButton>
+    </>
+  )
   return (
     <>
       <ScreenHeader title={t('Settings')} />
@@ -75,14 +86,11 @@ export function SettingsScreen() {
           </RowButton>
         )}
       </Group>
-      <Group title={t('Local account')} footer={t('Stored on this device for now. Account sign-in and cloud backup arrive in a later version.')}>
-        <RowButton tone="plain" onClick={() => setProfileOpen(true)} testID="openProfile">
-          {t('Profile & body weight')}
-        </RowButton>
-        <RowButton tone="plain" onClick={() => setSleep(true)}>
-          {t('Sleep scores')}
-        </RowButton>
-      </Group>
+      {sandbox ? (
+        <Group title={t('Local account')}>{profileRows}</Group>
+      ) : (
+        <AccountGroup>{profileRows}</AccountGroup>
+      )}
       <section className={styles.group} aria-labelledby="appearance-title">
         <h2 id="appearance-title">{t('Appearance')}</h2>
         <div className={styles.segmented} role="radiogroup" aria-labelledby="appearance-title">

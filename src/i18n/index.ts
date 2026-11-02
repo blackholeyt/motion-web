@@ -11,6 +11,10 @@ const dictionaries: Record<Language, Record<string, string>> = {
   en: { ...(englishPlurals as Record<string, string>), '{0} sets#one': '{0} set', '{0} exercises#one': '{0} exercise', '{0} saved sessions#one': '{0} saved session',
     '{0} exercises · {1} working · {2} warm-up#one': '{0} exercise · {1} working · {2} warm-up',
     '{0} exercises · {1} sets#one': '{0} exercise · {1} sets',
+    '{0} changes waiting#one': '{0} change waiting',
+    'Offline · {0} changes waiting#one': 'Offline · {0} change waiting',
+    '{0} changes are not backed up yet. If you sign out now, they stay on this device and upload the next time you sign in with this account.#one':
+      '1 change is not backed up yet. If you sign out now, it stays on this device and uploads the next time you sign in with this account.',
   },
   de: { ...(iosCatalog as Record<string, string>), ...de },
 }

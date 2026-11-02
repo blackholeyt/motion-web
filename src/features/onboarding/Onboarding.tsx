@@ -11,6 +11,7 @@ import { Choice, Continue, OnboardingPage, Quiet } from './OnboardingPage'
 import { MiniDemo } from './MiniDemo'
 import { OnboardingProfile } from './OnboardingProfile'
 import { updateOnboarding, type OnboardingIntent, type OnboardingProgress } from './state'
+import { cloudConfigured } from '../../sync/client'
 import styles from './onboarding.module.css'
 
 /** ProfileGateView + OnboardingView.swift: the introduction shown before the app. */
@@ -81,7 +82,7 @@ function Welcome() {
       {page === 0 && (
         <>
           <p className={styles.note}>
-            <ShieldCheck size={20} aria-hidden="true" /> {t('No registration needed. Your training is saved on this device first; an optional account for backup comes later.')}
+            <ShieldCheck size={20} aria-hidden="true" /> {t(cloudConfigured ? 'No registration needed. Your training is saved on this device first; you can add an optional account for backup in Settings.' : 'No registration needed. Your training is saved on this device first; an optional account for backup comes later.')}
           </p>
           <Quiet onClick={() => setDemo(true)} testID="onboardingDemo">
             {t('How it works')}
