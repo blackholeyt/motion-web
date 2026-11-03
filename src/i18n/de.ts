@@ -589,4 +589,6 @@ export const de: Record<string, string> = {
   'Week {0}: {1}': 'KW {0}: {1}',
   'W{0}': 'KW{0}',
   Now: 'Jetzt',
+  'Preparing demo…': 'Demo wird vorbereitet …',
+  'Preparing test…': 'Test wird vorbereitet …',
 }

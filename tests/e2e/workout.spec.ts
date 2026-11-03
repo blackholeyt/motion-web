@@ -97,3 +97,28 @@ test('an unfinished workout is offered for resuming', async ({ page }) => {
   await page.getByRole('button', { name: 'Resume unfinished workout' }).click()
   await expect(page.getByRole('heading', { name: 'Sled Push' })).toBeVisible()
 })
+
+test('the demo is ready before anything can be opened, and its workouts stay open', async ({ page }) => {
+  await page.goto('./#/settings')
+  await expect(page.getByTestId('opening')).toBeHidden({ timeout: 5_000 })
+  const hint = page.getByTestId('install-hint')
+  if (await hint.isVisible()) await hint.getByRole('button', { name: 'Not now' }).first().click()
+
+  // Seeding takes a moment; the app is covered until it is done, so it cannot jump back later.
+  await page.getByTestId('enterDemo').click()
+  await expect(page.getByTestId('sandboxPreparing')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Blueprints' })).toBeHidden()
+  await expect(page.getByTestId('sandboxPreparing')).toBeHidden({ timeout: 15_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Demo Alex')
+
+  await page.getByRole('link', { name: 'Blueprints' }).click()
+  await page.getByRole('button', { name: /^Push/ }).click()
+  await page.getByTestId('startWorkout').click()
+  await expect(page.getByTestId('completedSetCount')).toHaveText('0 / 9')
+  await expect(page).toHaveURL(/#\/workout\/[0-9a-f-]+$/)
+  const workout = page.url()
+  await enterSet(page, 'Bench Press', 1, '100', '8')
+  await page.waitForTimeout(500)
+  expect(page.url()).toBe(workout)
+  await expect(page.getByTestId('completedSetCount')).toHaveText('1 / 9')
+})

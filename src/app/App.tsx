@@ -18,6 +18,8 @@ import { UpdateNotice } from '../pwa/UpdateNotice'
 import { useApplyTheme } from '../ui/useTheme'
 import { AppShell } from './AppShell'
 import { DemoBanner } from '../features/demo/DemoBanner'
+import { SandboxPreparing } from '../features/demo/SandboxPreparing'
+import { useSandboxPreparing } from './sandbox'
 import { Onboarding } from '../features/onboarding/Onboarding'
 import { loadOnboarding, needsIntroduction, useOnboarding } from '../features/onboarding/state'
 import { ConsentScreen } from '../features/privacy/ConsentScreen'
@@ -72,9 +74,11 @@ function ConsentGate({ children }: { children: ReactNode }) {
 /** ProfileGateView: the introduction replaces the app until it is completed or skipped. */
 function IntroductionGate({ children }: { children: ReactNode }) {
   const progress = useOnboarding()
+  const preparing = useSandboxPreparing()
   useEffect(() => {
     if (!progress) void loadOnboarding()
   }, [progress])
+  if (preparing) return <SandboxPreparing kind={preparing} />
   if (!progress) return null
   return needsIntroduction(progress) ? <Onboarding progress={progress} /> : children
 }
