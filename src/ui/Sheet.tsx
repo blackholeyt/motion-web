@@ -81,8 +81,10 @@ export function ConfirmDialog({ open, title, message, actions, onDismiss }: { op
     >
       {open && (
         <>
-          <h2 id="confirm-title">{title}</h2>
-          {message && <p>{message}</p>}
+          <div className={styles.alertContent}>
+            <h2 id="confirm-title">{title}</h2>
+            {message && <p>{message}</p>}
+          </div>
           <div className={styles.actions}>
             {actions.map((action) => (
               <button key={action.label} type="button" className={styles[action.role ?? 'default']} onClick={action.onSelect}>

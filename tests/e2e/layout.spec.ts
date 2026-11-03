@@ -60,3 +60,35 @@ test('sheet buttons start below the status bar', async ({ page }) => {
   }
   await page.screenshot({ path: `${shots}/sheet-header.png` })
 })
+
+test('the finish dialog is never cut off, even with large text on a small phone', async ({ page }) => {
+  await startPush(page)
+  const set = page.getByTestId('set-Bench Press-1')
+  await set.getByTestId('setLoad-1').fill('60')
+  await set.getByTestId('setReps-1').fill('8')
+  await set.getByTestId('complete-1').click()
+  const check = async (name: string) => {
+    await page.getByTestId('finishWorkout').click()
+    const dialog = page.getByRole('alertdialog', { name: 'Finish this session?' })
+    await expect(dialog).toBeVisible()
+    const viewport = page.viewportSize()!
+    const frame = await box(dialog)
+    expect(frame.y).toBeGreaterThanOrEqual(SAFE_TOP)
+    expect(frame.y + frame.height).toBeLessThanOrEqual(viewport.height - SAFE_BOTTOM)
+    for (const label of ['Save completed sets', 'Keep training']) {
+      const button = dialog.getByRole('button', { name: label })
+      await expect(button).toBeInViewport({ ratio: 1 })
+      const bounds = await box(button)
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(frame.y + frame.height)
+    }
+    await page.screenshot({ path: `${shots}/${name}.png` })
+    await dialog.getByRole('button', { name: 'Keep training' }).click()
+    await expect(dialog).toBeHidden()
+  }
+  await check('finish-dialog')
+
+  // iPhone SE with the largest text size: the message scrolls, the buttons stay on screen.
+  await page.setViewportSize({ width: 375, height: 667 })
+  await page.addStyleTag({ content: 'html { font-size: 250% }' })
+  await check('finish-dialog-se-large-text')
+})
