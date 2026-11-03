@@ -41,6 +41,7 @@ Spätere Änderungen kommen als neue Dateien in `supabase/migrations/` und werde
 |---|---|---|
 | `20261102120000_initial_schema.sql` | 4 | 12 Tabellen, RLS, Schreibregel, Wachhalten |
 | `20261102180000_legacy_imports.sql` | 5a | Tabelle `legacy_imports` (Belege importierter iOS-Sicherungen), RLS wie oben. Danach zeigt der Table Editor 13 Tabellen. |
+| `20261103120000_delete_account.sql` | 6 | Funktion `delete_account()` für „Konto löschen“; die Schreibregel nimmt nur noch Zeilen für existierende Konten an. Ohne diese Migration meldet „Konto löschen“ einen Fehler, alles andere läuft weiter. Details: `DATENSCHUTZ.md`. |
 
 **Wichtig:** Die App lädt Importbelege in `legacy_imports` hoch. Fehlt die Tabelle in der Cloud, meldet der Sync-Status einen Fehler, bis die Migration eingespielt ist (die anderen Tabellen werden vorher trotzdem hochgeladen).
 
@@ -122,3 +123,9 @@ Auf dem Mac im Ordner `motion-web`:
 3. Erwartet: 13 bestandene Tests. Der Test legt zwei Wegwerf-Konten an (`motion-rls-…@example.com`, es werden keine Mails verschickt), prüft, dass Konto B die Daten von Konto A weder lesen noch ändern noch löschen kann, und löscht beide Konten wieder.
 
 Danach kannst du `.env.test.local` löschen. Die Datei wird ohnehin nie committet.
+
+## 11. Löschtest gegen dein Projekt (Abnahme Phase 6)
+Nach dem Einspielen von `20261103120000_delete_account.sql`, mit derselben `.env.test.local` wie in Schritt 10: `npm run test:delete-live`. Erwartet: 2 bestandene Tests. Details: `DATENSCHUTZ.md`, Abschnitt 6.
+
+## 12. Vertrag zur Auftragsverarbeitung
+Vor einer Veröffentlichung im Dashboard unter **Legal Documents** den DPA anfordern und unterschreiben. Details und weitere offene Punkte: `DATENSCHUTZ.md`, Abschnitt 5.

@@ -36,7 +36,7 @@
 | 4 | Schlüssel | Publishable Key statt des alten `anon`-Schlüssels, weil Supabase die alten bis Ende 2026 ablöst. |
 | 5 | Ohne Cloud-Einstellungen | Die App läuft weiter rein lokal und zeigt keinen Konto-Bereich. So bleibt die Live-Version bis zur Einrichtung unverändert. |
 | 6 | Zwei-Konten-Test | Zweimal: automatisch in CI gegen die echten Migrationen in einem eingebetteten Postgres (PGlite) und einmal gegen dein echtes Projekt (`npm run test:rls-live`). |
-| 7 | Logout | Konto-Datenbank bleibt geschlossen auf dem Gerät; beim nächsten Login mit demselben Konto ist sie sofort da. Löschen der lokalen Daten kommt mit „Konto löschen“ in Phase 6. |
+| 7 | Logout | Konto-Datenbank bleibt geschlossen auf dem Gerät; beim nächsten Login mit demselben Konto ist sie sofort da. Löschen der lokalen Daten kommt mit „Konto löschen“ in Phase 6 (umgesetzt am 03.11.2026). |
 
 
 ## Phase 5 (geplant am 02.11.2026)
@@ -54,3 +54,16 @@
 | 9 | IDs in älteren Dateien | Trainings ohne Entwurfs-ID, Übungen ohne Snapshot-ID und Sätze ohne Satz-ID bekommen eine aus dem Inhalt abgeleitete ID. Dieselbe Datei ergibt so immer dieselben IDs, ein zweiter Import fügt nichts doppelt hinzu. |
 | 10 | Abgleich ohne IDs | Wie in der alten App gilt ein Training aus einer älteren Datei als vorhanden, wenn hier eines mit gleichem Namen, gleichem Abschlussstatus und gleicher Sekunde existiert. Es bleibt dann unverändert. |
 | 11 | Fehlende Teile älterer Dateien | Einstellungen, Schlafwerte und Trainingsplan stehen nicht darin; das Gerät behält seine eigenen. Beispieltrainings werden wie in der vollständigen Sicherung weggelassen. |
+
+## Phase 6 (gebaut am 03.11.2026, Abnahme offen)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Einwilligung | Zwei Stufen: beim ersten Start Gesundheitsdaten auf dem Gerät und Mindestalter 16, beim Anmelden die Cloud-Sicherung. Gespeichert auf dem Gerät mit Version; die Cloud-Einwilligung zusätzlich in den Metadaten des Logins. Wer schon angemeldet ist, bestätigt die Cloud einmal nachträglich oder meldet sich ab. |
+| 2 | Konto löschen | Datenbankfunktion `delete_account()` statt Edge Function: kein Secret Key, keine weitere Einrichtung außer der Migration. Endgültig gelöscht, keine Grabsteine. Der Live-Test prüft, dass Supabase das Löschen aus `auth.users` per Funktion erlaubt. |
+| 3 | Andere Geräte nach dem Löschen | Schreibregel nimmt nur Zeilen existierender Konten an; das Gerät erkennt die Ablehnung und bietet an, die lokale Kopie zu entfernen. |
+| 4 | Gastdaten | Gehören nicht zum Konto und bleiben beim Konto-Löschen. Ohne Konto gibt es „Daten auf diesem Gerät löschen“, das auch die Einwilligung zurücksetzt. |
+| 5 | CSV-Format | Lesbare Tabelle (eine Zeile je Training, Satz, Ausdauer, Gewicht, Schlaf) statt einer Kopie des JSON. Die vollständige Kopie bleibt das JSON. |
+| 6 | Rechtstexte | Nur Deutsch, als Entwurf mit markierten Platzhaltern; ein Test verhindert das Abschalten des Entwurfshinweises mit offenen Platzhaltern. Ehrliche Angaben zu Cloudflare, Supabase, Gmail und Google. |
+| 7 | Gmail-Versand | Bleibt für den Testbetrieb. Vor einer Veröffentlichung nötig: Mailanbieter mit AVV (siehe `DATENSCHUTZ.md`, Abschnitt 5). |
+
