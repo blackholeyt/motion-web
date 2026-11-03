@@ -101,7 +101,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 38 | Zahleneingabe mit Punkt oder Komma, exakte Werte ohne Rundungsverlust (6.3) | `MeasurementUnits.swift`, `WorkoutSetInput.swift` | übernehmen | 2 | | Unit: `sets.test.ts`; E2E: `workout.spec.ts` (62,5) |
 | 39 | Tastatur-Leiste „Next“/„Done“ (6.3) | `ActiveWorkoutView.swift` | Web-Anpassung nötig | 2 | iOS-Safari erlaubt keine eigene Tastaturleiste; „Weiter“-Taste der Tastatur (`enterkeyhint`) und Fokus-Logik stattdessen | manuell (Browser): Tastatur „Weiter“ |
 | 40 | Supersets mit erzwungener Reihenfolge und Pausenregel (6.4) | `TrainingStructure.swift`, `ActiveWorkoutEngine.swift` | übernehmen | 2 | | Unit: `engine.test.ts` |
-| 41 | Lasteinheit im Training umschalten (6.5) | `WorkoutOnboardingSupport.swift` | übernehmen | 2 | | manuell (Browser): Einheit im Training umschalten |
+| 41 | Lasteinheit im Training umschalten (6.5) | `WorkoutOnboardingSupport.swift` | entfällt | – | Menü am 03.11.2026 entfernt; die Einheit kommt aus dem Profil und bleibt dort änderbar | manuell (Browser): Einstellungen → Profil & Körpergewicht |
 | 42 | Undo bis 100 Schritte, übersteht Neustart (6.5) | `WorkoutSessionEdits.swift` | übernehmen | 2 | | Unit: `engine.test.ts` |
 | 43 | Übung ersetzen, verschieben, entfernen, zu Freestyle wechseln (6.5) | `WorkoutSessionEdits.swift`, `WorkoutSessionEditControls.swift` | übernehmen | 2 | | manuell (Browser): Übungsmenü im Training |
 | 44 | Pause pro Übung nur für diese Session, „Start rest“ (6.5) | `ActiveWorkoutRest.swift`, `RestConfigurationViews.swift` | übernehmen | 2 | | manuell (Browser): Pause pro Übung |

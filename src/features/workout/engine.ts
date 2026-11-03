@@ -500,25 +500,6 @@ export async function addExercise(workoutID: string, request: AddExerciseRequest
   })
 }
 
-/** Changing the load unit converts every valid entry; incomplete input blocks the change. */
-export async function changeLoadUnit(workoutID: string, unit: WeightUnit, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const rows = session.all.flatMap(({ rows }) => rows)
-    const parsed = rows.map((row) => {
-      const text = quantityText(row.set, row.exercise.measurement, context.unit, context.locale)
-      return { row, text, kg: parseWeightText(text, row.exercise.measurement, setUnit(row.set, context.unit), row.set.weight_kg, context.locale) }
-    })
-    if (parsed.some(({ row, text, kg }) => row.exercise.measurement !== 'Duration' && text !== '' && kg === null)) {
-      throw new WorkoutError('Finish or clear the current load before changing units.')
-    }
-    for (const { row, text, kg } of parsed) {
-      if (row.exercise.measurement === 'Duration') continue
-      await update<SetLog>('set_logs', row.set.id, { draft_weight_unit: unit, draft_weight_text: text === '' || kg === null ? text : loadInput(unit, kg, context.locale), ...(kg !== null ? { weight_kg: kg } : {}) })
-    }
-  })
-}
-
 // MARK: - Records
 
 /**

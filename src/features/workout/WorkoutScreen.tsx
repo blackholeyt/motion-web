@@ -2,10 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { CalendarClock, CheckCircle2, ChevronDown, ChevronLeft, Plus, Shuffle, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import type { WeightUnit } from '../../data/types'
 import { useT } from '../../i18n'
 import { platform } from '../../platform'
-import { updateProfile } from '../../store/profile'
 import type { FinishReward } from '../../store/progress'
 import type { RecordAchievement } from '../../domain/progress'
 import { Celebration } from '../progress/Celebration'
@@ -13,7 +11,7 @@ import { RecordNotice } from '../progress/RecordNotice'
 import { updateOnboarding, useOnboarding } from '../onboarding/state'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { ContinueButton } from '../../ui/components'
-import { SelectRow, TextButton } from '../../ui/controls'
+import { TextButton } from '../../ui/controls'
 import { RestNotificationSettings } from '../settings/RestNotificationSettings'
 import * as engine from './engine'
 import { ExercisePicker } from './ExercisePicker'
@@ -186,23 +184,6 @@ export function WorkoutScreen() {
           {next && <p className={styles.next}>{t('Next: {0} · set {1}', [next.exercise.exercise_name, next.set.set_index])}</p>}
         </div>
         <div className={styles.card}>
-          <SelectRow<WeightUnit>
-            label={`${t('Training load unit: {0}', [context.unit])}`}
-            value={context.unit}
-            options={[
-              { value: 'kg', label: 'kg' },
-              { value: 'lb', label: 'lb' },
-            ]}
-            onChange={async (unit) => {
-              await flushAll()
-              try {
-                await engine.changeLoadUnit(id, unit, context)
-                await updateProfile({ load_unit: unit })
-              } catch (failure) {
-                report(failure)
-              }
-            }}
-          />
           <button type="button" className={styles.disclosure} aria-expanded={workoutOptions} onClick={() => setWorkoutOptions(!workoutOptions)}>
             {t('Workout options')} <ChevronDown size={16} className={workoutOptions ? styles.rotated : ''} aria-hidden="true" />
           </button>
