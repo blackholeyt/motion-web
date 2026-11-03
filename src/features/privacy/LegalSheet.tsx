@@ -1,11 +1,11 @@
 import { Fragment, type ReactNode } from 'react'
 import { useT } from '../../i18n'
-import { imprint, legalDraft, privacyPolicy, type LegalSection } from '../../privacy/legal'
+import { about, legalDraft, privacyPolicy, type LegalSection } from '../../privacy/legal'
 import { Sheet } from '../../ui/Sheet'
 import { TextButton } from '../../ui/controls'
 import styles from './privacy.module.css'
 
-export type LegalPage = 'privacy' | 'imprint'
+export type LegalPage = 'privacy' | 'about'
 
 /** Placeholders in [square brackets] are highlighted, so nothing unfinished goes unnoticed. */
 function withPlaceholders(text: string): ReactNode {
@@ -34,19 +34,19 @@ function Sections({ sections }: { sections: LegalSection[] }) {
   )
 }
 
-/** Datenschutzerklärung and Impressum, readable before consent and from Settings. */
+/** Privacy notice and "About this project", readable before consent and from Settings. */
 export function LegalSheet({ page, onClose }: { page: LegalPage | null; onClose: () => void }) {
   const { t, language } = useT()
   if (!page) return null
   return (
-    <Sheet open onClose={onClose} title={page === 'privacy' ? t('Privacy policy') : t('Imprint')} leading={<TextButton onClick={onClose}>{t('Done')}</TextButton>}>
+    <Sheet open onClose={onClose} title={page === 'privacy' ? t('Privacy policy') : t('About this project')} leading={<TextButton onClick={onClose}>{t('Done')}</TextButton>}>
       {legalDraft && (
         <p className={styles.draft} data-testid="legalDraft">
           {t('Draft: not yet legally reviewed. Highlighted placeholders must be replaced before Motion is published.')}
         </p>
       )}
       {language !== 'de' && <p className={styles.note}>{t('The legal texts are available in German only.')}</p>}
-      <Sections sections={page === 'privacy' ? privacyPolicy : imprint} />
+      <Sections sections={page === 'privacy' ? privacyPolicy : about} />
     </Sheet>
   )
 }
@@ -58,8 +58,8 @@ export function LegalLinks({ onOpen }: { onOpen: (page: LegalPage) => void }) {
       <button type="button" onClick={() => onOpen('privacy')} data-testid="openPrivacyPolicy">
         {t('Privacy policy')}
       </button>
-      <button type="button" onClick={() => onOpen('imprint')} data-testid="openImprint">
-        {t('Imprint')}
+      <button type="button" onClick={() => onOpen('about')} data-testid="openAbout">
+        {t('About this project')}
       </button>
     </div>
   )

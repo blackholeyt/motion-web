@@ -255,10 +255,17 @@ export async function unsyncedChanges(): Promise<number> {
   return state.account ? db.outbox.count() : 0
 }
 
-/* Sign-in: a 6-digit code by e-mail (no magic link, which would open outside the installed app) or Google. */
+/*
+ * Sign-in: a 6-digit code by e-mail (no magic link, which would open outside the installed app) or Google.
+ * Motion is invite-only (docs/DATENSCHUTZ.md, section 5): accounts are created in the Supabase
+ * dashboard, so a code never creates a new account.
+ */
+
+/** Supabase's answer when an e-mail has no account and sign-ups are closed. */
+export const isNotInvited = (message: string | undefined) => /signups? not allowed|signup_disabled|otp_disabled/i.test(message ?? '')
 
 export async function sendCode(email: string) {
-  const { error } = await supabase().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } })
+  const { error } = await supabase().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false } })
   if (error) throw error
 }
 

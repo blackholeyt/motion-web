@@ -10,8 +10,8 @@ test('asks for consent first, exports CSV, and deleting the device data starts o
 
   await expect(page.getByTestId('consentTitle')).toBeVisible()
   await page.getByTestId('openPrivacyPolicy').click()
-  await expect(page.getByTestId('legalDraft')).toBeVisible()
-  await expect(page.getByText('1. Verantwortlicher')).toBeVisible()
+  await expect(page.getByText('Wer dahintersteckt')).toBeVisible()
+  await expect(page.getByTestId('legalDraft')).toHaveCount(0)
   await page.getByRole('button', { name: 'Done' }).click()
   await expect(page.getByTestId('acceptConsent')).toBeDisabled()
   await page.getByTestId('consentHealth').check()

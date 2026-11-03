@@ -3,7 +3,7 @@ import { useT } from '../../i18n'
 import { Sheet } from '../../ui/Sheet'
 import { Group, PrimaryButton, TextButton } from '../../ui/controls'
 import controls from '../../ui/controls.module.css'
-import { sendCode, signInWithGoogle, verifyCode } from '../../sync/account'
+import { isNotInvited, sendCode, signInWithGoogle, verifyCode } from '../../sync/account'
 import { acceptCloudConsent, getConsent } from '../../privacy/consent'
 import { ConsentCheck } from '../privacy/ConsentScreen'
 import styles from './account.module.css'
@@ -15,6 +15,7 @@ function explain(failure: unknown): string {
   if (error.name === 'AuthRetryableFetchError' || (failure instanceof TypeError && /fetch|network|load failed/i.test(error.message ?? ''))) {
     return 'Motion cannot reach the server right now. Try again in a moment.'
   }
+  if (isNotInvited(error.code) || isNotInvited(error.message)) return 'Motion is invite-only. This e-mail has no account yet; ask Mathis for an invitation.'
   if (error.status === 429 || error.code === 'over_email_send_rate_limit' || error.code === 'over_request_rate_limit') return 'Too many attempts. Wait a minute and try again.'
   if (error.code === 'otp_expired' || /token has expired or is invalid/i.test(error.message ?? '')) return 'This code is wrong or has expired. Request a new one.'
   return error.message ?? String(failure)
@@ -54,7 +55,7 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
   if (!open) return null
   return (
     <Sheet open onClose={close} title={t('Sign in')} leading={<TextButton onClick={close}>{t('Cancel')}</TextButton>}>
-      <p className={styles.intro}>{t('Back up your training and use it on several devices. Your data stays on this device as well and works offline.')}</p>
+      <p className={styles.intro}>{t('Back up your training and use it on several devices. Your data stays on this device as well and works offline.')} {t('Motion is a private project: sign-in works for invited e-mail addresses.')}</p>
       <Group footer={t('You can withdraw this at any time by deleting your account in Settings.')}>
         <ConsentCheck checked={cloud} onChange={setCloud} testID="signInConsent">
           {t('I agree that my training and health data are backed up in my account on Supabase servers in Frankfurt (EU).')}

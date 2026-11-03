@@ -1,14 +1,19 @@
 /*
- * Privacy policy and imprint, phase 6. DRAFTS: written from what the app actually does, but not
- * checked by a lawyer. Everything in [square brackets] is a placeholder that must be replaced before
- * Motion is offered to the public (checklist in docs/DATENSCHUTZ.md, section 5). While legalDraft is
- * true, both pages show a draft banner; legal.test.ts fails if it is switched off with placeholders left.
+ * Privacy notice and "About this project" for the private operation (decision of 03.11.2026): Motion
+ * runs for Mathis and a few invited friends, sign-up is closed and accounts are created by hand. A
+ * purely private circle like this needs no imprint, so no name or postal address is published.
+ * The longer drafts for a public release (with imprint and placeholders) are in commit 22223c3;
+ * docs/DATENSCHUTZ.md, section 5, lists what a public release would need.
  *
- * The texts are German only: Motion is offered in Germany, and the German version is the binding one.
+ * Not checked by a lawyer. While legalDraft is true, both pages show a draft banner; legal.test.ts
+ * fails if it is switched off with [placeholders] left.
+ *
+ * The texts are German only: everyone who uses Motion reads German.
  */
 
-export const legalDraft = true
-export const legalUpdated = '[DATUM DER VERÖFFENTLICHUNG]'
+export const legalDraft = false
+export const legalUpdated = '3. November 2026'
+export const contactEmail = 'motion.web.support@gmail.com'
 
 export interface LegalSection {
   heading: string
@@ -16,110 +21,79 @@ export interface LegalSection {
   list?: string[]
 }
 
-export const imprint: LegalSection[] = [
+export const about: LegalSection[] = [
   {
-    heading: 'Angaben gemäß § 5 DDG',
-    paragraphs: ['[VORNAME NACHNAME]', '[STRASSE HAUSNUMMER]', '[PLZ ORT]', 'Deutschland'],
+    heading: 'Ein privates Projekt',
+    paragraphs: [
+      'Motion ist ein privates, nicht kommerzielles Projekt von Mathis für sich selbst und ein paar eingeladene Freunde. Es wird nicht öffentlich angeboten, es gibt keine Werbung, keine Käufe und keine Einnahmen.',
+      'Ein Konto bekommt nur, wer eingeladen wurde. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
+    ],
   },
   {
     heading: 'Kontakt',
-    paragraphs: ['E-Mail: [KONTAKT-E-MAIL]', '[ZWEITER SCHNELLER KONTAKTWEG, z. B. Telefon oder Kontaktformular]'],
-  },
-  {
-    heading: 'Hinweis',
-    paragraphs: [
-      'Motion ist ein privates, nicht kommerzielles Projekt. Es gibt keine Werbung und keine kostenpflichtigen Funktionen.',
-      'Plattform der EU-Kommission zur Online-Streitbeilegung: Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
-    ],
+    paragraphs: [`E-Mail: ${contactEmail}`],
   },
 ]
 
 export const privacyPolicy: LegalSection[] = [
   {
-    heading: '1. Verantwortlicher',
+    heading: 'Wer dahintersteckt',
     paragraphs: [
-      'Verantwortlich für die Datenverarbeitung in Motion ist: [VORNAME NACHNAME], [STRASSE HAUSNUMMER], [PLZ ORT], E-Mail: [KONTAKT-E-MAIL].',
-      'Einen Datenschutzbeauftragten gibt es nicht, weil keine Pflicht dazu besteht.',
+      `Motion ist ein privates Projekt von Mathis für einen kleinen Kreis eingeladener Freunde. Fragen, Auskunft oder Löschwünsche: ${contactEmail}.`,
     ],
   },
   {
-    heading: '2. Das Wichtigste in Kürze',
+    heading: 'Das Wichtigste in Kürze',
     paragraphs: [],
     list: [
-      'Motion funktioniert ohne Konto. Dann bleiben alle Daten auf deinem Gerät und werden nicht an uns übertragen.',
-      'Es gibt keine Werbung, kein Tracking, keine Analyse-Tools und keine Cookies zu Werbezwecken.',
-      'Körpergewicht und Schlafindex sind Gesundheitsdaten. Motion verarbeitet sie nur mit deiner ausdrücklichen Einwilligung und nur, um dir deinen Fortschritt zu zeigen.',
-      'Mit einem freiwilligen Konto werden deine Daten zur Sicherung und für mehrere Geräte auf Servern in Frankfurt am Main gespeichert.',
-      'Du kannst deine Daten jederzeit als JSON oder CSV exportieren und dein Konto mit allen Daten in der App löschen.',
+      'Ohne Konto bleiben alle Daten auf deinem Gerät. Niemand sonst sieht sie.',
+      'Keine Werbung, kein Tracking, keine Analyse-Tools, keine Werbe-Cookies.',
+      'Körpergewicht und Schlafindex sind Gesundheitsdaten. Motion nutzt sie nur, um dir deinen Fortschritt zu zeigen.',
+      'Mit Konto werden deine Daten zur Sicherung auf Servern in Frankfurt am Main gespeichert.',
+      'Export als JSON oder CSV und Löschen von Konto oder Gerätedaten gehen jederzeit in den Einstellungen.',
     ],
   },
   {
-    heading: '3. Daten auf deinem Gerät',
+    heading: 'Auf deinem Gerät',
     paragraphs: [
-      'Motion speichert im Speicher deines Browsers bzw. der installierten App (IndexedDB und localStorage): Trainings, Sätze, Routinen, Trainingsplan, Übungen, Rekordziele, Ausdauer-Einheiten, Körpergewicht, Schlafindex, XP, dein Profil (Name, Einheiten, Zielgewicht) sowie Einstellungen und deine Einwilligung.',
-      'Diese Daten verlassen dein Gerät ohne Konto nicht. Zweck: die Funktionen der App. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO und für Gesundheitsdaten deine ausdrückliche Einwilligung nach Art. 9 Abs. 2 lit. a DSGVO. Das Speichern auf deinem Gerät ist für den von dir gewünschten Dienst unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG).',
-      'Löschen: Einstellungen → „Daten auf diesem Gerät löschen“ oder Löschen der Website-Daten bzw. der App.',
+      'Motion speichert im Speicher des Browsers bzw. der installierten App: Trainings und Sätze, Routinen, Trainingsplan, Übungen, Ausdauer-Einheiten, Körpergewicht, Schlafindex, XP, dein Profil (Name, Einheiten, Zielgewicht), Einstellungen und deine Einwilligung.',
+      'Löschen: Einstellungen → „Daten auf diesem Gerät löschen“, oder die Website-Daten bzw. die App entfernen.',
     ],
   },
   {
-    heading: '4. Bereitstellung der App (Hosting)',
+    heading: 'Laden der App',
     paragraphs: [
-      'Die App wird über Cloudflare Pages ausgeliefert (Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, USA). Beim Laden der App verarbeitet Cloudflare technisch notwendige Verbindungsdaten wie deine IP-Adresse, Zeitpunkt, angefragte Datei und Browserkennung, um die App auszuliefern und vor Angriffen zu schützen.',
-      'Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an einer sicheren Auslieferung). Cloudflare ist unter dem EU-US Data Privacy Framework zertifiziert [PRÜFEN]. Mit Cloudflare besteht ein Vertrag zur Auftragsverarbeitung [PRÜFEN: Self-Serve-DPA von Cloudflare]. Speicherdauer der Protokolle: [PRÜFEN].',
+      'Die App wird über Cloudflare Pages ausgeliefert (Cloudflare, Inc., USA). Beim Laden verarbeitet Cloudflare technisch nötige Verbindungsdaten wie IP-Adresse, Zeitpunkt und Browserkennung, um die App auszuliefern und vor Angriffen zu schützen.',
     ],
   },
   {
-    heading: '5. Konto und Cloud-Sicherung (freiwillig)',
+    heading: 'Konto und Cloud-Sicherung',
     paragraphs: [
-      'Wenn du dich anmeldest, speichern wir deine E-Mail-Adresse, eine zufällige Konto-ID und alle in Abschnitt 3 genannten Trainings- und Gesundheitsdaten in deinem Konto, damit sie gesichert sind und auf mehreren Geräten zur Verfügung stehen. Außerdem speichern wir Zeitpunkt und Version deiner Einwilligung.',
-      'Dienstleister ist Supabase ([FIRMA UND ANSCHRIFT AUS DEM SUPABASE-DPA ÜBERNEHMEN]). Die Datenbank liegt in der Region Frankfurt am Main (AWS eu-central-1). Supabase verarbeitet die Daten in unserem Auftrag; ein Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO [ABGESCHLOSSEN AM DATUM]. Soweit Supabase oder seine Unterauftragnehmer Daten außerhalb der EU verarbeiten, geschieht das auf Grundlage der EU-Standardvertragsklauseln [PRÜFEN].',
-      'Bei der Anmeldung protokolliert Supabase technisch notwendige Daten wie IP-Adresse und Zeitpunkt, um Missbrauch zu verhindern.',
-      'Rechtsgrundlage: deine ausdrückliche Einwilligung (Art. 6 Abs. 1 lit. a und Art. 9 Abs. 2 lit. a DSGVO), die du beim Anmelden gibst, sowie Art. 6 Abs. 1 lit. b DSGVO für die Bereitstellung des Kontos.',
+      'Mit einem Konto werden deine E-Mail-Adresse, eine zufällige Konto-ID, Zeitpunkt und Version deiner Einwilligung sowie alle oben genannten Trainings- und Gesundheitsdaten bei Supabase gespeichert, damit sie gesichert sind und auf mehreren Geräten zur Verfügung stehen. Die Datenbank liegt in Frankfurt am Main. Bei der Anmeldung protokolliert Supabase technisch nötige Daten wie IP-Adresse und Zeitpunkt.',
+      'Das passiert nur mit deiner ausdrücklichen Einwilligung, die du beim Anmelden gibst. Mathis kann die Daten im Supabase-Dashboard technisch einsehen, schaut sie aber nicht an und gibt sie an niemanden weiter.',
     ],
   },
   {
-    heading: '6. Anmeldung per E-Mail-Code',
+    heading: 'Anmeldung',
     paragraphs: [
-      'Für die Anmeldung per Code senden wir dir eine E-Mail. Der Versand läuft über einen E-Mail-Dienst von Google (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland). Dabei werden deine E-Mail-Adresse und der Inhalt der E-Mail (der Code) verarbeitet. [PRÜFEN: Für ein privates Gmail-Konto gibt es keinen Vertrag zur Auftragsverarbeitung; vor der Veröffentlichung auf einen Anbieter mit AV-Vertrag wechseln, siehe docs/DATENSCHUTZ.md.]',
+      'Der Anmeldecode kommt per E-Mail über ein Gmail-Konto von Motion (Google). Dabei werden deine E-Mail-Adresse und der Code verarbeitet.',
+      'Bei „Mit Google fortfahren“ übermittelt Google deine E-Mail-Adresse, deinen Namen und dein Profilbild; Motion verwendet davon nur die E-Mail-Adresse. Google erfährt dabei, dass du dich bei Motion anmeldest.',
     ],
   },
   {
-    heading: '7. Anmeldung mit Google',
+    heading: 'Löschen und Widerruf',
     paragraphs: [
-      'Wenn du „Mit Google fortfahren“ wählst, wirst du zu Google weitergeleitet (Google Ireland Limited, Anschrift wie oben). Google teilt uns deine E-Mail-Adresse, deinen Namen und dein Profilbild mit; wir verwenden davon nur die E-Mail-Adresse. Google erfährt, dass du dich bei Motion anmeldest. Für die Verarbeitung durch Google gilt die Datenschutzerklärung von Google. Rechtsgrundlage: deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).',
+      'Daten in deinem Konto bleiben gespeichert, bis du das Konto löschst. „Konto löschen“ entfernt sofort alle Einträge des Kontos und die Anmeldung selbst, und auf dem Gerät, auf dem du löschst, auch die lokale Kopie. Auf anderen Geräten bleibt die lokale Kopie, bis du dich dort abmeldest oder die Daten dort löschst.',
+      'Deine Einwilligung kannst du jederzeit widerrufen: durch Löschen des Kontos bzw. der Gerätedaten oder per E-Mail. Auskunft bekommst du jederzeit über den Export oder per E-Mail.',
     ],
   },
   {
-    heading: '8. Speicherdauer',
-    paragraphs: [
-      'Daten in deinem Konto speichern wir, bis du das Konto löschst. Beim Löschen entfernt Motion sofort alle Datensätze des Kontos und die Anmeldung selbst; auf dem Gerät, auf dem du löschst, wird auch die lokale Kopie entfernt. Auf anderen Geräten bleibt die lokale Kopie, bis du dich dort abmeldest oder die Daten dort löschst.',
-      'Eigene Sicherungskopien der Datenbank: [PRÜFEN: Wie lange werden manuelle Datenbank-Sicherungen aufbewahrt? z. B. höchstens 30 Tage].',
-    ],
+    heading: 'Alter',
+    paragraphs: ['Wer jünger als 16 ist, braucht die Zustimmung der Eltern.'],
   },
   {
-    heading: '9. Deine Rechte',
-    paragraphs: ['Du hast das Recht auf:'],
-    list: [
-      'Auskunft über deine Daten (Art. 15 DSGVO) und eine Kopie: in der App über den Export als JSON oder CSV.',
-      'Berichtigung (Art. 16 DSGVO): Alle Einträge lassen sich in der App bearbeiten.',
-      'Löschung (Art. 17 DSGVO): in der App über „Konto löschen“ bzw. „Daten auf diesem Gerät löschen“.',
-      'Einschränkung der Verarbeitung (Art. 18 DSGVO) und Widerspruch (Art. 21 DSGVO).',
-      'Datenübertragbarkeit (Art. 20 DSGVO): Der JSON-Export enthält alle Daten in einem maschinenlesbaren Format.',
-      'Widerruf deiner Einwilligung mit Wirkung für die Zukunft (Art. 7 Abs. 3 DSGVO): durch Löschen des Kontos bzw. der Daten auf dem Gerät oder per E-Mail an [KONTAKT-E-MAIL]. Die bis dahin erfolgte Verarbeitung bleibt rechtmäßig.',
-      'Beschwerde bei einer Datenschutz-Aufsichtsbehörde (Art. 77 DSGVO), zum Beispiel bei [ZUSTÄNDIGE AUFSICHTSBEHÖRDE, z. B. Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen].',
-    ],
-  },
-  {
-    heading: '10. Mindestalter',
-    paragraphs: ['Motion richtet sich an Personen ab 16 Jahren. Wer jünger ist, braucht die Zustimmung der Eltern (Art. 8 DSGVO).'],
-  },
-  {
-    heading: '11. Keine automatisierten Entscheidungen',
-    paragraphs: ['Motion trifft keine automatisierten Entscheidungen im Sinne von Art. 22 DSGVO und erstellt keine Profile zu Werbezwecken. XP, Level und Rekorde werden nur für dich berechnet.'],
-  },
-  {
-    heading: '12. Änderungen',
-    paragraphs: [`Wenn sich diese Datenschutzerklärung wesentlich ändert, fragt Motion beim nächsten Start erneut nach deiner Einwilligung. Stand: ${legalUpdated}.`],
+    heading: 'Stand',
+    paragraphs: [`${legalUpdated}. Ändert sich hier etwas Wesentliches, fragt Motion beim nächsten Start erneut nach deiner Einwilligung.`],
   },
 ]
 

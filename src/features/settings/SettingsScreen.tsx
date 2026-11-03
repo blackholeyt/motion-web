@@ -95,8 +95,8 @@ export function SettingsScreen() {
         <RowButton tone="plain" onClick={() => setLegal('privacy')} testID="settingsPrivacyPolicy">
           {t('Privacy policy')}
         </RowButton>
-        <RowButton tone="plain" onClick={() => setLegal('imprint')} testID="settingsImprint">
-          {t('Imprint')}
+        <RowButton tone="plain" onClick={() => setLegal('about')} testID="settingsAbout">
+          {t('About this project')}
         </RowButton>
       </Group>
       {sandbox ? (
