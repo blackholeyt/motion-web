@@ -65,5 +65,6 @@
 | 4 | Gastdaten | Gehören nicht zum Konto und bleiben beim Konto-Löschen. Ohne Konto gibt es „Daten auf diesem Gerät löschen“, das auch die Einwilligung zurücksetzt. |
 | 5 | CSV-Format | Lesbare Tabelle (eine Zeile je Training, Satz, Ausdauer, Gewicht, Schlaf) statt einer Kopie des JSON. Die vollständige Kopie bleibt das JSON. |
 | 6 | Rechtstexte | Nur Deutsch, als Entwurf mit markierten Platzhaltern; ein Test verhindert das Abschalten des Entwurfshinweises mit offenen Platzhaltern. Ehrliche Angaben zu Cloudflare, Supabase, Gmail und Google. |
-| 7 | Gmail-Versand | Bleibt für den Testbetrieb. Vor einer Veröffentlichung nötig: Mailanbieter mit AVV (siehe `DATENSCHUTZ.md`, Abschnitt 5). |
+| 7 | Gmail-Versand | Bleibt für den privaten Betrieb. Bei einer Veröffentlichung nötig: Mailanbieter mit AVV (siehe `DATENSCHUTZ.md`, Abschnitt 5). |
+| 8 | Privater Betrieb (03.11.2026) | Motion bleibt privat für Mathis und ein, zwei Freunde: Registrierung in Supabase geschlossen, App legt keine Konten an, Freunde werden im Dashboard angelegt. Statt Impressum und langer Datenschutzerklärung ein kurzer Datenschutzhinweis und „Über dieses Projekt“ ohne Namen und Anschrift. Die Entwürfe für eine Veröffentlichung liegen in Commit `22223c3`. |
 

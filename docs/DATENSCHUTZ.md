@@ -1,19 +1,19 @@
 # Datenschutz und Konto (Phase 6)
 
-Stand: 03.11.2026. Das ist keine Rechtsberatung. Die Texte und Hinweise beschreiben, was die App technisch tut, und markieren, was vor einer Veröffentlichung noch geprüft oder ergänzt werden muss.
+Stand: 03.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die App technisch tut. Motion läuft privat und nur auf Einladung (Abschnitt 5).
 
 ## 1. Überblick
 | Baustein | Wo | Code |
 |---|---|---|
 | Einwilligung beim ersten Start | Vor der Einführung, vor allem anderen | `src/features/privacy/ConsentScreen.tsx`, `src/privacy/consent.ts` |
 | Einwilligung zur Cloud | Im Anmeldefenster, Pflicht vor Google oder E-Mail-Code | `src/features/account/SignInSheet.tsx` |
-| Datenschutzerklärung, Impressum | Aus der Einwilligung und unter Einstellungen → Hilfe & Datenschutz | `src/privacy/legal.ts`, `src/features/privacy/LegalSheet.tsx` |
+| Datenschutzhinweis, „Über dieses Projekt“ | Aus der Einwilligung und unter Einstellungen → Hilfe & Datenschutz | `src/privacy/legal.ts`, `src/features/privacy/LegalSheet.tsx` |
 | Export JSON und CSV | Einstellungen → Sicherung, und im Löschen-Fenster | `src/store/backup.ts`, `src/store/csvExport.ts` |
 | Konto löschen | Einstellungen → Konto → „Konto löschen“ | `src/sync/account.ts` (`deleteAccount`), Migration `20261103120000_delete_account.sql` |
 | Daten auf diesem Gerät löschen | Einstellungen → Konto (ohne Anmeldung) | `src/sync/account.ts` (`deleteDeviceData`) |
 
 ## 2. Einwilligung
-**Erster Start:** Ein Bildschirm erklärt in vier Punkten, was wo gespeichert wird, verlinkt Datenschutzerklärung und Impressum und verlangt zwei Häkchen:
+**Erster Start:** Ein Bildschirm erklärt in vier Punkten, was wo gespeichert wird, verlinkt Datenschutzhinweis und „Über dieses Projekt“ und verlangt zwei Häkchen:
 1. Datenschutzerklärung gelesen, ausdrückliche Einwilligung in die Verarbeitung von Trainings- und Gesundheitsdaten (Körpergewicht, Schlafindex) auf dem Gerät (Art. 9 Abs. 2 lit. a DSGVO).
 2. Mindestens 16 Jahre alt oder Eltern einverstanden (Art. 8 DSGVO, Altersgrenze in Deutschland 16).
 
@@ -35,7 +35,7 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 
 **Andere Geräte desselben Kontos:** Ein Zugriffstoken gilt nach dem Löschen noch bis zu einer Stunde. Damit ein anderes Gerät in dieser Zeit keine Zeilen zurückbringt, nimmt die Schreibregel `motion_accept_write` nur noch Zeilen für Konten an, die in `auth.users` existieren. Das andere Gerät zeigt dann „Dieses Konto wurde auf einem anderen Gerät gelöscht“ und bietet „Seine Daten von diesem Gerät entfernen“ an. Spätestens wenn das Token abläuft, ist die Sitzung dort beendet; die lokale Kopie bleibt, bis man sich dort abmeldet und die Daten löscht oder die App entfernt. Das steht so in der Datenschutzerklärung.
 
-**Nicht automatisch gelöscht:** eigene Datenbank-Sicherungen (`supabase db dump`, siehe `BETRIEB.md`) und Dateien, die du exportiert hast. Für Dumps eine Aufbewahrungsfrist festlegen (Platzhalter in der Datenschutzerklärung, Abschnitt 8).
+**Nicht automatisch gelöscht:** eigene Datenbank-Sicherungen (`supabase db dump`, siehe `BETRIEB.md`) und Dateien, die du exportiert hast. Dumps nicht länger als nötig aufbewahren.
 
 **Hinweis zu Supabase:** Supabase dokumentiert offiziell das Löschen über die Admin-API mit dem Secret Key. Das Löschen per SQL-Funktion aus `auth.users` ist ein verbreitetes Muster, aber nicht offiziell beschrieben. Deshalb prüft der Live-Test (Abschnitt 6) genau diesen Weg gegen dein Projekt. Schlägt er fehl, ist der Ausweg eine Edge Function mit dem Secret Key.
 
@@ -45,16 +45,44 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 
 Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm, bei `sleep_score` der Index.
 
-## 5. Vor einer Veröffentlichung (Checkliste)
-Die Texte sind Entwürfe. Jeder Platzhalter steht in eckigen Klammern und ist in der App gelb markiert; oben steht ein Entwurfshinweis, solange `legalDraft = true` in `src/privacy/legal.ts` steht. Der Test `legal.test.ts` schlägt fehl, wenn jemand `legalDraft` ausschaltet und noch Platzhalter übrig sind.
+## 5. Betrieb: privat, nur auf Einladung (Entscheidung vom 03.11.2026)
+Motion läuft für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:
 
-1. **Vertrag zur Auftragsverarbeitung (AVV/DPA) mit Supabase abschließen.** Supabase verarbeitet die Konto- und Gesundheitsdaten in deinem Auftrag, dafür ist ein Vertrag nach Art. 28 DSGVO nötig. Laut Supabase: im Dashboard auf der Seite **Legal Documents** der Organisation den DPA anfordern; die verbindliche Fassung kommt als PandaDoc-Dokument zum Unterschreiben. Eine PDF-Fassung zum Lesen gibt es unter https://supabase.com/legal/dpa. Datum und Firmenanschrift aus dem DPA in die Datenschutzerklärung (Abschnitt 5) übernehmen. Vorher die Anweisungen im PandaDoc-Dokument lesen (früher musste der unterschriebene DPA zusätzlich an privacy@supabase.com geschickt werden; ob das noch gilt, ist unklar).
-2. **E-Mail-Versand:** Ein privates Gmail-Konto hat keinen AVV. Für eine Veröffentlichung auf einen Mailanbieter mit AVV wechseln (z. B. Google Workspace oder einen Versanddienst mit EU-Servern). Das widerspricht deiner Vorgabe, keine Postadresse anzugeben, weil fast alle solchen Anbieter eine verlangen. Für dich und Freunde im Testbetrieb ist das bewusst offen gelassen.
-3. **Cloudflare:** Prüfen, dass der Self-Serve-DPA von Cloudflare greift, und die Speicherdauer der Zugriffsprotokolle eintragen.
-4. **Impressum:** Name, ladungsfähige Anschrift und E-Mail sind Pflicht, sobald Motion öffentlich angeboten wird (§ 5 DDG). Wenn du deine Wohnadresse nicht veröffentlichen willst, gibt es kostenpflichtige Impressum-/Anschriftsdienste. Für ein rein privates Angebot im Freundeskreis ist ein Impressum je nach Einzelfall nicht nötig; das sollte jemand mit Rechtskenntnis bewerten.
-5. **Minderjährigkeit:** Du bist 16. Als Betreiber und Verantwortlicher im Sinne der DSGVO solltest du die Veröffentlichung mit deinen Eltern absprechen; bei Verträgen (z. B. dem DPA) kann ihre Zustimmung nötig sein.
-6. **Aufsichtsbehörde:** In NRW die Landesbeauftragte für Datenschutz und Informationsfreiheit Nordrhein-Westfalen (LDI NRW). Eintragen, sobald der Wohnsitz des Verantwortlichen feststeht.
-7. Alle `[PRÜFEN]`-Stellen klären, Platzhalter ersetzen, `legalUpdated` setzen, `legalDraft = false`.
+- **Registrierung geschlossen:** In Supabase ist „Allow new users to sign up“ aus (03.11.2026, geprüft: der Server antwortet `signup_disabled`). Die App fordert keine neuen Konten mehr an (`shouldCreateUser: false`) und sagt Uneingeladenen „Motion gibt es nur auf Einladung“.
+- **Google-Login:** Das Google-Projekt steht im Testmodus; nur eingetragene Test-Nutzer kommen durch. Bei geschlossener Registrierung legt aber auch Google kein neues Konto an.
+- **Texte:** kurzer, ehrlicher Datenschutzhinweis und „Über dieses Projekt“ statt Impressum, ohne Namen und Anschrift. Kontakt: motion.web.support@gmail.com. Kein Entwurfshinweis mehr (`legalDraft = false`); ein Test stellt sicher, dass keine Anschrift in den Texten steht.
+
+### Einen Freund einladen
+1. Supabase → **Authentication → Users → Add user → Create new user**.
+2. E-Mail-Adresse des Freundes eintragen, Passwort leer lassen bzw. ein zufälliges setzen, **Auto Confirm User** anhaken, erstellen. Es wird keine Mail verschickt.
+3. Wenn er sich mit Google anmelden will: dieselbe Adresse in der Google Cloud Console unter **Google Auth Platform → Audience → Test users** eintragen.
+4. Der Freund öffnet https://motion-web.pages.dev, gibt seine Adresse ein und bekommt den 6-stelligen Code.
+
+**Einen Freund entfernen:** Am einfachsten löscht er sein Konto selbst in der App. Sonst im SQL Editor (E-Mail eintragen), das entfernt alle seine Zeilen und danach den Login:
+```sql
+do $$
+declare
+  account uuid := (select id from auth.users where email = 'freund@example.com');
+  t text;
+begin
+  foreach t in array array['profiles', 'exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises',
+    'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores', 'legacy_imports'] loop
+    execute format('delete from public.%I where user_id = $1', t) using account;
+  end loop;
+  delete from auth.users where id = account;
+end;
+$$;
+```
+
+### Wenn Motion doch öffentlich wird (App Store, Link öffentlich geteilt, größerer Kreis, Einnahmen)
+Dann gilt die DSGVO voll, und ein Impressum ist nötig. Die ausführlichen Entwürfe dafür (Datenschutzerklärung mit Rechtsgrundlagen, Impressum nach § 5 DDG, Platzhalter) liegen in Commit `22223c3`, Datei `src/privacy/legal.ts`. Zusätzlich:
+
+1. **Vertrag zur Auftragsverarbeitung (AVV/DPA) mit Supabase** abschließen: im Dashboard auf der Seite **Legal Documents** der Organisation anfordern, die verbindliche Fassung kommt als PandaDoc-Dokument. Lesefassung: https://supabase.com/legal/dpa. Vorher die Anweisungen im PandaDoc lesen (früher musste der DPA zusätzlich an privacy@supabase.com).
+2. **E-Mail-Versand:** Ein privates Gmail-Konto hat keinen AVV; dann auf einen Mailanbieter mit AVV wechseln (verlangt meist eine Postadresse).
+3. **Cloudflare:** Self-Serve-DPA prüfen, Speicherdauer der Zugriffsprotokolle eintragen.
+4. **Impressum** mit Name und ladungsfähiger Anschrift (oder einem kostenpflichtigen Anschriftsdienst).
+5. **Minderjährigkeit:** Veröffentlichung mit den Eltern absprechen; für Verträge wie den DPA kann ihre Zustimmung nötig sein.
+6. **Aufsichtsbehörde** nennen (in NRW: LDI NRW), `consentVersion` erhöhen, Registrierung wieder öffnen.
 
 ## 6. Abnahme: nach dem Löschen keine Daten mehr
 Automatisch in jeder CI-Runde, auf den echten Migrationen in einem eingebetteten Postgres:

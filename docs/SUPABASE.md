@@ -127,5 +127,5 @@ Danach kannst du `.env.test.local` löschen. Die Datei wird ohnehin nie committe
 ## 11. Löschtest gegen dein Projekt (Abnahme Phase 6)
 Nach dem Einspielen von `20261103120000_delete_account.sql`, mit derselben `.env.test.local` wie in Schritt 10: `npm run test:delete-live`. Erwartet: 2 bestandene Tests. Details: `DATENSCHUTZ.md`, Abschnitt 6.
 
-## 12. Vertrag zur Auftragsverarbeitung
-Vor einer Veröffentlichung im Dashboard unter **Legal Documents** den DPA anfordern und unterschreiben. Details und weitere offene Punkte: `DATENSCHUTZ.md`, Abschnitt 5.
+## 12. Nur auf Einladung
+Seit 03.11.2026 ist unter **Authentication → Sign In / Providers** „Allow new users to sign up“ **aus**. Neue Konten legst du für Freunde selbst an (Authentication → Users → Add user → Create new user, „Auto Confirm User“). Anleitung und was bei einer Veröffentlichung nötig wäre (u. a. AVV mit Supabase): `DATENSCHUTZ.md`, Abschnitt 5.
