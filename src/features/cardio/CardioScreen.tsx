@@ -10,7 +10,7 @@ import type { XPAward } from '../../domain/progress'
 import { useT } from '../../i18n'
 import { finishCardio } from '../../store/cardio'
 import { useHaptics } from '../../store/hooks'
-import { usePreferences, useProfile } from '../../store/profile'
+import { useProfile } from '../../store/profile'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Group, PrimaryButton, TextButton } from '../../ui/controls'
 import { Celebration } from '../progress/Celebration'
@@ -31,7 +31,6 @@ function CardioSession({ blueprint, activity }: { blueprint: import('../../data/
   const { t, locale } = useT()
   const navigate = useNavigate()
   const haptic = useHaptics()
-  const preferences = usePreferences()
   const profile = useProfile()
   const unit = profile?.distance_unit ?? 'km'
   const loadUnit = profile?.load_unit ?? 'kg'
@@ -50,8 +49,7 @@ function CardioSession({ blueprint, activity }: { blueprint: import('../../data/
     try {
       const saved = await finishCardio(draft, { blueprint: blueprint ?? undefined, planTicket: routeState.planTicket ?? null, notes })
       haptic('success')
-      if (preferences.quietMode) leave()
-      else setResult(saved)
+      setResult(saved)
     } catch (failure) {
       setError((failure as Error).message)
     }

@@ -82,3 +82,4 @@
 | Nr | Punkt | Umsetzung |
 |---|---|---|
 | 1 | Schlafindex | Ganz entfernt (Karte, Einstellungen, Speicher, Sync, Export, Import). Dexie-Version 4 löscht die lokale Tabelle samt wartender Uploads. Alte Sicherungen mit Schlafwerten lassen sich weiter importieren; die Werte werden still übergangen. Die Cloud-Tabelle `sleep_scores` bleibt, die App liest und schreibt sie nur nicht mehr. |
+| 2 | Ruhemodus | Einstellung und alles, was davon abhing, ersatzlos entfernt: Level-Karte und Feiern erscheinen immer. Der Wert aus iOS-Sicherungen wird übergangen; alte Profile verlieren den Schlüssel bei der nächsten Einstellungsänderung. |

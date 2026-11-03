@@ -123,7 +123,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 60 | Feier-Bildschirme mit XP-Animation, Rekordkarten, „Your progression“ (8.9) | `WorkoutXPRewardView.swift`, `PersonalRecordCelebration.swift`, `WorkoutRanksView.swift`, `XPRewardTimeline.swift` | übernehmen | 3 | | Unit: `progress.test.ts` (Zeitachse); manuell (Browser): Demo → Training mit Rekord |
 | 61 | Profil mit drei Einheiten (9) | `LocalProfileView.swift` | übernehmen | 3 | Fußtext zu „nur lokal“ anpassen (siehe 10) | manuell (Browser): Einstellungen → Profil & Körpergewicht |
 | 62 | Körpergewicht: Karte, Diagramm, Eintrag pro Tag, +25 XP, Verlauf, Korrektur, Löschen (9) | `BodyWeightViews.swift`, `LocalProfile.swift` | übernehmen | 3 | manuelle Daten, bleiben | Unit: `body.test.ts` (+25 XP/Tag, Löschen behält XP) |
-| 63 | Gewichtsziel erreicht: einmalige Feier und Vorschau (9) | `WeightGoalAchievement.swift`, `WeightCheckInCelebration.swift` | übernehmen | 3 | | Unit: `body.test.ts` (einmalige Feier, Quiet Mode) |
+| 63 | Gewichtsziel erreicht: einmalige Feier und Vorschau (9) | `WeightGoalAchievement.swift`, `WeightCheckInCelebration.swift` | übernehmen | 3 | | Unit: `body.test.ts` (einmalige Feier) |
 | 64 | Körpergewicht-Ziel (abnehmen/zunehmen/halten) und „Show body-weight tracking“ (9, 11) | `BodyWeightGoal.swift`, `SettingsView.swift` | übernehmen | 3 | | Unit: `body.test.ts`; manuell (Browser): Vorschau in den Einstellungen |
 | 65 | Manueller Apple Sleep Score mit Karte, Diagramm, Editor, Liste (10) | `SleepScoreEntry.swift`, `SleepViews.swift` | entfällt | – | am 03.11.2026 auf Wunsch entfernt; Schlafwerte in alten Sicherungen werden beim Import still übergangen | Unit: `webBackup.test.ts`, `sync.test.ts` (Datenbank-Version 4)
 | 66 | Schlafdauer und -phasen aus Apple Health (18) | `SleepStore.swift`, `SleepViews.swift` | später nativ | – | | – (nativ) |
@@ -133,7 +133,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 70 | Health-Archiv im Backup (18) | `HealthBackupArchive.swift` | später nativ | – | | – (nativ) |
 | 71 | Einstellungen: Darstellung Dunkel/Hell/System (11) | `SettingsView.swift`, `MotionTheme.swift` | übernehmen | 1 | | Unit: `App.test.tsx` |
 | 72 | Einstellungen: Sprache (11) | `SettingsView.swift` | Web-Anpassung nötig | 1 | Web kann keine iOS-Einstellungen öffnen; eigene Sprachwahl Englisch/Deutsch in der App | E2E: `app.spec.ts` |
-| 73 | Einstellungen: Quiet Mode (11) | `SettingsView.swift` | übernehmen | 3 | | manuell (Browser): Quiet Mode: keine Level-Karte, keine Feier |
+| 73 | Einstellungen: Quiet Mode (11) | `SettingsView.swift` | entfällt | – | am 03.11.2026 auf Wunsch entfernt; der Wert aus iOS-Sicherungen wird übergangen | Unit: `importer.test.ts`, `profile.test.ts` |
 | 74 | Einstellungen: App-Haptik an/aus (11, 15) | `MotionHaptics.swift` | Web-Anpassung nötig | 2 | Vibration nur auf Android; Schalter bleibt, Hinweis für iPhone | Unit: `haptics.test.ts` |
 | 75 | Einstellungen: Wiederholungen tracken, globale Pause 5 s–4 min (11) | `SettingsView.swift` | übernehmen | 2 | | manuell (Browser): Einstellungen → Pausen-Regler |
 | 76 | Einstellungen: Pausen-Mitteilungen (6.7, 11) | `RestConfigurationViews.swift` | Web-Anpassung nötig | 2 | siehe Nr. 50; Texte an Web-Verhalten anpassen | manuell (Browser): Einstellungen → Pausen-Mitteilungen |

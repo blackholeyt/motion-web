@@ -178,7 +178,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 ### 2.2 Tabellen
 | Tabelle | Wichtige Spalten |
 |---|---|
-| `profiles` | name, body_weight_unit, load_unit, distance_unit, target_weight_kg, celebrated_weight_goals jsonb, body_weight_goal, preferences jsonb (appearance, quiet_mode, body_weight_tracking_visible, opening_animation, haptics, track_reps, rest_timer_seconds) |
+| `profiles` | name, body_weight_unit, load_unit, distance_unit, target_weight_kg, celebrated_weight_goals jsonb, body_weight_goal, preferences jsonb (appearance, body_weight_tracking_visible, opening_animation, haptics, track_reps, rest_timer_seconds) |
 | `exercises` | name, goal_weight_kg, is_pr_tracked, rest_seconds, catalogue_id, equipment, muscle, measurement, guidance, track_progress |
 | `blueprints` | name, cardio_type, cardio_minutes, cardio_distance_km |
 | `blueprint_exercises` | blueprint_id, exercise_id, sort_order, target_sets, warm_up_sets, superset_group, guidance jsonb |

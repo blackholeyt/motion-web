@@ -26,10 +26,10 @@ export const useCompletedWorkouts = () =>
     live(await db.workouts.orderBy('performed_at').reverse().toArray()).filter((workout) => workout.is_completed),
   )
 
-/** Haptics respecting the "App Haptics" and quiet-mode preferences (MotionHaptics.swift). */
+/** Haptics respecting the "App Haptics" preference (MotionHaptics.swift). */
 export function useHaptics() {
   const preferences = usePreferences()
   return (event: HapticEvent) => {
-    if (preferences.haptics && !preferences.quietMode) platform.haptics.play(event)
+    if (preferences.haptics) platform.haptics.play(event)
   }
 }

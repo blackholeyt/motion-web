@@ -5,7 +5,6 @@ import { loadInput } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { checkIn, correctWeight, type CheckInResult } from '../../store/body'
 import { useHaptics } from '../../store/hooks'
-import { usePreferences } from '../../store/profile'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { Group, TextButton, TextRow } from '../../ui/controls'
 import { WeightCelebration } from './WeightCelebration'
@@ -15,7 +14,6 @@ import styles from './body.module.css'
 export function BodyWeightEditor({ unit, entry, onClose }: { unit: WeightUnit; entry?: BodyWeight; onClose: () => void }) {
   const { t, locale } = useT()
   const haptic = useHaptics()
-  const quiet = usePreferences().quietMode
   const original = entry ? loadInput(unit, entry.kilograms, locale) : ''
   const [text, setText] = useState(original)
   const [result, setResult] = useState<CheckInResult | null>(null)
@@ -25,7 +23,6 @@ export function BodyWeightEditor({ unit, entry, onClose }: { unit: WeightUnit; e
     if (kilograms === null) return
     try {
       const saved = entry ? await correctWeight(entry, kilograms) : await checkIn(kilograms)
-      if (quiet) return onClose()
       haptic('success')
       setResult(saved)
     } catch (failure) {

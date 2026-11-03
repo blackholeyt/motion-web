@@ -142,8 +142,6 @@ export function SettingsScreen() {
             : t('This browser cannot vibrate (for example Safari on iPhone). The setting applies on devices that support it.')
         }
       >
-        <Toggle label={t('Quiet mode')} checked={preferences.quietMode} onChange={(quietMode) => updatePreferences({ quietMode })} />
-        <p className={styles.caption}>{t('Hide ranks and large reward presentations. Workouts and earned XP are still saved.')}</p>
         <Toggle label={t('App Haptics')} checked={preferences.haptics} onChange={(haptics) => updatePreferences({ haptics })} />
       </Group>
       <Group title={t('Rest alerts')}>

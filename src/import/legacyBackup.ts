@@ -146,7 +146,6 @@ export interface LegacySchedule {
 
 export interface LegacyPreferences {
   appearance: string
-  quietMode: boolean
   bodyWeightTrackingVisible: boolean
   launchAnimationEnabled: boolean
   xpHapticsEnabled: boolean
@@ -314,7 +313,6 @@ const backupFields: Record<string, Spec> = {
   }),
   preferences: {
     appearance: 'string',
-    quietMode: 'bool',
     bodyWeightTrackingVisible: 'bool',
     launchAnimationEnabled: 'bool',
     xpHapticsEnabled: 'bool',

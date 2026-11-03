@@ -155,7 +155,6 @@ export interface SetLog extends SyncedRecord {
 }
 
 export interface Preferences {
-  quietMode: boolean
   bodyWeightTrackingVisible: boolean
   haptics: boolean
   trackReps: boolean

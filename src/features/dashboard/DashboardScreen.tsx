@@ -53,7 +53,7 @@ export function DashboardScreen() {
           <CalendarPlus size={18} aria-hidden="true" /> {t('Log past workout')}
         </button>
       </div>
-      {!preferences.quietMode && progress && <ProgressCard progress={progress} />}
+      {progress && <ProgressCard progress={progress} />}
       {preferences.bodyWeightTrackingVisible && <BodyWeightCard />}
       <section className={styles.section}>
         <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />

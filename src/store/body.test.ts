@@ -21,13 +21,11 @@ describe('body weight', () => {
     expect((await checkIn(72, morning)).earnedXP).toBe(0)
   })
 
-  it('celebrates a reached weight goal once, never in quiet mode', async () => {
+  it('celebrates a reached weight goal once', async () => {
     await updateProfile({ target_weight_kg: 70, body_weight_goal: 'lose' })
     expect((await checkIn(69.5, new Date('2026-11-01T07:00:00'))).achievedTarget).toBe(70)
     expect((await checkIn(69, new Date('2026-11-02T07:00:00'))).achievedTarget).toBeNull()
     await updateProfile({ target_weight_kg: 68 })
-    const profile = (await db.profiles.toArray())[0]!
-    await updateProfile({ preferences: { ...profile.preferences, quietMode: true } })
-    expect((await checkIn(67, new Date('2026-11-03T07:00:00'))).achievedTarget).toBeNull()
+    expect((await checkIn(67, new Date('2026-11-03T07:00:00'))).achievedTarget).toBe(68)
   })
 })

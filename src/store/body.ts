@@ -22,9 +22,9 @@ export interface CheckInResult {
   achievedTarget: number | null
 }
 
-/** Claimed in the same transaction as the measurement; quiet mode and older corrections never celebrate. */
+/** Claimed in the same transaction as the measurement; older corrections never celebrate. */
 async function claim(profile: Profile, kilograms: number, eligible: boolean): Promise<number | null> {
-  if (!eligible || profile.preferences.quietMode) return null
+  if (!eligible) return null
   const result = claimGoal(profile.target_weight_kg, kilograms, profile.body_weight_goal, profile.celebrated_weight_goals)
   if (!result) return null
   await update<Profile>('profiles', profile.id, { celebrated_weight_goals: result.celebrated })

@@ -5,7 +5,6 @@ import { enqueue, stamp, update } from '../data/repo'
 import type { Preferences, Profile } from '../data/types'
 
 export const defaultPreferences: Preferences = {
-  quietMode: false,
   bodyWeightTrackingVisible: true,
   haptics: true,
   trackReps: true,
@@ -59,7 +58,10 @@ export async function updateProfile(change: Partial<Profile>) {
   await update<Profile>('profiles', profile.id, change)
 }
 
+/** Keeps only the current preference keys, so settings removed from the app leave the profile on its next change. */
 export async function updatePreferences(change: Partial<Preferences>) {
   const profile = await ensureProfile()
-  await update<Profile>('profiles', profile.id, { preferences: { ...defaultPreferences, ...profile.preferences, ...change } })
+  const merged: Preferences = { ...defaultPreferences, ...profile.preferences, ...change }
+  const preferences = Object.fromEntries(Object.keys(defaultPreferences).map((key) => [key, merged[key as keyof Preferences]])) as unknown as Preferences
+  await update<Profile>('profiles', profile.id, { preferences })
 }

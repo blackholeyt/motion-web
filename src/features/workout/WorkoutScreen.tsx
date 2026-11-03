@@ -6,7 +6,7 @@ import type { WeightUnit } from '../../data/types'
 import { useT } from '../../i18n'
 import { platform } from '../../platform'
 import { useHaptics } from '../../store/hooks'
-import { updateProfile, usePreferences } from '../../store/profile'
+import { updateProfile } from '../../store/profile'
 import type { FinishReward } from '../../store/progress'
 import type { RecordAchievement } from '../../domain/progress'
 import { Celebration } from '../progress/Celebration'
@@ -49,7 +49,6 @@ export function WorkoutScreen() {
   const [saved, setSaved] = useState(false)
   const [reward, setReward] = useState<FinishReward | null>(null)
   const [record, setRecord] = useState<{ record: RecordAchievement; setID: string } | null>(null)
-  const preferences = usePreferences()
   const tips = useOnboarding()
   const [notes, setNotes] = useState<string | null>(null)
 
@@ -81,7 +80,7 @@ export function WorkoutScreen() {
     )
   }
 
-  if (saved && reward && !preferences.quietMode && tips?.savedWorkoutTipDone !== false) {
+  if (saved && reward && tips?.savedWorkoutTipDone !== false) {
     return (
       <Celebration
         recap={reward.recap}
