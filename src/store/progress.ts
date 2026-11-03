@@ -3,7 +3,8 @@ import { db } from '../data/db'
 import { stableID } from '../data/ids'
 import { insertOne, live, update } from '../data/repo'
 import type { Workout, WorkoutAward } from '../data/types'
-import { buildRecap, progressFor, xpAward, type StoredWorkout, type WorkoutRecap, type XPAward } from '../domain/progress'
+import { buildRecap, progressFor, sessionStats, xpAward, type SessionStats, type StoredWorkout, type WorkoutRecap, type XPAward } from '../domain/progress'
+import { trainingWeeks, type TrainingWeek } from '../domain/statistics'
 
 export async function storedWorkout(workout: Workout): Promise<StoredWorkout> {
   const [exercises, sets] = await Promise.all([
@@ -26,6 +27,12 @@ export async function totalXP(): Promise<number> {
   return workouts.reduce((sum, workout) => sum + Math.max(0, workout.earned_xp), 0) + rewards.reduce((sum, reward) => sum + Math.max(0, reward.earned_xp), 0)
 }
 
+/** Calendar weeks around `now`, counting every completed session. */
+export async function recentWeeks(now: Date): Promise<TrainingWeek[]> {
+  const workouts = live(await db.workouts.toArray()).filter((workout) => workout.is_completed)
+  return trainingWeeks(workouts.map((workout) => workout.performed_at), now)
+}
+
 export const useProgress = () => {
   const total = useLiveQuery(totalXP, [])
   return total === undefined ? undefined : progressFor(total)
@@ -33,6 +40,9 @@ export const useProgress = () => {
 
 export interface FinishReward {
   recap: WorkoutRecap
+  stats: SessionStats
+  /** Includes the session being finished. */
+  weeks: TrainingWeek[]
   /** null when the award was already granted (a receipt exists) or none applies. */
   award: XPAward | null
   totalXP: number
@@ -53,10 +63,17 @@ export async function grantWorkoutAward(workout: Workout, proposed: XPAward): Pr
 }
 
 /** Recap and award for a strength session about to be completed. */
-export async function prepareStrengthReward(workout: Workout): Promise<FinishReward> {
+export async function prepareStrengthReward(workout: Workout, now: Date = new Date()): Promise<FinishReward> {
   const [current, history, library] = await Promise.all([storedWorkout(workout), completedHistory(), db.exercises.toArray()])
   const recap = buildRecap(current, history, library)
   const award = xpAward(recap.bonusExerciseCount, recap.records.length)
   const result = await grantWorkoutAward(workout, award)
-  return { recap, award: result.granted ? award : null, totalXP: (await totalXP()) + result.xp }
+  const performed = [...history.filter((other) => other.workout.id !== workout.id), current].map((stored) => stored.workout.performed_at)
+  return {
+    recap,
+    stats: sessionStats(current, now),
+    weeks: trainingWeeks(performed, now),
+    award: result.granted ? award : null,
+    totalXP: (await totalXP()) + result.xp,
+  }
 }

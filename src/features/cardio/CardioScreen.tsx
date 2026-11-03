@@ -4,15 +4,14 @@ import { useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { db } from '../../data/db'
 import type { TrainingPlanTicket } from '../../data/types'
-import { newCardioDraft, draftPace, draftValid, withDistance, withSeconds, type CardioDraft } from '../../domain/cardio'
-import { paceLabel } from '../../domain/measurement'
-import type { XPAward } from '../../domain/progress'
+import { newCardioDraft, draftValid, withDistance, withSeconds, type CardioDraft } from '../../domain/cardio'
+import { distanceLabel, paceLabel } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { finishCardio } from '../../store/cardio'
 import { useProfile } from '../../store/profile'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Group, PrimaryButton, TextButton } from '../../ui/controls'
-import { Celebration } from '../progress/Celebration'
+import { Celebration, durationLabel } from '../progress/Celebration'
 import { CardioFields } from './CardioFields'
 import styles from './cardio.module.css'
 
@@ -39,7 +38,7 @@ function CardioSession({ blueprint, activity }: { blueprint: import('../../data/
     return withDistance(withSeconds(start, blueprint?.cardio_minutes != null ? blueprint.cardio_minutes * 60 : null, locale), blueprint?.cardio_distance_km ?? null, locale)
   })
   const [notes, setNotes] = useState('')
-  const [result, setResult] = useState<{ award: XPAward; totalXP: number } | null>(null)
+  const [result, setResult] = useState<Awaited<ReturnType<typeof finishCardio>> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const leave = () => navigate(returnTo, { replace: true })
 
@@ -53,15 +52,22 @@ function CardioSession({ blueprint, activity }: { blueprint: import('../../data/
   }
 
   if (result) {
-    const summary = `${draft.minutes} min · ${draft.distance} ${draft.unit} · ${paceLabel(draft.unit, draftPace(draft) ?? 0)}`
+    const { workout } = result
+    const stats = [
+      workout.cardio_seconds != null ? { label: t('Duration'), value: durationLabel(workout.cardio_seconds) } : null,
+      workout.cardio_distance_km != null ? { label: t('Distance'), value: distanceLabel(unit, workout.cardio_distance_km, locale) } : null,
+      workout.cardio_pace_s_per_km != null ? { label: t('Pace'), value: paceLabel(unit, workout.cardio_pace_s_per_km) } : null,
+      { label: t('Activity'), value: t(workout.cardio_type ?? 'Cardio') },
+    ].filter((stat) => stat !== null)
     return (
       <Celebration
-        recap={{ name: blueprint?.name ?? draft.activity, setCount: 0, warmUpCount: 0, improvements: [], records: [], repImprovements: [], comparableCount: 0, consistencyDays: null, improvedExerciseCount: 0, bonusExerciseCount: 0 }}
+        name={workout.name}
+        stats={stats}
+        recap={null}
         award={result.award}
         totalXP={result.totalXP}
-        records={[]}
+        weeks={result.weeks}
         unit={loadUnit}
-        detail={`${t(blueprint?.name ?? draft.activity)} · ${summary}`}
         note={t('Duration and distance saved. Training conditions and intended effort are not recorded, so no improvement claim is made.')}
         onContinue={leave}
       />

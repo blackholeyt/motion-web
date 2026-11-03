@@ -19,6 +19,14 @@ describe('cardio', () => {
     expect(await db.workout_awards.count()).toBe(1)
   })
 
+  it('returns the calendar weeks including the new session', async () => {
+    await finishCardio(run(), { now: new Date('2026-10-28T10:00:00') })
+    const { weeks } = await finishCardio(run(), { now: new Date('2026-11-02T10:00:00') })
+    expect(weeks).toHaveLength(6)
+    expect(weeks.at(-1)).toMatchObject({ isCurrent: true, workouts: 1 })
+    expect(weeks.at(-2)!.workouts).toBe(1)
+  })
+
   it('rejects invalid input', async () => {
     await expect(finishCardio({ ...run(), pace: '4:00' })).rejects.toThrow('Pace must match')
   })

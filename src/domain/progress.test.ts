@@ -1,5 +1,5 @@
 import type { Exercise, Guidance, SetLog, Workout, WorkoutExercise } from '../data/types'
-import { buildRecap, levelCost, levelThreshold, progressFor, ranks, rewardDuration, rewardFrame, xpAward, type StoredWorkout } from './progress'
+import { buildRecap, levelCost, levelThreshold, progressFor, ranks, rewardDuration, rewardFrame, sessionStats, xpAward, type StoredWorkout } from './progress'
 
 // Ported from WorkoutProgressTests, WorkoutRecapTests and RecordedProgressTests (iOS).
 const base = { user_id: null, created_at: '', updated_at: '', deleted_at: null }
@@ -142,5 +142,31 @@ describe('recap', () => {
     const history = [session(1, { A: { load: 20 } }), session(10, { A: { load: 20 } })]
     expect(buildRecap(session(20, { A: { load: 20 } }), history, []).consistencyDays).toBe(3)
     expect(buildRecap(session(40, { A: { load: 20 } }), history, []).consistencyDays).toBeNull()
+  })
+})
+
+describe('session stats', () => {
+  it('derives duration, sets, volume and exercises from the stored session', () => {
+    const stored = session(5, { Bench: { load: 60, reps: 8, sets: 3 }, Row: { load: 40, reps: 10, sets: 2 } })
+    stored.sets[0]!.is_warm_up = true
+    stored.sets[4]!.is_completed = false
+    const finished = new Date(new Date(stored.workout.performed_at).getTime() + 52 * 60_000)
+    expect(sessionStats(stored, finished)).toEqual({ durationSeconds: 3120, workingSets: 3, warmUpSets: 1, volumeKg: 60 * 8 * 2 + 40 * 10, exerciseCount: 2 })
+  })
+
+  it('leaves out the duration of retrospective sessions and implausible clocks', () => {
+    const stored = session(5, { Bench: { load: 60 } })
+    const start = new Date(stored.workout.performed_at).getTime()
+    expect(sessionStats(stored, new Date(start - 1000)).durationSeconds).toBeNull()
+    expect(sessionStats(stored, new Date(start + 13 * 3600_000)).durationSeconds).toBeNull()
+    stored.workout.is_retrospective = true
+    expect(sessionStats(stored, new Date(start + 3600_000)).durationSeconds).toBeNull()
+  })
+
+  it('counts no volume for bodyweight or duration exercises', () => {
+    const stored = session(5, { Pull: { load: 0, reps: 10, sets: 2 } })
+    stored.exercises[0]!.measurement = 'Bodyweight reps'
+    expect(sessionStats(stored, new Date()).volumeKg).toBe(0)
+    expect(sessionStats(stored, new Date()).workingSets).toBe(2)
   })
 })

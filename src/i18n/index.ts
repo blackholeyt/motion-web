@@ -12,6 +12,9 @@ const dictionaries: Record<Language, Record<string, string>> = {
     '{0} exercises · {1} working · {2} warm-up#one': '{0} exercise · {1} working · {2} warm-up',
     '{0} exercises · {1} sets#one': '{0} exercise · {1} sets',
     '{0} changes waiting#one': '{0} change waiting',
+    '{0} new records#one': 'New record',
+    '{0} workouts this week#one': '1 workout this week',
+    'Compared {0} exercises with their most recent recorded session.#one': 'Compared 1 exercise with its most recent recorded session.',
     '{0} workouts from Apple Health or Strava are skipped. They stay in your file for the native app.#one':
       '1 workout from Apple Health or Strava is skipped. It stays in your file for the native app.',
     'Skipped: {0} workouts from Apple Health or Strava.#one': 'Skipped: 1 workout from Apple Health or Strava.',

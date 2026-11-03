@@ -6,7 +6,7 @@ import { useT } from '../../i18n'
 import { platform } from '../../platform'
 import type { FinishReward } from '../../store/progress'
 import type { RecordAchievement } from '../../domain/progress'
-import { Celebration } from '../progress/Celebration'
+import { Celebration, strengthStats } from '../progress/Celebration'
 import { RecordNotice } from '../progress/RecordNotice'
 import { updateOnboarding, useOnboarding } from '../onboarding/state'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
@@ -75,10 +75,12 @@ export function WorkoutScreen() {
   if (saved && reward && tips?.savedWorkoutTipDone !== false) {
     return (
       <Celebration
+        name={reward.recap.name}
+        stats={strengthStats(reward.stats, context.unit, t, locale)}
         recap={reward.recap}
         award={reward.award}
         totalXP={reward.totalXP}
-        records={reward.recap.records}
+        weeks={reward.weeks}
         unit={context.unit}
         onContinue={() => navigate(returnTo, { replace: true })}
       />

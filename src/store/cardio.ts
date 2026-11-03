@@ -3,7 +3,8 @@ import type { Blueprint, TrainingPlanTicket, Workout } from '../data/types'
 import { draftKilometers, draftPace, draftSeconds, draftValid, type CardioDraft } from '../domain/cardio'
 import { XP, xpAward, type XPAward } from '../domain/progress'
 import { advancePlanFor } from './plan'
-import { grantWorkoutAward, totalXP } from './progress'
+import type { TrainingWeek } from '../domain/statistics'
+import { grantWorkoutAward, recentWeeks, totalXP } from './progress'
 
 export class CardioError extends Error {
   constructor() {
@@ -24,7 +25,7 @@ export async function createCardioBlueprint(name: string, draft: CardioDraft): P
 export async function finishCardio(
   draft: CardioDraft,
   options: { blueprint?: Blueprint; planTicket?: TrainingPlanTicket | null; notes?: string; now?: Date } = {},
-): Promise<{ award: XPAward; totalXP: number; workout: Workout }> {
+): Promise<{ award: XPAward; totalXP: number; workout: Workout; weeks: TrainingWeek[] }> {
   if (!draftValid(draft)) throw new CardioError()
   const now = options.now ?? new Date()
   return transaction(async () => {
@@ -50,6 +51,6 @@ export async function finishCardio(
     const award = xpAward(0, 0, XP.cardio)
     const { xp } = await grantWorkoutAward(workout, award)
     await advancePlanFor(workout, now)
-    return { award, totalXP: await totalXP(), workout: { ...workout, earned_xp: xp } }
+    return { award, totalXP: await totalXP(), workout: { ...workout, earned_xp: xp }, weeks: await recentWeeks(now) }
   })
 }

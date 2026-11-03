@@ -596,7 +596,7 @@ export async function finishWorkout(workoutID: string, context: WorkoutContext):
     const session = await loadSession(workoutID)
     if (!session || session.workout.is_completed) return null
     if (!canFinish(session, context)) return null
-    const reward = await prepareStrengthReward(session.workout)
+    const reward = await prepareStrengthReward(session.workout, clock(context))
     const completed = { ...session.workout, is_completed: true }
     await advancePlanFor(completed, clock(context))
     await update<Workout>('workouts', workoutID, { is_completed: true, rest_timer: timer.cancel(timer.restored(session.workout.rest_timer)) })

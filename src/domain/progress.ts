@@ -198,6 +198,31 @@ export function buildRecap(current: StoredWorkout, history: StoredWorkout[], lib
   }
 }
 
+/** Key figures for the finish screens, derived from the stored session only. */
+export interface SessionStats {
+  /** null for retrospective sessions or an implausible clock. */
+  durationSeconds: number | null
+  workingSets: number
+  warmUpSets: number
+  /** Sum of load × reps across comparable working sets. */
+  volumeKg: number
+  exerciseCount: number
+}
+
+const longestSession = 12 * 3600
+
+export function sessionStats(stored: StoredWorkout, finishedAt: Date): SessionStats {
+  const performed = visibleExercises(stored).flatMap((exercise) => setsOf(stored, exercise).filter((set) => isPerformed(set, exercise)).map((set) => ({ set, exercise })))
+  const elapsed = Math.round((finishedAt.getTime() - new Date(stored.workout.performed_at).getTime()) / 1000)
+  return {
+    durationSeconds: !stored.workout.is_retrospective && elapsed > 0 && elapsed <= longestSession ? elapsed : null,
+    workingSets: performed.filter(({ set, exercise }) => isWorkingResult(set, exercise)).length,
+    warmUpSets: performed.filter(({ set }) => set.is_warm_up).length,
+    volumeKg: performed.reduce((sum, { set, exercise }) => (isWeightComparable(set, exercise) ? sum + set.weight_kg * (set.reps ?? 0) : sum), 0),
+    exerciseCount: new Set(performed.map(({ exercise }) => identityKey(exercise))).size,
+  }
+}
+
 // MARK: - XP and levels
 
 export const XP = { completion: 100, improvement: 25, record: 75, cardio: 100, weightCheckIn: 25 } as const
