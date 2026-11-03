@@ -15,7 +15,7 @@ import { applyRemote, fromServer, isOpenWorkout, keepConflict, workoutOf } from 
  *    a slow concurrent upload is not missed. Repeated rows are harmless because applying is idempotent.
  */
 
-export type SyncState = 'off' | 'syncing' | 'synced' | 'offline' | 'signedOut' | 'error'
+export type SyncState = 'off' | 'syncing' | 'synced' | 'offline' | 'signedOut' | 'deleted' | 'error'
 
 export interface SyncStatus {
   state: SyncState
@@ -48,6 +48,9 @@ export function useSyncStatus(): SyncStatus {
 }
 
 export const syncStatus = () => status
+
+/** The account was deleted on another device: the server refuses its uploads (delete_account migration). */
+const isDeletedAccount = (error: unknown) => /Motion: account deleted/.test((error as Error)?.message ?? '')
 
 const isOffline = (error: unknown) =>
   (typeof navigator !== 'undefined' && navigator.onLine === false) || (error instanceof TypeError && /fetch|network|load failed/i.test(error.message))
@@ -215,7 +218,9 @@ export async function requestSync(): Promise<void> {
         await syncOnce(current.database, current.userID)
         if (session === current) setStatus({ state: 'synced', lastSyncedAt: new Date().toISOString(), error: null })
       } catch (error) {
-        if (session === current) setStatus(isOffline(error) ? { state: 'offline' } : { state: 'error', error: (error as Error).message ?? String(error) })
+        if (session !== current) return
+        if (isDeletedAccount(error)) setStatus({ state: 'deleted', error: null })
+        else setStatus(isOffline(error) ? { state: 'offline' } : { state: 'error', error: (error as Error).message ?? String(error) })
       }
     } while (again && session === current)
   })().finally(() => {

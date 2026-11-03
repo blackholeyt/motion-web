@@ -12,7 +12,13 @@ describe('app shell', () => {
   it('shows the four tabs and switches between them', async () => {
     const { App } = await import('./App')
     render(<App />)
-    // A first launch shows the introduction; it can be skipped entirely.
+    // A first launch asks for consent; continuing needs both confirmations.
+    expect(await screen.findByTestId('acceptConsent')).toBeDisabled()
+    await userEvent.click(screen.getByTestId('consentHealth'))
+    expect(screen.getByTestId('acceptConsent')).toBeDisabled()
+    await userEvent.click(screen.getByTestId('consentAge'))
+    await userEvent.click(screen.getByTestId('acceptConsent'))
+    // Then the introduction; it can be skipped entirely.
     await userEvent.click(await screen.findByTestId('onboardingProfileSkip'))
     await userEvent.click(await screen.findByTestId('onboardingExplore'))
     expect(await screen.findByText('Your training, in perspective.', { normalizer: (s) => s.replace(/\s+/g, ' ') })).toBeInTheDocument()
@@ -21,7 +27,7 @@ describe('app shell', () => {
     await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
     await userEvent.click(screen.getByRole('radio', { name: 'Light' }))
     expect(document.documentElement.dataset.theme).toBe('light')
-  })
+  }, 15_000)
 
   it('creates the profile and a routine from a template in the introduction', async () => {
     localStorage.clear()

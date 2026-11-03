@@ -5,6 +5,13 @@ test.use({ locale: 'en-US' })
 async function dismissHint(page: Page) {
   const hint = page.getByTestId('install-hint')
   if (await hint.isVisible()) await hint.getByRole('button', { name: 'Not now' }).first().click()
+  await acceptConsent(page)
+}
+
+async function acceptConsent(page: Page) {
+  await page.getByTestId('consentHealth').check()
+  await page.getByTestId('consentAge').check()
+  await page.getByTestId('acceptConsent').click()
 }
 
 test('the introduction leads to a first workout that earns XP', async ({ page }) => {

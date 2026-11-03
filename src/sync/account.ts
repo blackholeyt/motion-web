@@ -6,6 +6,8 @@ import { ensureProfile } from '../store/profile'
 import { cloudConfigured, supabase } from './client'
 import { pull, requestSync, startSync, stopSync } from './engine'
 import { mergeGuest } from './merge'
+import { forgetOnboarding } from '../features/onboarding/state'
+import { clearCloudConsent, getConsent, resetConsent } from '../privacy/consent'
 
 /*
  * Which local database is active. The guest uses "motion-local"; each account has its own
@@ -158,6 +160,24 @@ async function activate(account: Account, takeGuestData: boolean) {
   setState({ account })
   await ensureProfile()
   startSync(database, account.id)
+  void recordCloudConsent()
+}
+
+/**
+ * The consent to the cloud (given in the sign-in sheet or at first start) is also kept with the
+ * login itself, in the user metadata of auth.users, so it is provable and leaves with the account.
+ */
+export async function recordCloudConsent() {
+  const consent = getConsent()
+  if (!consent?.cloud_accepted_at) return
+  try {
+    const { data } = await supabase().auth.getUser()
+    const stored = data.user?.user_metadata?.privacy_consent as { version?: number } | undefined
+    if (stored?.version === consent.version) return
+    await supabase().auth.updateUser({ data: { privacy_consent: { version: consent.version, accepted_at: consent.cloud_accepted_at } } })
+  } catch {
+    // Offline: recorded at the next sign-in on this device.
+  }
 }
 
 /** Ends the session on this device. The account's database stays here for the next login but is closed. */
@@ -177,6 +197,57 @@ async function closeAccount() {
   setDatabase(new MotionDatabase(guestName))
   setState({ account: null, guestDecision: null, signInError: null })
   previous.close()
+  await ensureProfile()
+}
+
+/**
+ * Deletes the account in the cloud (delete_account removes every row and the login) and then its
+ * database on this device. The guest data of this device is not the account's and stays.
+ * Returns how many cloud rows were removed per table.
+ */
+export async function deleteAccount(): Promise<Record<string, number>> {
+  const account = state.account
+  if (!account) throw new Error('Not signed in.')
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new Error('You are offline. Connect to the internet to delete your account.')
+  const { data: session } = await supabase().auth.getSession()
+  if (session.session?.user.id !== account.id) throw new Error('Your session has expired. Sign in again, then delete your account.')
+  // No upload may run while the rows disappear; the server refuses them anyway (account deleted).
+  stopSync()
+  const { data, error } = await supabase().rpc('delete_account')
+  if (error) {
+    startSync(db, account.id)
+    throw error
+  }
+  await removeAccountFromDevice()
+  return (data ?? {}) as Record<string, number>
+}
+
+/** Closes and deletes the account's database here, also when the account was deleted on another device. */
+export async function removeAccountFromDevice() {
+  const previous = db
+  try {
+    await supabase().auth.signOut({ scope: 'local' })
+  } catch {
+    // The login no longer exists; the local session is removed anyway.
+  }
+  await closeAccount()
+  clearCloudConsent()
+  forgetOnboarding(previous.name)
+  await previous.delete()
+}
+
+/**
+ * Without an account: deletes all training, body weight, sleep scores and settings on this device
+ * and withdraws the consent, so Motion starts over with the consent screen.
+ */
+export async function deleteDeviceData() {
+  if (state.account) throw new Error('Delete your account instead.')
+  // Emptied in place instead of deleted, so no open screen reads a closed database meanwhile.
+  await db.transaction('rw', db.tables, async () => {
+    await Promise.all(db.tables.map((table) => table.clear()))
+  })
+  forgetOnboarding(db.name)
+  resetConsent()
   await ensureProfile()
 }
 

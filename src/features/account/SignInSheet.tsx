@@ -4,6 +4,8 @@ import { Sheet } from '../../ui/Sheet'
 import { Group, PrimaryButton, TextButton } from '../../ui/controls'
 import controls from '../../ui/controls.module.css'
 import { sendCode, signInWithGoogle, verifyCode } from '../../sync/account'
+import { acceptCloudConsent, getConsent } from '../../privacy/consent'
+import { ConsentCheck } from '../privacy/ConsentScreen'
 import styles from './account.module.css'
 
 /** Supabase errors in plain words; unknown ones keep their own message. */
@@ -29,7 +31,10 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [cloud, setCloud] = useState(() => Boolean(getConsent()?.cloud_accepted_at))
   const run = async (work: () => Promise<void>) => {
+    // The cloud consent is recorded when it is acted on, and again with the login (recordCloudConsent).
+    if (!getConsent()?.cloud_accepted_at) acceptCloudConsent()
     setBusy(true)
     setError(null)
     try {
@@ -50,8 +55,13 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
   return (
     <Sheet open onClose={close} title={t('Sign in')} leading={<TextButton onClick={close}>{t('Cancel')}</TextButton>}>
       <p className={styles.intro}>{t('Back up your training and use it on several devices. Your data stays on this device as well and works offline.')}</p>
+      <Group footer={t('You can withdraw this at any time by deleting your account in Settings.')}>
+        <ConsentCheck checked={cloud} onChange={setCloud} testID="signInConsent">
+          {t('I agree that my training and health data are backed up in my account on Supabase servers in Frankfurt (EU).')}
+        </ConsentCheck>
+      </Group>
       <Group>
-        <button type="button" className={styles.google} onClick={() => run(signInWithGoogle)} disabled={busy} data-testid="signInGoogle">
+        <button type="button" className={styles.google} onClick={() => run(signInWithGoogle)} disabled={busy || !cloud} data-testid="signInGoogle">
           {t('Continue with Google')}
         </button>
       </Group>
@@ -62,7 +72,7 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
             <input id="sign-in-email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" value={email} onChange={(event) => setEmail(event.target.value)} />
           </div>
           <PrimaryButton
-            disabled={busy || !validEmail(email)}
+            disabled={busy || !cloud || !validEmail(email)}
             testID="sendCode"
             onClick={() =>
               run(async () => {

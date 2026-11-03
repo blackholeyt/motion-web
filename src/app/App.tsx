@@ -20,6 +20,9 @@ import { AppShell } from './AppShell'
 import { DemoBanner } from '../features/demo/DemoBanner'
 import { Onboarding } from '../features/onboarding/Onboarding'
 import { loadOnboarding, needsIntroduction, useOnboarding } from '../features/onboarding/state'
+import { ConsentScreen } from '../features/privacy/ConsentScreen'
+import { DeletionNotice } from '../features/privacy/DeletionNotice'
+import { needsConsent, useConsent } from '../privacy/consent'
 
 // Hash routing works from any static host, offline and inside a future Capacitor shell.
 export function App() {
@@ -33,6 +36,7 @@ export function App() {
     <HashRouter>
       <OpeningProvider>
         <DemoBanner />
+        <ConsentGate>
         <IntroductionGate key={database}>
           <Routes>
             <Route element={<AppShell />}>
@@ -49,12 +53,20 @@ export function App() {
             <Route path="cardio" element={<CardioScreen />} />
           </Routes>
         </IntroductionGate>
+        </ConsentGate>
         <GuestDataPrompt />
+        <DeletionNotice />
         <InstallHint />
         <UpdateNotice />
       </OpeningProvider>
     </HashRouter>
   )
+}
+
+/** Consent on this device comes before everything else (phase 6). */
+function ConsentGate({ children }: { children: ReactNode }) {
+  const consent = useConsent()
+  return needsConsent(consent) ? <ConsentScreen /> : children
 }
 
 /** ProfileGateView: the introduction replaces the app until it is completed or skipped. */

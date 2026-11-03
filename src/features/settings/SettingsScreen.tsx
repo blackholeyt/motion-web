@@ -15,6 +15,11 @@ import { enterSandbox, useSandbox } from '../../app/sandbox'
 import { seedDemo } from '../demo/seed'
 import { useNavigate } from 'react-router-dom'
 import { exportBackup } from '../../store/backup'
+import { exportCSV } from '../../store/csvExport'
+import { downloadFile } from '../../ui/download'
+import { useConsent } from '../../privacy/consent'
+import { LegalSheet, type LegalPage } from '../privacy/LegalSheet'
+import { DeleteDataSheet, type DeleteMode } from '../privacy/DeleteDataSheet'
 import { SleepScores } from '../body/SleepScores'
 import { WeightCelebration } from '../body/WeightCelebration'
 import { bodyWeightGoals, type BodyWeightGoal } from '../../domain/body'
@@ -27,8 +32,11 @@ const appearances: Appearance[] = ['dark', 'light', 'system']
 const titles: Record<Appearance, string> = { dark: 'Dark', light: 'Light', system: 'System' }
 
 export function SettingsScreen() {
-  const { t } = useT()
+  const { t, locale } = useT()
   const settings = useSettings()
+  const consent = useConsent()
+  const [legal, setLegal] = useState<LegalPage | null>(null)
+  const [deleting, setDeleting] = useState<DeleteMode | null>(null)
   const preferences = usePreferences()
   const opening = useOpening()
   const [notifications, setNotifications] = useState(false)
@@ -50,15 +58,9 @@ export function SettingsScreen() {
       setMessage((failure as Error).message)
     }
   }
-  const download = async () => {
+  const download = async (build: () => Promise<File>) => {
     try {
-      const file = await exportBackup()
-      const url = URL.createObjectURL(file)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = file.name
-      link.click()
-      URL.revokeObjectURL(url)
+      downloadFile(await build())
     } catch (failure) {
       setMessage((failure as Error).message)
     }
@@ -78,7 +80,10 @@ export function SettingsScreen() {
   return (
     <>
       <ScreenHeader title={t('Settings')} />
-      <Group title={t('Help & Privacy')}>
+      <Group
+        title={t('Help & Privacy')}
+        footer={consent ? t('Consent given on {0}. You can withdraw it by deleting your data or account.', [new Date(consent.accepted_at).toLocaleDateString(locale)]) : undefined}
+      >
         <RowButton tone="plain" onClick={() => setHowItWorks(true)} testID="previewOnboarding">
           {t('How it works')}
         </RowButton>
@@ -87,11 +92,17 @@ export function SettingsScreen() {
             {t('Test onboarding')}
           </RowButton>
         )}
+        <RowButton tone="plain" onClick={() => setLegal('privacy')} testID="settingsPrivacyPolicy">
+          {t('Privacy policy')}
+        </RowButton>
+        <RowButton tone="plain" onClick={() => setLegal('imprint')} testID="settingsImprint">
+          {t('Imprint')}
+        </RowButton>
       </Group>
       {sandbox ? (
         <Group title={t('Local account')}>{profileRows}</Group>
       ) : (
-        <AccountGroup>{profileRows}</AccountGroup>
+        <AccountGroup onDelete={setDeleting}>{profileRows}</AccountGroup>
       )}
       <section className={styles.group} aria-labelledby="appearance-title">
         <h2 id="appearance-title">{t('Appearance')}</h2>
@@ -194,13 +205,16 @@ export function SettingsScreen() {
           </Group>
           <Group
             title={t('Backup')}
-            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. Export downloads all training, profile, body weight, sleep scores, plans and XP as a JSON file.')}
+            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. JSON is the complete backup. CSV is a table of workouts, sets, body weight and sleep scores for spreadsheets.')}
           >
             <RowButton tone="plain" onClick={() => setImporting(true)} testID="importBackup">
               {t('Import from the iOS app')}
             </RowButton>
-            <RowButton tone="plain" onClick={download} testID="exportBackup">
+            <RowButton tone="plain" onClick={() => void download(exportBackup)} testID="exportBackup">
               {t('Export backup (JSON)')}
+            </RowButton>
+            <RowButton tone="plain" onClick={() => void download(exportCSV)} testID="exportCSV">
+              {t('Export table (CSV)')}
             </RowButton>
           </Group>
           <ImportSheet open={importing} onClose={() => setImporting(false)} />
@@ -208,6 +222,8 @@ export function SettingsScreen() {
       )}
       <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
       <ConfirmDialog open={message !== null} title={t('Motion')} message={message ? t(message) : ''} onDismiss={() => setMessage(null)} actions={[{ label: t('OK'), role: 'cancel', onSelect: () => setMessage(null) }]} />
+      <LegalSheet page={legal} onClose={() => setLegal(null)} />
+      <DeleteDataSheet mode={deleting} onClose={() => setDeleting(null)} />
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
       <SleepScores open={sleep} onClose={() => setSleep(false)} />
       {goalPreview && (

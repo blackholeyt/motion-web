@@ -7,6 +7,7 @@ test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => {
     const key = 'motion.onboarding.v1.motion-local'
     if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ status: 'skipped', profileStepDone: true }))
+    if (!localStorage.getItem('motion.consent.v1')) localStorage.setItem('motion.consent.v1', JSON.stringify({ version: 1, accepted_at: new Date().toISOString(), cloud_accepted_at: null }))
   })
 })
 
