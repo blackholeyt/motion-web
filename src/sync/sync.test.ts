@@ -27,6 +27,8 @@ import { mergeGuest } from './merge'
 import { applyCloudVersion } from './conflicts'
 import { readImportText, runImport } from '../import/importer'
 import { legacyBackup } from '../test/legacyBackup'
+import { buildBackup } from '../store/backup'
+import { buildCSVRows } from '../store/csvExport'
 
 const userA = '00000000-0000-4000-8000-00000000000a'
 const context: engine.WorkoutContext = { trackReps: true, globalRestSeconds: 90, unit: 'kg', locale: 'en-US', now: () => new Date() }
@@ -342,5 +344,99 @@ describe('deleting the account (phase 6)', () => {
     await laptop.use(() => checkIn(71, new Date()))
     await expect(laptop.sync()).rejects.toThrow(/account deleted/)
     expect(await counted()).toBe(0)
+  })
+})
+
+describe('complete run-through (phase 7)', () => {
+  const userJ = '00000000-0000-4000-8000-0000000000aa'
+  const offline = {
+    auth: { getSession: async () => ({ data: { session: { user: { id: userJ } } }, error: null }) },
+    from: () => {
+      throw new TypeError('Failed to fetch')
+    },
+    rpc: async () => {
+      throw new TypeError('Failed to fetch')
+    },
+  } as unknown as Parameters<typeof setSupabase>[0]
+
+  it('goes from guest to account, trains offline, syncs to a second device, exports and deletes everything', async () => {
+    await addUsers(pg, userJ)
+    const rowsOfJ = async () => {
+      let total = 0
+      for (const table of syncedTables) total += (await pg.query<{ n: number }>(`select count(*)::int as n from public.${table} where user_id = '${userJ}'`)).rows[0]!.n
+      return total
+    }
+
+    // 1. Before any account: training as a guest on the phone.
+    const guest = await device(userJ)
+    await guest.use(async () => {
+      await ensureProfile()
+      await checkIn(67.4, new Date())
+    })
+    expect(await hasGuestData(guest.database)).toBe(true)
+
+    // 2. New account on the phone, the guest data is taken along.
+    const phone = await device(userJ)
+    await phone.use(() => ensureProfile())
+    expect(await mergeGuest(guest.database, phone.database, syncedTables)).toBeGreaterThan(0)
+    await phone.sync()
+    expect(await serverCount('body_weights')).toBe(1)
+
+    // 3. A whole workout without a connection: it waits in the outbox, nothing is lost.
+    const workoutID = await phone.use(async () => {
+      const id = await pushWorkout()
+      const session = (await loadSession(id))!
+      for (const row of session.rows) {
+        await engine.updateSetInput(id, row.set.id, '62,5', '8', context)
+        await engine.toggleCompletion(id, row.set.id, context)
+      }
+      await engine.finishWorkout(id, context)
+      return id
+    })
+    setSupabase(offline)
+    await expect(syncOnce(phone.database, userJ)).rejects.toThrow(/fetch/)
+    expect(await phone.database.outbox.count()).toBeGreaterThan(0)
+    expect(await serverCount('workouts')).toBe(0)
+
+    // 4. Back online: uploaded once, also after repeated syncs.
+    await phone.sync()
+    await phone.sync()
+    expect(await phone.database.outbox.count()).toBe(0)
+    expect(await serverCount('workouts')).toBe(1)
+    expect(await serverCount('set_logs')).toBe(2)
+
+    // 5. Second device: everything arrives, and its changes go back to the phone.
+    const laptop = await device(userJ)
+    await laptop.sync()
+    expect(await laptop.database.workouts.get(workoutID)).toMatchObject({ is_completed: true })
+    expect((await laptop.database.set_logs.where('workout_id').equals(workoutID).toArray()).map((set) => set.weight_kg)).toEqual([62.5, 62.5])
+    expect(await laptop.database.body_weights.count()).toBe(1)
+    await laptop.use(() => saveSleepScore(83, new Date()))
+    await laptop.sync()
+    await phone.sync()
+    expect(await phone.database.sleep_scores.count()).toBe(1)
+
+    // 6. Export on the second device holds the workout in both formats.
+    const backup = await laptop.use(() => buildBackup())
+    expect(backup.tables.workouts).toHaveLength(1)
+    expect(backup.tables.set_logs).toHaveLength(2)
+    expect(backup.tables.body_weights).toHaveLength(1)
+    expect((await laptop.use(() => buildCSVRows())).length).toBeGreaterThan(0)
+
+    // 7. Delete the account from the phone: no row and no login left, the laptop cannot bring anything back.
+    expect(await rowsOfJ()).toBeGreaterThan(0)
+    const deleted = await pgSupabase(pg, userJ).rpc('delete_account')
+    expect(deleted.error).toBeNull()
+    expect(await rowsOfJ()).toBe(0)
+    expect((await pg.query('select 1 from auth.users where id = $1', [userJ])).rows).toHaveLength(0)
+    await laptop.use(() => checkIn(68, new Date()))
+    await expect(laptop.sync()).rejects.toThrow(/account deleted/)
+    expect(await rowsOfJ()).toBe(0)
+
+    // 8. The device copies go with it.
+    await phone.database.delete()
+    await laptop.database.delete()
+    expect(await Dexie.exists(phone.database.name)).toBe(false)
+    expect(await Dexie.exists(laptop.database.name)).toBe(false)
   })
 })
