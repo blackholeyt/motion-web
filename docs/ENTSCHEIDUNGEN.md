@@ -68,3 +68,11 @@
 | 7 | Gmail-Versand | Bleibt für den privaten Betrieb. Bei einer Veröffentlichung nötig: Mailanbieter mit AVV (siehe `DATENSCHUTZ.md`, Abschnitt 5). |
 | 8 | Privater Betrieb (03.11.2026) | Motion bleibt privat für Mathis und ein, zwei Freunde: Registrierung in Supabase geschlossen, App legt keine Konten an, Freunde werden im Dashboard angelegt. Statt Impressum und langer Datenschutzerklärung ein kurzer Datenschutzhinweis und „Über dieses Projekt“ ohne Namen und Anschrift. Die Entwürfe für eine Veröffentlichung liegen in Commit `22223c3`. |
 
+
+## Phase 7 (03.11.2026)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Kompletter Durchlauf | Als ein automatischer Test gegen die echten Migrationen in eingebettetem Postgres (`src/sync/sync.test.ts`), läuft in CI. Gegen das echte Projekt lege ich keine Konten an; dort decken `test:rls-live` und `test:delete-live` die Server-Regeln ab, den Rest die Geräte-Checkliste in `ABNAHME.md`. |
+| 2 | Geheimnis-Scan | Einmalig über die ganze Historie (keine Funde) und dauerhaft als CI-Job mit gitleaks. |
+| 3 | Fehlende Wiederherstellung der Web-Sicherung | Nicht in Phase 7 gebaut, sondern ehrlich als Abweichung A1 in `PARITAET.md` geführt. |

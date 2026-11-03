@@ -4,8 +4,48 @@
 - `übernehmen`: geht im Web genauso
 - `Web-Anpassung nötig`: geht im Web, aber anders oder eingeschränkt
 - `später nativ`: entfällt in V1 und kommt mit der Capacitor-App zurück
+- `entfällt`: im Web nicht nötig
 
 Die Spalte „Phase“ zeigt, wann die Funktion gebaut wird. Die Spalte „Test“ nennt, wo die Funktion geprüft wird: Unit-Tests (Vitest, `src/**/*.test.ts`), Browser-Tests (Playwright, `tests/e2e/`) oder ein manueller Prüfschritt.
+
+## Abweichungen von der iOS-App (Stand Phase 7, 03.11.2026)
+Ehrliche Gesamtliste. Die Abschnitte „Stand nach Phase …“ weiter unten sind der Verlauf und teils überholt; im Zweifel gilt diese Liste und die Tabelle.
+
+### A. Fehlt noch, obwohl es im Web ginge
+| Nr | Was | Folge | Zeile |
+|---|---|---|---|
+| A1 | Die **neue Web-Sicherung (JSON) lässt sich nicht zurückspielen.** Der Import liest nur Dateien der iOS-App. | Mit Konto ist die Cloud die Wiederherstellung. Ohne Konto ist der Export nur zum Aufbewahren; nach „Daten auf diesem Gerät löschen“ oder verlorenem Browser-Speicher kommt man damit nicht zurück. | 78, 79 |
+| A2 | Der **CSV-Export ist eine lesbare Tabelle** und wird nicht wieder eingelesen. In der iOS-App war die CSV eine vollständige, importierbare Sicherung. | Für eine vollständige Kopie das JSON nehmen (siehe A1). | 80 |
+
+### B. Geht, aber anders als in der iOS-App
+| Nr | Was | Zeile |
+|---|---|---|
+| B1 | **Pausen-Mitteilung im Hintergrund** ist im Web nicht zuverlässig, auf dem iPhone praktisch nie. Die Pause stimmt beim Zurückkehren immer. | 50, 76 |
+| B2 | **Keine Vibration auf dem iPhone** (Safari kann es nicht). Ansage und Bildschirmhinweis gehen. | 49, 74, 83 |
+| B3 | **Keine eigene Tastaturleiste** „Next/Done“; stattdessen die „Weiter“-Taste der Tastatur. | 39 |
+| B4 | **Sprache** wird in der App gewählt statt in den iOS-Einstellungen. | 72 |
+| B5 | `motion://dashboard` ist die Adresse `/` bzw. `/#/dashboard`. | 2 |
+| B6 | Sichern und Laden über Download und Datei-Upload statt Datei-Dialog bzw. Teilen-Menü. | 78–80 |
+| B7 | **Abgleich nur, solange Motion offen ist.** Änderungen warten auf dem Gerät. | – |
+| B8 | Ein **nicht installierter Browser-Tab** kann nach langer Pause seinen Speicher verlieren. Installiert oder mit Konto ist das abgefangen. | – |
+| B9 | „Alte Beispieldaten entfernen“ entfällt: Der Import lässt Beispieltrainings gleich weg. | 82 |
+| B10 | **Gesamt-XP nach dem Import:** XP aus früher importierten Health-/Strava-Workouts zählen nicht mit, weil diese Workouts übersprungen werden. Wer solche Workouts hatte, sieht weniger XP und ggf. ein niedrigeres Level als in der iOS-App. | 57, 69 |
+| B11 | Der Import meldet **alle Fehler** (bis 50) mit Fundstelle, statt beim ersten abzubrechen. | 79, 80 |
+| B12 | Kein Gratis-Limit von 3 Blueprints, weil es im Web keine Käufe gibt. | 22 |
+| B13 | Wird das Konto auf einem Gerät gelöscht, merkt ein anderes Gerät das erst bei seiner nächsten Änderung oder wenn es die Anmeldung erneuert. | – |
+
+### C. In V1 nicht vorhanden, kommt erst mit der nativen App
+Apple Health: Workouts importieren und Herzfrequenz (9, 69), Schlafdauer und -phasen (66), Schritte und Schrittziel (67), Ernährung (68), Health-Archiv in der Sicherung (70). Motion Pro mit Paywall, Abo und Platzhaltern (84, 85). Widgets (86). Live Activity / Dynamic Island (87).
+
+**Beim Import übersprungen und gezählt:** Health- und Strava-Workouts, Ernährung, Health-Archiv, Health-Belege, Schrittziel. Die Originaldatei bleibt bei dir.
+
+### D. Neu im Web, gab es in der iOS-App nicht
+Konto (Google oder E-Mail-Code, nur auf Einladung), Cloud-Sync und Sync-Status, Einwilligung beim Start und beim Anmelden, Konto löschen und Gerätedaten löschen, CSV-Export als Tabelle, Wake Lock, Installationshinweis, Speicher-Persistenz.
+
+### E. Gebaut, aber noch nicht auf echten Geräten oder mit echten Daten abgenommen
+- Der komplette Durchlauf auf iPhone, Android und Desktop (Checkliste: `ABNAHME.md`, Abschnitt 3). Automatisch geprüft ist er gegen die echten Migrationen in einem eingebetteten Postgres und in Playwright mit Geräteprofilen, nicht in echtem Safari auf dem iPhone.
+- Google-Anmeldung in der installierten iPhone-App.
+- Import deines echten iOS-Exports (5a) und deiner alten CSV-Datei (5b).
 
 **Stand nach Phase 3:** Alle Zeilen mit Phase 1, 2 und 3 sind gebaut. Ausnahmen und Anpassungen:
 - Nr. 78: In Phase 3 kommt nur der **Export** im neuen JSON-Format (Einstellungen → Sicherung). Wiederherstellen folgt mit Phase 5.
@@ -28,7 +68,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 5 | Opening an/aus und „Preview Opening“ (2, 11) | `SettingsView.swift` | übernehmen | 1 | | manuell (Browser): Einstellungen → Startanimation |
 | 6 | Einführung: Profil-Schritte mit Prüfungen (3.2) | `OnboardingProfileView.swift` | übernehmen | 3 | | Unit: `App.test.tsx` (Profil, Gewicht); E2E: `introduction.spec.ts` |
 | 7 | Einführung: Trainingswahl, Vorlage, eigene Routine, Freestyle (3.2) | `OnboardingView.swift`, `OnboardingPlanPages.swift`, `OnboardingDestinations.swift` | übernehmen | 3 | | Unit: `App.test.tsx` (Vorlage); E2E: `introduction.spec.ts` |
-| 8 | Einführung: „Restore backup“ (3.2) | `OnboardingDestinations.swift` | Web-Anpassung nötig | 5 | führt zum Web-Import der alten Daten | – (Phase 5) |
+| 8 | Einführung: „Restore backup“ (3.2) | `OnboardingDestinations.swift` | Web-Anpassung nötig | 5 | führt zum Web-Import der alten Daten | E2E: `import.spec.ts`; Unit: `importer.test.ts` |
 | 9 | Einführung: „Import from Apple Health“ (3.2) | `OnboardingView.swift` | später nativ | – | Auswahl in V1 ausblenden | – (ausgeblendet) |
 | 10 | Einführungstext „No registration. Your training data stays on this device.“ (3.2) | `OnboardingView.swift` | Web-Anpassung nötig | 3/4 | stimmt mit Konto und Cloud nicht mehr; ehrlich umformulieren | manuell (Browser): Startseite der Einführung, Text „Keine Registrierung nötig …“ |
 | 11 | Mini-Demo „How it works“ (3.3) | `OnboardingMiniDemo.swift` | übernehmen | 3 | | manuell (Browser): Einstellungen → „So funktioniert’s“ |
@@ -99,10 +139,10 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 76 | Einstellungen: Pausen-Mitteilungen (6.7, 11) | `RestConfigurationViews.swift` | Web-Anpassung nötig | 2 | siehe Nr. 50; Texte an Web-Verhalten anpassen | manuell (Browser): Einstellungen → Pausen-Mitteilungen |
 | 77 | Hilfe & Datenschutz (12) | `HelpPrivacyView.swift` | Web-Anpassung nötig | 6 | Texte zu Konto, Cloud und Health neu; Links zu Datenschutz und Impressum; Einwilligung beim Start | E2E: `privacy.spec.ts`; Unit: `legal.test.ts`, `privacy.test.ts` |
 | 78 | JSON-Backup exportieren (13) | `MotionBackupStore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 3 (Export)/6 | Download statt Datei-Dialog; neues Format plus Import des alten Formats | Unit: `backup.test.ts` (Export), `importer.test.ts` (Import) |
-| 79 | JSON-Backup importieren mit Vorschau und Zusammenführung (13) | `MotionBackupRestore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 5 | Upload statt Datei-Dialog; Regeln gleich | – (Phase 5) |
+| 79 | JSON-Backup importieren mit Vorschau und Zusammenführung (13) | `MotionBackupRestore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 5 | Upload statt Datei-Dialog; Regeln gleich. Gilt für Sicherungen der iOS-App; die neue Web-Sicherung lässt sich noch nicht zurückspielen (siehe Abweichungen, A1) | Unit: `importer.test.ts`; E2E: `import.spec.ts` |
 | 80 | CSV exportieren und importieren (13) | `CompleteCSVCodec.swift`, `WorkoutCSVImporter.swift`, `MotionBackupCSV.swift` | Web-Anpassung nötig | 5/6 | Pflicht: alle alten CSV-Formate (v1–v18 und einfache Workout-CSV) importierbar; Export als lesbare Tabelle im neuen Format | E2E: `import.spec.ts`, `privacy.spec.ts`; Unit: `csvExport.test.ts` |
 | 81 | Demo-Modus mit synthetischen Daten (14) | `DemoSession.swift`, `SampleDataStore.swift` | übernehmen | 3 | eigene temporäre IndexedDB | E2E: `introduction.spec.ts` (Demo, persönliche Daten unberührt) |
-| 82 | Alte Beispieldaten entfernen (14) | `SettingsView.swift`, `SampleDataStore.swift` | übernehmen | 5 (verschoben) | betrifft nur importierte Daten, falls vorhanden | – (Phase 5, mit dem Import) |
+| 82 | Alte Beispieldaten entfernen (14) | `SettingsView.swift`, `SampleDataStore.swift` | entfällt | – | Der Import lässt markierte Beispieltrainings weg, deshalb gibt es im Web keine zu entfernen (siehe Abweichungen, B9) | Unit: `importer.test.ts`, `olderCSV.test.ts` (Beispieltrainings weggelassen) |
 | 83 | Haptik-Ereignisse mit Drosselung (15) | `MotionHaptics.swift` | Web-Anpassung nötig | 2 | `src/platform/haptics`; iPhone ohne Wirkung | Unit: `haptics.test.ts` |
 | 84 | Motion Pro: Paywall, Abo, Kauf wiederherstellen, Status (16) | `MotionStore.swift`, `PaywallView.swift`, `MotionProSection.swift` | später nativ | – | Käufe nur über App Store bzw. Capacitor | – (nativ) |
 | 85 | Platzhalter „Advanced analytics“ und „Themes“ (16) | `MotionProSection.swift` | später nativ | – | in V1 ausgeblendet | – (nativ) |
