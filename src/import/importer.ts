@@ -31,6 +31,7 @@ import type { TrainingSchedule } from '../domain/schedule'
 import { updateSettings, type Appearance } from '../settings/deviceSettings'
 import { ensureProfile } from '../store/profile'
 import { csvKind, decodeCompleteCSV, parseCSV } from './csv'
+import { decodeOlderCSV, decodeWorkoutCSV } from './olderCSV'
 import { ImportError, type ImportIssue } from './errors'
 import {
   appleEpochOffset,
@@ -46,7 +47,8 @@ import {
 } from './legacyBackup'
 
 /*
- * Import of the iOS app's full backup (JSON "Export Backup" or CSV v18 "Export CSV"), following
+ * Import of the iOS app's full backup (JSON "Export Backup" or CSV v18 "Export CSV"), and since
+ * phase 5b of the older CSV formats converted to the same backup (olderCSV.ts), following
  * MotionBackupRestore.swift: missing records are added, existing ones stay untouched (matched by id,
  * or by day for daily records), no XP is calculated, profile and preferences are applied.
  * Health and Strava workouts are skipped and counted (decision of 02.11.2026), drafts are kept.
@@ -56,9 +58,13 @@ import {
 const maximumJSONBytes = 32 * 1024 * 1024
 const maximumCSVBytes = 64 * 1024 * 1024
 
+/** Which file the backup came from: the full backup, a Motion CSV before version 18, or the plain workout CSV. */
+export type ImportOrigin = { kind: 'backup' } | { kind: 'olderCSV'; version: number } | { kind: 'workoutCSV' }
+
 export interface ImportSource {
   fileName: string
   format: 'json' | 'csv'
+  origin: ImportOrigin
   backup: LegacyBackup
   fingerprint: string
 }
@@ -87,6 +93,8 @@ export interface SampleWorkout {
 export interface ImportSummary {
   fileName: string
   format: 'json' | 'csv'
+  origin: ImportOrigin
+  /** For older CSV files, which carry no export date, the newest date in the file. */
   exportedAt: string
   /** What the file holds; healthWorkouts are the ones that are skipped. */
   file: ImportCounts
@@ -98,7 +106,7 @@ export interface ImportSummary {
 
 // Reading the file ------------------------------------------------------------------------------
 
-/** JSON or CSV v18, recognised by content; the CSV turns back into the same backup object. */
+/** JSON or CSV, recognised by content; every CSV format turns into the same backup object. */
 export async function readImportFile(file: File): Promise<ImportSource> {
   const text = await file.text()
   return readImportText(text, file.name, file.size)
@@ -108,6 +116,7 @@ export async function readImportText(text: string, fileName: string, size = new 
   const isJSON = text.replace(/^﻿/, '').trimStart().startsWith('{')
   if (size > (isJSON ? maximumJSONBytes : maximumCSVBytes)) throw new ImportError('tooLarge')
   let object: unknown
+  let origin: ImportOrigin = { kind: 'backup' }
   if (isJSON) {
     try {
       object = JSON.parse(text.replace(/^﻿/, ''))
@@ -117,13 +126,18 @@ export async function readImportText(text: string, fileName: string, size = new 
   } else {
     const rows = parseCSV(text)
     const kind = csvKind(rows)
-    if (kind === 'olderBackup') throw new ImportError('olderCSV')
-    if (kind === 'workoutCSV') throw new ImportError('workoutCSV')
     if (kind === 'unknown') throw new ImportError('unreadable')
-    object = decodeCompleteCSV(rows)
+    if (kind === 'olderBackup') {
+      const older = decodeOlderCSV(rows)
+      object = older.backup
+      origin = { kind: 'olderCSV', version: older.version }
+    } else if (kind === 'workoutCSV') {
+      object = decodeWorkoutCSV(rows)
+      origin = { kind: 'workoutCSV' }
+    } else object = decodeCompleteCSV(rows)
   }
-  const backup = decodeBackup(object)
-  return { fileName, format: isJSON ? 'json' : 'csv', backup, fingerprint: await fingerprint(object) }
+  const backup = decodeBackup(object, { fromOlderCSV: origin.kind !== 'backup' })
+  return { fileName, format: isJSON ? 'json' : 'csv', origin, backup, fingerprint: await fingerprint(object) }
 }
 
 /** SHA-256 of the backup with sorted keys, so the JSON and CSV export of one backup match. */
@@ -407,8 +421,19 @@ async function prepare(source: ImportSource): Promise<Prepared> {
     added.routines++
   }
 
-  // XP receipts: an existing receipt wins; never calculate fresh import XP.
   const workouts = new Map((await db.workouts.toArray()).map((workout) => [workout.id, workout]))
+  // Older CSV files have no ids for most workouts. Like MotionBackupCSV.restore, a workout with the
+  // same name, completion and second as one on this device is the same workout and stays unchanged.
+  const sameWorkout = new Set<string>()
+  if (source.origin.kind !== 'backup') {
+    const second = (completed: boolean, name: string, unix: number) => `${completed}\u001f${name}\u001f${Math.floor(unix)}`
+    const existing = new Set([...workouts.values()].map((workout) => second(workout.is_completed, workout.name, Date.parse(workout.performed_at) / 1000)))
+    for (const session of backup.workouts) {
+      if (!workouts.has(lower(session.id)) && existing.has(second(session.isCompleted, session.name, session.date + appleEpochOffset))) sameWorkout.add(lower(session.id))
+    }
+  }
+
+  // XP receipts: an existing receipt wins; never calculate fresh import XP.
   const awards = new Map((await db.workout_awards.toArray()).map((award) => [award.workout_id, award.earned_xp]))
   const addAward = (workoutID: string, xp: number) => {
     add<WorkoutAward>('workout_awards', { id: stableID('workout_awards', workoutID), workout_id: workoutID, earned_xp: xp })
@@ -417,7 +442,7 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   }
   for (const award of backup.workoutAwards) {
     const workoutID = lower(award.sessionID)
-    if (awards.has(workoutID)) continue
+    if (awards.has(workoutID) || sameWorkout.has(workoutID)) continue
     const existing = workouts.get(workoutID)
     addAward(workoutID, existing?.is_completed ? existing.earned_xp : award.earnedXP)
   }
@@ -428,7 +453,7 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   const newSessions: LegacySession[] = []
   for (const [index, session] of backup.workouts.entries()) {
     const id = lower(session.id)
-    if (isHealth(session) || workouts.has(id)) continue
+    if (isHealth(session) || workouts.has(id) || sameWorkout.has(id)) continue
     const path = `workouts[${index}]`
     for (const exercise of session.exercises) {
       if (snapshotIDs.has(lower(exercise.id))) issues.push({ path, reason: 'exercise snapshot already belongs to another workout' })
@@ -539,7 +564,7 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   const profile = await profileChange(backup)
   const previous = (await db.legacy_imports.where('fingerprint').equals(source.fingerprint).first()) ?? null
   return {
-    summary: { fileName: source.fileName, format: source.format, exportedAt: iso(backup.exportedAt), file, added, samples: samples(sessions), previous },
+    summary: { fileName: source.fileName, format: source.format, origin: source.origin, exportedAt: iso(backup.exportedAt), file, added, samples: samples(sessions), previous },
     writes,
     profile,
   }
@@ -549,17 +574,18 @@ async function prepare(source: ImportSource): Promise<Prepared> {
 async function profileChange(backup: LegacyBackup): Promise<Partial<Profile> | null> {
   const current = live(await db.profiles.toArray())[0]
   const preferences = backup.preferences
-  const change: Partial<Profile> = {
-    preferences: {
+  const change: Partial<Profile> = {}
+  if (preferences) {
+    change.preferences = {
       quietMode: preferences.quietMode,
       bodyWeightTrackingVisible: preferences.bodyWeightTrackingVisible,
       haptics: preferences.xpHapticsEnabled,
       trackReps: preferences.isRepTrackingEnabled,
       restTimerSeconds: preferences.restTimerSeconds,
       restNotifications: current?.preferences.restNotifications ?? false,
-    },
+    }
   }
-  if (preferences.bodyWeightGoal) change.body_weight_goal = preferences.bodyWeightGoal as Profile['body_weight_goal']
+  if (preferences?.bodyWeightGoal) change.body_weight_goal = preferences.bodyWeightGoal as Profile['body_weight_goal']
   const profile = backup.profile
   if (profile) {
     change.name = profile.name
@@ -570,7 +596,7 @@ async function profileChange(backup: LegacyBackup): Promise<Partial<Profile> | n
     change.celebrated_weight_goals = [...new Set([...(current?.celebrated_weight_goals ?? []), ...(profile.celebratedWeightGoals ?? [])])]
     change.created_at = iso(profile.createdAt)
   }
-  return change
+  return Object.keys(change).length > 0 ? change : null
 }
 
 /** Counts, samples and a possible earlier import, without writing anything. */
@@ -610,6 +636,6 @@ export async function runImport(source: ImportSource, now = new Date()): Promise
   })
   // Device-bound preferences are applied after the save succeeded, as in MotionBackupRestore.swift.
   const preferences = source.backup.preferences
-  updateSettings({ appearance: preferences.appearance as Appearance, openingAnimation: preferences.launchAnimationEnabled })
+  if (preferences) updateSettings({ appearance: preferences.appearance as Appearance, openingAnimation: preferences.launchAnimationEnabled })
   return summary
 }

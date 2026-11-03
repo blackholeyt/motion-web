@@ -181,7 +181,8 @@ export interface LegacyBackup {
   healthArchive?: object | null
   nutrition?: object | null
   trainingPlan?: LegacySchedule | null
-  preferences: LegacyPreferences
+  /** Always in the full backup; CSV files before version 18 have none. */
+  preferences?: LegacyPreferences | null
 }
 
 // Structure ------------------------------------------------------------------------------------
@@ -203,7 +204,7 @@ const guidanceSpec: Spec = {
   progression: opt('string'),
 }
 
-const backupSpec: Spec = {
+const backupFields: Record<string, Spec> = {
   format: 'string',
   version: 'int',
   exportedAt: 'date',
@@ -326,6 +327,8 @@ const backupSpec: Spec = {
     bodyWeightGoal: opt('string'),
   },
 }
+const backupSpec: Spec = backupFields
+const olderCSVSpec: Spec = { ...backupFields, preferences: opt(backupFields.preferences!) }
 
 const maximumIssues = 50
 
@@ -363,13 +366,16 @@ function checkShape(value: unknown, spec: Spec, path: string, issues: ImportIssu
   }
 }
 
-/** MotionBackupStore.decode: header first (file type, version), then the complete structure, then the rules. */
-export function decodeBackup(object: unknown): LegacyBackup {
+/**
+ * MotionBackupStore.decode: header first (file type, version), then the complete structure, then the rules.
+ * A backup converted from an older CSV file has no preferences.
+ */
+export function decodeBackup(object: unknown, { fromOlderCSV = false } = {}): LegacyBackup {
   const header = object as { format?: unknown; version?: unknown } | null
   if (typeof header !== 'object' || header === null || header.format !== 'motion.full-backup') throw new ImportError('wrongType')
   if (header.version !== 1) throw new ImportError('unsupportedVersion')
   const issues: ImportIssue[] = []
-  checkShape(object, backupSpec, '', issues)
+  checkShape(object, fromOlderCSV ? olderCSVSpec : backupSpec, '', issues)
   if (issues.length > 0) throw new ImportError('invalid', { issues })
   const backup = object as LegacyBackup
   const rules = validateBackup(backup)
@@ -663,7 +669,7 @@ export function validateBackup(backup: LegacyBackup): ImportIssue[] {
     'invalid workout XP receipt',
   )
   const preferences = backup.preferences
-  require(
+  if (preferences) require(
     (isNil(preferences.bodyWeightGoal) || ['lose', 'gain', 'maintain'].includes(preferences.bodyWeightGoal)) &&
       ['dark', 'light', 'system'].includes(preferences.appearance) &&
       inRange(preferences.restTimerSeconds, 5, 240) &&

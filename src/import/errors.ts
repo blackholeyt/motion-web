@@ -8,8 +8,6 @@ export type ImportErrorCode =
   | 'unreadable'
   | 'csvMalformed'
   | 'csvRow'
-  | 'olderCSV'
-  | 'workoutCSV'
   | 'wrongType'
   | 'unsupportedVersion'
   | 'invalid'

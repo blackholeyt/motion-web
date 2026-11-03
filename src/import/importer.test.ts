@@ -39,9 +39,9 @@ describe('reading iOS backups', () => {
     expect(() => parseCSV('"a"b')).toThrow(ImportError)
   })
 
-  it('names older Motion CSV files and the plain workout CSV instead of guessing', async () => {
-    expect((await failure(readImportText('motion_backup_v17,key,date\n', 'old.csv'))).code).toBe('olderCSV')
-    expect((await failure(readImportText('workout_date,workout_name,exercise\n', 'w.csv'))).code).toBe('workoutCSV')
+  it('treats a cut-off header of an older CSV as damaged instead of guessing', async () => {
+    expect((await failure(readImportText('motion_backup_v17,key,date\n', 'old.csv'))).code).toBe('csvMalformed')
+    expect((await failure(readImportText('workout_date,workout_name,exercise\n', 'w.csv'))).code).toBe('csvMalformed')
     expect((await failure(readImportText('hello', 'x.txt'))).code).toBe('unreadable')
     expect((await failure(readImportText('{"format":"motion-web-backup","version":1}', 'web.json'))).code).toBe('wrongType')
     expect((await failure(readImportText('{"format":"motion.full-backup","version":2}', 'new.json'))).code).toBe('unsupportedVersion')

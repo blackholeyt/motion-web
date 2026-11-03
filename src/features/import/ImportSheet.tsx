@@ -10,8 +10,8 @@ import { Group, PrimaryButton, RowButton, TextButton } from '../../ui/controls'
 import styles from './import.module.css'
 
 /*
- * Import of the iOS app's backup (phase 5a): choose the file, read the preview, import, read the
- * report. Every step before "Import" only reads; the import itself is one transaction.
+ * Import of the iOS app's backup (phase 5a) and its older CSV files (phase 5b): choose the file,
+ * read the preview, import, read the report. Every step before "Import" only reads; the import itself is one transaction.
  */
 
 type Step =
@@ -27,8 +27,6 @@ const errorTexts: Record<ImportErrorCode, string> = {
   unreadable: 'This file is not a Motion backup. Choose the JSON file from “Export Backup” or the CSV file from “Export CSV” in the iOS app.',
   csvMalformed: 'The CSV file is damaged or incomplete.',
   csvRow: 'The CSV file is damaged in row {0}.',
-  olderCSV: 'This is an older Motion CSV file (before version 18). Export a new backup in the iOS app, or keep this file for a one-time conversion.',
-  workoutCSV: 'This is the simple workout CSV, which holds only part of your data. Export the full backup in the iOS app instead.',
   wrongType: 'This is not a backup of the Motion iOS app.',
   unsupportedVersion: 'This Motion backup version is not supported.',
   invalid: 'The backup did not pass the checks of the Motion app.',
@@ -60,6 +58,7 @@ const pathNames: Record<string, string> = {
   workoutAwards: 'Workout XP receipt',
   sleepScores: 'Sleep score',
   undoHistory: 'Undo step',
+  rows: 'Row',
 }
 
 /** "workouts[3].exercises[0].sets[2]" → "Workout 4 › Exercise 1 › Set 3". */
@@ -135,7 +134,7 @@ export function ImportSheet({ open, onClose, onImported }: { open: boolean; onCl
       {chooser}
       {(step.kind === 'choose' || step.kind === 'reading') && (
         <Group
-          footer={t('In the iOS app open Settings and use “Export Backup” (JSON) or “Export CSV”. Send the file to this device, for example with AirDrop or the Files app. Nothing is imported before you confirm the preview.')}
+          footer={t('In the iOS app open Settings and use “Export Backup” (JSON) or “Export CSV”. Older Motion CSV files and the simple workout CSV work too. Send the file to this device, for example with AirDrop or the Files app. Nothing is imported before you confirm the preview.')}
         >
           <RowButton onClick={() => input.current?.click()} disabled={step.kind === 'reading'} testID="chooseImportFile">
             {step.kind === 'reading' ? t('Checking file…') : t('Choose backup file')}
@@ -211,8 +210,20 @@ function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: 
   return (
     <div className={styles.stack} data-testid="importPreview">
       <p className={styles.lead}>
-        {t('{0} · exported {1}', [summary.fileName, date(summary.exportedAt)])}
+        {summary.origin.kind === 'backup'
+          ? t('{0} · exported {1}', [summary.fileName, date(summary.exportedAt)])
+          : t('{0} · newest entry {1}', [summary.fileName, date(summary.exportedAt)])}
       </p>
+      {summary.origin.kind === 'olderCSV' && (
+        <p className={styles.muted} data-testid="olderFormat">
+          {t('Older Motion CSV (version {0}). It has no settings, sleep scores or training plan; this device keeps its own.', [summary.origin.version])}
+        </p>
+      )}
+      {summary.origin.kind === 'workoutCSV' && (
+        <p className={styles.muted} data-testid="olderFormat">
+          {t('Simple workout CSV. It only holds completed workouts with their sets, without XP, routines or body weight.')}
+        </p>
+      )}
       {summary.previous && (
         <p className={styles.notice} role="status" data-testid="alreadyImported">
           {t('This backup was already imported on {0}. Records that already exist are skipped, so importing again adds nothing twice.', [date(summary.previous.imported_at)])}
