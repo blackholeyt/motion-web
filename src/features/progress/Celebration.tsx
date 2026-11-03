@@ -4,7 +4,6 @@ import type { WeightUnit } from '../../data/types'
 import { loadLabel } from '../../domain/measurement'
 import { progressFor, rewardDuration, rewardFrame, type RecordAchievement, type WorkoutRecap, type XPAward } from '../../domain/progress'
 import { useT } from '../../i18n'
-import { useHaptics } from '../../store/hooks'
 import { ContinueButton, Masthead } from '../../ui/components'
 import { prefersReducedMotion } from '../../ui/motion'
 import { ProgressCard } from './ProgressCard'
@@ -26,11 +25,7 @@ export interface CelebrationProps {
 /** PersonalRecordCelebration.swift (WorkoutCelebrationView) with the XP reward on top. */
 export function Celebration({ recap, award, totalXP, records, unit, detail, note, onContinue }: CelebrationProps) {
   const { t, locale } = useT()
-  const haptic = useHaptics()
   const load = (kg: number) => loadLabel(unit, kg, locale)
-  useEffect(() => {
-    if (!award) haptic('success')
-  }, [])
   return (
     <div className={styles.celebration} data-testid="celebration">
       <div className={styles.celebrationBody}>
@@ -106,19 +101,14 @@ export function Celebration({ recap, award, totalXP, records, unit, detail, note
 /** WorkoutXPRewardView.swift: one bounded, cancellable count-up shared by text and bar. */
 function XPReward({ name, detail, award, totalXP }: { name: string; detail: string; award: XPAward; totalXP: number }) {
   const { t } = useT()
-  const haptic = useHaptics()
   const reduced = useRef(prefersReducedMotion()).current
   const [elapsed, setElapsed] = useState(reduced ? rewardDuration : 0)
   const frame = rewardFrame(totalXP, award.total, elapsed, reduced)
   const final = rewardFrame(totalXP, award.total, rewardDuration, true)
   useEffect(() => {
-    if (reduced) {
-      haptic(final.leveledUp ? 'success' : 'completion')
-      return
-    }
+    if (reduced) return
     const started = performance.now()
     let handle = 0
-    const credit = window.setTimeout(() => haptic('completion'), 250)
     const step = (time: number) => {
       const seconds = (time - started) / 1000
       setElapsed(Math.min(seconds, rewardDuration))
@@ -126,18 +116,8 @@ function XPReward({ name, detail, award, totalXP }: { name: string; detail: stri
       else setElapsed(rewardDuration)
     }
     handle = requestAnimationFrame(step)
-    return () => {
-      cancelAnimationFrame(handle)
-      window.clearTimeout(credit)
-    }
+    return () => cancelAnimationFrame(handle)
   }, [])
-  const levelUp = useRef(false)
-  useEffect(() => {
-    if (frame.leveledUp && !levelUp.current && !reduced) {
-      levelUp.current = true
-      haptic('success')
-    }
-  }, [frame.leveledUp])
   const summary = [
     final.rankedUp ? t('Rank unlocked: {0}.', [t(final.progress.rank.name)]) : '',
     final.leveledUp ? t('Level up to {0}.', [final.progress.level]) : '',

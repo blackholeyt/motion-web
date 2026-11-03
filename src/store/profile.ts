@@ -6,7 +6,6 @@ import type { Preferences, Profile } from '../data/types'
 
 export const defaultPreferences: Preferences = {
   bodyWeightTrackingVisible: true,
-  haptics: true,
   trackReps: true,
   restTimerSeconds: 90,
   restNotifications: false,

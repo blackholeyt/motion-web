@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useT } from '../../i18n'
-import { platform } from '../../platform'
 import { updateSettings, useSettings, type Appearance, type LanguageChoice } from '../../settings/deviceSettings'
 import { updatePreferences, usePreferences } from '../../store/profile'
 import { ScreenHeader } from '../../ui/ScreenHeader'
@@ -134,16 +133,6 @@ export function SettingsScreen() {
           </select>
         </label>
       </section>
-      <Group
-        title={t('Feedback')}
-        footer={
-          platform.haptics.supported
-            ? t('Tactile feedback for choices, completed sets, saved changes, rest completion and rewards. Turn off to silence all Motion haptics; system controls may still provide their own feedback. Animations follow Reduce Motion.')
-            : t('This browser cannot vibrate (for example Safari on iPhone). The setting applies on devices that support it.')
-        }
-      >
-        <Toggle label={t('App Haptics')} checked={preferences.haptics} onChange={(haptics) => updatePreferences({ haptics })} />
-      </Group>
       <Group title={t('Rest alerts')}>
         <RowButton tone="plain" onClick={() => setNotifications(true)}>
           {t('Rest notifications')}

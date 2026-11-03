@@ -151,8 +151,6 @@ export const de: Record<string, string> = {
   'System permission: not requested': 'Systemberechtigung: nicht angefragt',
   'Target: {0} seconds per working set': 'Ziel: {0} Sekunden pro Arbeitssatz',
   'Target: {0}–{1} reps per working set': 'Ziel: {0}–{1} Wiederholungen pro Arbeitssatz',
-  'This browser cannot vibrate (for example Safari on iPhone). The setting applies on devices that support it.':
-    'Dieser Browser kann nicht vibrieren (zum Beispiel Safari auf dem iPhone). Die Einstellung wirkt auf Geräten, die es können.',
   'This routine only': 'Nur diese Routine',
   'Timer behavior': 'Verhalten des Timers',
   Training: 'Training',

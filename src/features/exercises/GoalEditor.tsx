@@ -3,7 +3,6 @@ import { update } from '../../data/repo'
 import type { Exercise } from '../../data/types'
 import { loadInput, parseLoad } from '../../domain/measurement'
 import { useT } from '../../i18n'
-import { useHaptics } from '../../store/hooks'
 import { useProfile } from '../../store/profile'
 import { Sheet } from '../../ui/Sheet'
 import { Group, RowButton, TextButton, TextRow } from '../../ui/controls'
@@ -15,7 +14,6 @@ export function GoalEditor({ exercise, onClose }: { exercise: Exercise | null; o
 
 function GoalEditorSheet({ exercise, onClose }: { exercise: Exercise; onClose: () => void }) {
   const { t, locale } = useT()
-  const haptic = useHaptics()
   const unit = useProfile()?.load_unit ?? 'kg'
   const original = exercise.goal_weight_kg != null ? loadInput(unit, exercise.goal_weight_kg, locale) : ''
   const [text, setText] = useState(original)
@@ -23,7 +21,6 @@ function GoalEditorSheet({ exercise, onClose }: { exercise: Exercise; onClose: (
   const value = text === original ? exercise.goal_weight_kg : parsed !== null && parsed > 0 ? parsed : null
   const save = async (goal: number | null) => {
     await update<Exercise>('exercises', exercise.id, goal === null ? { goal_weight_kg: null } : { goal_weight_kg: goal, is_pr_tracked: true })
-    haptic('success')
     onClose()
   }
   return (

@@ -5,7 +5,7 @@ import { live } from '../../data/repo'
 import type { Exercise } from '../../data/types'
 import { sameName } from '../../domain/catalogue'
 import { useT } from '../../i18n'
-import { useHaptics, useLibrary } from '../../store/hooks'
+import { useLibrary } from '../../store/hooks'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { Group, RowButton, Stepper, TextButton, TextRow } from '../../ui/controls'
 import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
@@ -14,7 +14,6 @@ import * as engine from './engine'
 /** FreestyleExercisePicker.swift; with `replacing` it swaps an exercise in one undo step. */
 export function ExercisePicker({ workoutID, replacing, context, onClose }: { workoutID: string; replacing: string | null; context: engine.WorkoutContext; onClose: () => void }) {
   const { t } = useT()
-  const haptic = useHaptics()
   const library = useLibrary() ?? []
   const [sets, setSets] = useState(3)
   const [name, setName] = useState('')
@@ -30,7 +29,6 @@ export function ExercisePicker({ workoutID, replacing, context, onClose }: { wor
   const add = async (request: { existing?: Exercise; customName?: string }) => {
     try {
       await engine.addExercise(workoutID, { ...request, sets }, context, { replacing: replacing ?? undefined })
-      haptic('action')
       onClose()
     } catch (failure) {
       setError(t((failure as Error).message))

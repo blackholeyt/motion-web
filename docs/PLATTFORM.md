@@ -6,10 +6,10 @@ Alle Gerätefunktionen laufen über `src/platform/` (Schnittstellen in `types.ts
 |---|---|---|---|
 | Offline-Start nach dem ersten Besuch | ja | ja | ja |
 | Pausen-Timer korrekt nach Sperren, Wechseln oder Neuladen | ja, weil er aus dem gespeicherten Endzeitpunkt rechnet | ja, gleicher Grund | ja |
-| Ton, Vibration oder Ansage bei Pausen-Ende **im Vordergrund** | ja | Ansage und Bildschirmhinweis ja, **keine Vibration** | ja |
+| Ansage bei Pausen-Ende **im Vordergrund** | ja | ja, mit Bildschirmhinweis | ja |
 | Mitteilung bei Pausen-Ende, **während die App im Hintergrund ist** | nur solange der Browser die Seite nicht anhält, also unzuverlässig | **nicht zuverlässig.** iOS hält Web-Apps im Hintergrund nach kurzer Zeit an. Zeitgesteuerte lokale Mitteilungen gibt es im Web nicht | ja (lokale Mitteilung wie in der alten App) |
 | Bildschirm bleibt im Training an (Wake Lock) | ja | ja, in aktuellen iOS-Versionen; wird beim Verlassen der App automatisch aufgehoben | ja |
-| Vibration (Haptik) | ja | nein (Safari unterstützt `navigator.vibrate` nicht) | ja |
+| Vibration (Haptik) | nein, am 03.11.2026 entfernt | nein (Safari unterstützt `navigator.vibrate` nicht) | ja |
 | Dateien sichern / teilen | Teilen-Menü oder Download | Teilen-Menü | ja |
 | Speicher vor automatischem Löschen schützen (`navigator.storage.persist`) | wird angefragt | wird angefragt. Installierte PWAs sind besser geschützt; ein Browser-Tab, der lange nicht geöffnet wurde, kann seine Daten verlieren. Mit Konto fängt die Cloud-Sicherung das ab | entfällt |
 | Anmelden mit E-Mail-Code | ja | ja, auch in der installierten App: Der Code wird in der App eingetippt, es wird kein Link geöffnet. iOS schlägt den Code aus der Mail-App oft direkt über der Tastatur vor | ja |

@@ -178,7 +178,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 ### 2.2 Tabellen
 | Tabelle | Wichtige Spalten |
 |---|---|
-| `profiles` | name, body_weight_unit, load_unit, distance_unit, target_weight_kg, celebrated_weight_goals jsonb, body_weight_goal, preferences jsonb (appearance, body_weight_tracking_visible, opening_animation, haptics, track_reps, rest_timer_seconds) |
+| `profiles` | name, body_weight_unit, load_unit, distance_unit, target_weight_kg, celebrated_weight_goals jsonb, body_weight_goal, preferences jsonb (appearance, body_weight_tracking_visible, opening_animation, track_reps, rest_timer_seconds) |
 | `exercises` | name, goal_weight_kg, is_pr_tracked, rest_seconds, catalogue_id, equipment, muscle, measurement, guidance, track_progress |
 | `blueprints` | name, cardio_type, cardio_minutes, cardio_distance_km |
 | `blueprint_exercises` | blueprint_id, exercise_id, sort_order, target_sets, warm_up_sets, superset_group, guidance jsonb |
@@ -248,7 +248,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 - Datenbank: `src/data/db.ts` (Dexie, Version 1), Typen in `src/data/types.ts`.
 - Jede Änderung läuft über `src/data/repo.ts`: Dort werden `updated_at` gesetzt, gelöschte Datensätze weich gelöscht (`deleted_at`) und der Datensatz in die Warteschlange `outbox` gelegt. Die Sync in Phase 4 lädt genau diese Einträge hoch.
 - `set_logs` enthalten zusätzlich `workout_id`, damit ein Training mit einer Abfrage geladen werden kann.
-- Geräteeinstellungen (Darstellung, Startanimation, Sprache, Installationshinweis) liegen vorerst in `localStorage`. Trainingseinstellungen (Wiederholungen, Pause, Haptik, Mitteilungen) liegen im Profil und werden später synchronisiert.
+- Geräteeinstellungen (Darstellung, Startanimation, Sprache, Installationshinweis) liegen vorerst in `localStorage`. Trainingseinstellungen (Wiederholungen, Pause, Mitteilungen) liegen im Profil und werden später synchronisiert.
 
 ## 5. Ergänzungen in Phase 3
 - XP: `workouts.earned_xp` plus ein Beleg in `workout_awards` pro Training. Der Beleg wird nie gelöscht; ein erneut abgeschlossenes oder wiederhergestelltes Training bekommt dadurch keine XP doppelt. Die Gesamt-XP sind die Summe aus `earned_xp` aller nicht gelöschten, abgeschlossenen Trainings und allen `weight_rewards`.

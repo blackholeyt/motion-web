@@ -21,7 +21,7 @@ Ehrliche Gesamtliste. Die Abschnitte „Stand nach Phase …“ weiter unten sin
 | Nr | Was | Zeile |
 |---|---|---|
 | B1 | **Pausen-Mitteilung im Hintergrund** ist im Web nicht zuverlässig, auf dem iPhone praktisch nie. Die Pause stimmt beim Zurückkehren immer. | 50, 76 |
-| B2 | **Keine Vibration auf dem iPhone** (Safari kann es nicht). Ansage und Bildschirmhinweis gehen. | 49, 74, 83 |
+| B2 | **Keine Haptik.** Die Web-Vibration ging auf dem iPhone ohnehin nicht und wurde am 03.11.2026 entfernt. Ansage und Bildschirmhinweis gehen. | 49, 74, 83 |
 | B3 | **Keine eigene Tastaturleiste** „Next/Done“; stattdessen die „Weiter“-Taste der Tastatur. | 39 |
 | B4 | **Sprache** wird in der App gewählt statt in den iOS-Einstellungen. | 72 |
 | B5 | `motion://dashboard` ist die Adresse `/` bzw. `/#/dashboard`. | 2 |
@@ -109,7 +109,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 46 | „Finish“ mit Zusammenfassung (6.5, 6.9) | `ActiveWorkoutView.swift` | übernehmen | 2 | | E2E: `workout.spec.ts` |
 | 47 | Workout nachtragen (6.6) | `PastWorkoutPicker.swift` | übernehmen | 2 | | Unit: `engine.test.ts` |
 | 48 | Pausen-Timer aus gespeichertem Endzeitpunkt, Leiste, Stop/Skip/Restart/Cancel (6.7) | `RestTimerState.swift`, `FloatingRestTimer.swift` | übernehmen | 2 | | Unit: `restTimer.test.ts` |
-| 49 | Pausen-Ende im Vordergrund: Haptik und Ansage (6.7) | `FloatingRestTimer.swift` | Web-Anpassung nötig | 2 | Ansage per `aria-live`; Vibration nur Android; optional Ton | Unit: `haptics.test.ts` |
+| 49 | Pausen-Ende im Vordergrund: Haptik und Ansage (6.7) | `FloatingRestTimer.swift` | Web-Anpassung nötig | 2 | Ansage per `aria-live`; keine Haptik (entfernt 03.11.2026) | manuell (Browser): Ansage bei Pausen-Ende |
 | 50 | Lokale Mitteilung bei Pausen-Ende im Hintergrund (6.7) | `RestNotifications.swift` | Web-Anpassung nötig | 2 | Web hat keine zeitgesteuerten lokalen Mitteilungen. Auf iPhone nicht zuverlässig, auch nicht als installierte PWA. Ehrlich dokumentieren; zuverlässig erst nativ | – (Plattformgrenze dokumentiert) |
 | 51 | Bildschirm bleibt im Training an | – (iOS-Verhalten) | Web-Anpassung nötig | 2 | Wake Lock, wo unterstützt (neu, nach Vorgabe) | manuell (Browser): Bildschirm bleibt an |
 | 52 | Rekord-Hinweis während des Trainings (6.8) | `ActiveWorkoutEngine.swift`, `InSessionRecordAcknowledgment.swift` | übernehmen | 3 | | Unit: `engine.test.ts` (Rekordhinweis) |
@@ -134,7 +134,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 71 | Einstellungen: Darstellung Dunkel/Hell/System (11) | `SettingsView.swift`, `MotionTheme.swift` | übernehmen | 1 | | Unit: `App.test.tsx` |
 | 72 | Einstellungen: Sprache (11) | `SettingsView.swift` | Web-Anpassung nötig | 1 | Web kann keine iOS-Einstellungen öffnen; eigene Sprachwahl Englisch/Deutsch in der App | E2E: `app.spec.ts` |
 | 73 | Einstellungen: Quiet Mode (11) | `SettingsView.swift` | entfällt | – | am 03.11.2026 auf Wunsch entfernt; der Wert aus iOS-Sicherungen wird übergangen | Unit: `importer.test.ts`, `profile.test.ts` |
-| 74 | Einstellungen: App-Haptik an/aus (11, 15) | `MotionHaptics.swift` | Web-Anpassung nötig | 2 | Vibration nur auf Android; Schalter bleibt, Hinweis für iPhone | Unit: `haptics.test.ts` |
+| 74 | Einstellungen: App-Haptik an/aus (11, 15) | `MotionHaptics.swift` | entfällt | – | am 03.11.2026 entfernt, weil Safari auf dem iPhone `navigator.vibrate` nicht kann; der Wert aus iOS-Sicherungen wird übergangen | Unit: `importer.test.ts` |
 | 75 | Einstellungen: Wiederholungen tracken, globale Pause 5 s–4 min (11) | `SettingsView.swift` | übernehmen | 2 | | manuell (Browser): Einstellungen → Pausen-Regler |
 | 76 | Einstellungen: Pausen-Mitteilungen (6.7, 11) | `RestConfigurationViews.swift` | Web-Anpassung nötig | 2 | siehe Nr. 50; Texte an Web-Verhalten anpassen | manuell (Browser): Einstellungen → Pausen-Mitteilungen |
 | 77 | Hilfe & Datenschutz (12) | `HelpPrivacyView.swift` | Web-Anpassung nötig | 6 | Texte zu Konto, Cloud und Health neu; Links zu Datenschutz und Impressum; Einwilligung beim Start | E2E: `privacy.spec.ts`; Unit: `legal.test.ts`, `privacy.test.ts` |
@@ -143,7 +143,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 80 | CSV exportieren und importieren (13) | `CompleteCSVCodec.swift`, `WorkoutCSVImporter.swift`, `MotionBackupCSV.swift` | Web-Anpassung nötig | 5/6 | Pflicht: alle alten CSV-Formate (v1–v18 und einfache Workout-CSV) importierbar; Export als lesbare Tabelle im neuen Format | E2E: `import.spec.ts`, `privacy.spec.ts`; Unit: `csvExport.test.ts` |
 | 81 | Demo-Modus mit synthetischen Daten (14) | `DemoSession.swift`, `SampleDataStore.swift` | übernehmen | 3 | eigene temporäre IndexedDB | E2E: `introduction.spec.ts` (Demo, persönliche Daten unberührt) |
 | 82 | Alte Beispieldaten entfernen (14) | `SettingsView.swift`, `SampleDataStore.swift` | entfällt | – | Der Import lässt markierte Beispieltrainings weg, deshalb gibt es im Web keine zu entfernen (siehe Abweichungen, B9) | Unit: `importer.test.ts`, `olderCSV.test.ts` (Beispieltrainings weggelassen) |
-| 83 | Haptik-Ereignisse mit Drosselung (15) | `MotionHaptics.swift` | Web-Anpassung nötig | 2 | `src/platform/haptics`; iPhone ohne Wirkung | Unit: `haptics.test.ts` |
+| 83 | Haptik-Ereignisse mit Drosselung (15) | `MotionHaptics.swift` | später nativ | – | im Web am 03.11.2026 entfernt; kommt mit der Capacitor-App | – (nativ) |
 | 84 | Motion Pro: Paywall, Abo, Kauf wiederherstellen, Status (16) | `MotionStore.swift`, `PaywallView.swift`, `MotionProSection.swift` | später nativ | – | Käufe nur über App Store bzw. Capacitor | – (nativ) |
 | 85 | Platzhalter „Advanced analytics“ und „Themes“ (16) | `MotionProSection.swift` | später nativ | – | in V1 ausgeblendet | – (nativ) |
 | 86 | Widgets: Körpergewicht, PRs, Schritte, Konsistenz (17) | `MotionWidgets/*` | später nativ | – | | – (nativ) |

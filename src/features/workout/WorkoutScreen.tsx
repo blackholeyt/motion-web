@@ -5,7 +5,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import type { WeightUnit } from '../../data/types'
 import { useT } from '../../i18n'
 import { platform } from '../../platform'
-import { useHaptics } from '../../store/hooks'
 import { updateProfile } from '../../store/profile'
 import type { FinishReward } from '../../store/progress'
 import type { RecordAchievement } from '../../domain/progress'
@@ -32,7 +31,6 @@ export function WorkoutScreen() {
   const navigate = useNavigate()
   const returnTo = ((useLocation().state ?? {}) as { returnTo?: string }).returnTo ?? '/'
   const context = useWorkoutContext()
-  const haptic = useHaptics()
   const session = useLiveQuery(() => loadSession(id), [id])
   const identities = session ? [...new Set(session.exercises.map(({ exercise }) => identityKey(exercise)))].sort().join('|') : ''
   const history = useLiveQuery(
@@ -63,10 +61,6 @@ export function WorkoutScreen() {
       void platform.wakeLock.release()
     }
   }, [session?.workout.id, session?.workout.is_completed])
-
-  useEffect(() => {
-    if (error) haptic('error')
-  }, [error])
 
   if (session === undefined || history === undefined) return null
   if (session === null || (session.workout.is_completed && !saved)) {
@@ -121,7 +115,6 @@ export function WorkoutScreen() {
     for (const handle of rowRefs.current.values()) await handle.flush()
   }
   const complete = async (setID: string) => {
-    const wasCompleted = session.rows.find((row) => row.set.id === setID)?.set.is_completed
     const result = await engine.toggleCompletion(id, setID, context).catch((failure) => {
       report(failure)
       return null
@@ -130,12 +123,10 @@ export function WorkoutScreen() {
     if (result.error) return setError({ message: result.error, values: result.errorValues })
     if (result.record) {
       setRecord({ record: result.record, setID })
-      haptic('success')
       return
     }
     if (!result.completed && record?.setID === setID) setRecord(null)
     if (result.completed) updateOnboarding({ firstSetTipDone: true })
-    haptic(result.completed ? 'completion' : wasCompleted ? 'selection' : 'completion')
   }
   const finish = async () => {
     await flushAll()
@@ -149,7 +140,6 @@ export function WorkoutScreen() {
     const result = await engine.finishWorkout(id, context)
     if (result) {
       platform.notifications.cancel(`motion.rest.${id}`)
-      haptic('success')
       setReward(result)
       setSaved(true)
     }
@@ -254,10 +244,7 @@ export function WorkoutScreen() {
             onRemoveSet={setRemoving}
             onReplace={() => setPicker({ replacing: group.exercise.id })}
             onEnter={focusNext}
-            onAddSet={async () => {
-              await engine.addSet(id, group.exercise.id, context).catch(report)
-              haptic('action')
-            }}
+            onAddSet={() => engine.addSet(id, group.exercise.id, context).catch(report)}
           />
         ))}
         <section className={styles.card}>

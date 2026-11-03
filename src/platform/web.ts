@@ -1,32 +1,4 @@
-import type { HapticEvent, NotificationPermission, Platform, RestNotification } from './types'
-
-// Same event vocabulary and throttling as MotionHaptics.swift; patterns approximate iOS feedback.
-const patterns: Record<HapticEvent, number | number[]> = {
-  selection: 8,
-  action: 12,
-  completion: 20,
-  success: [14, 60, 22],
-  error: [30, 50, 30],
-}
-
-export function createHapticThrottle(now: () => number) {
-  let lastPulse = -Infinity
-  let lastSuccess = -Infinity
-  return (event: HapticEvent): boolean => {
-    const time = now()
-    if (event === 'success') {
-      if (time - lastSuccess < 800) return false
-      lastSuccess = time
-    } else if (time - lastPulse < 120 || time - lastSuccess < 800) {
-      return false
-    }
-    lastPulse = time
-    return true
-  }
-}
-
-const allowHaptic = createHapticThrottle(() => performance.now())
-const vibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator
+import type { NotificationPermission, Platform, RestNotification } from './types'
 
 function notificationPermission(): NotificationPermission {
   return typeof Notification === 'undefined' ? 'unsupported' : Notification.permission
@@ -61,12 +33,6 @@ function cancel(id: string) {
 let sentinel: WakeLockSentinel | null = null
 
 export const webPlatform: Platform = {
-  haptics: {
-    supported: vibrate,
-    play(event) {
-      if (vibrate && allowHaptic(event)) navigator.vibrate(patterns[event])
-    },
-  },
   notifications: {
     permission: notificationPermission,
     async requestPermission() {

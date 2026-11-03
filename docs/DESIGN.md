@@ -166,7 +166,7 @@ Alle Animationen werden bei „Bewegung reduzieren“ abgeschaltet oder durch ei
 
 ## Haptik
 - Siehe `FUNKTIONEN.md`, Abschnitt 15.
-- Im Web gibt es Vibration nur über `navigator.vibrate`. Das funktioniert auf Android-Chrome, nicht in Safari auf dem iPhone. Das ist eine Web-Anpassung.
+- Die Web-App hat keine Haptik (entfernt am 03.11.2026): `navigator.vibrate` geht in Safari auf dem iPhone nicht. Haptik kommt erst mit der nativen App.
 
 ## Barrierefreiheit (Vorbild für die Web-App)
 - Jede Grafik hat eine Textbeschreibung (Diagrammbalken mit Datum und Wert, Fortschrittsbalken mit Prozent).

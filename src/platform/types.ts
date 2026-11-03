@@ -4,14 +4,6 @@
  * screens or business logic.
  */
 
-export type HapticEvent = 'selection' | 'action' | 'completion' | 'success' | 'error'
-
-export interface Haptics {
-  /** False where the device or browser cannot vibrate (e.g. Safari on iPhone). */
-  readonly supported: boolean
-  play(event: HapticEvent): void
-}
-
 export type NotificationPermission = 'unsupported' | 'default' | 'denied' | 'granted'
 
 export interface RestNotification {
@@ -60,7 +52,6 @@ export interface Health {
 }
 
 export interface Platform {
-  haptics: Haptics
   notifications: Notifications
   wakeLock: WakeLock
   timers: Timers

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../../i18n'
 import { createBlueprint, entriesFor } from '../../store/blueprints'
-import { useBlueprints, useHaptics } from '../../store/hooks'
+import { useBlueprints } from '../../store/hooks'
 import { Sheet } from '../../ui/Sheet'
 import { Group, TextButton, TextRow } from '../../ui/controls'
 import { TrainingPlanEditor } from '../plan/TrainingPlanEditor'
@@ -100,7 +100,6 @@ function BlueprintList({ onPlan }: { onPlan: () => void }) {
 function NewBlueprintSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useT()
   const navigate = useNavigate()
-  const haptic = useHaptics()
   const [name, setName] = useState('')
   const [cardio, setCardio] = useState(false)
   const unit = useProfile()?.distance_unit ?? 'km'
@@ -114,11 +113,9 @@ function NewBlueprintSheet({ open, onClose }: { open: boolean; onClose: () => vo
   const save = async () => {
     if (cardio) {
       await createCardioBlueprint(name, draft)
-      haptic('action')
       return close()
     }
     const blueprint = await createBlueprint(name)
-    haptic('action')
     close()
     navigate(`/blueprints/${blueprint.id}`)
   }

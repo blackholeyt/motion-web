@@ -583,7 +583,6 @@ async function profileChange(backup: LegacyBackup): Promise<Partial<Profile> | n
   if (preferences) {
     change.preferences = {
       bodyWeightTrackingVisible: preferences.bodyWeightTrackingVisible,
-      haptics: preferences.xpHapticsEnabled,
       trackReps: preferences.isRepTrackingEnabled,
       restTimerSeconds: preferences.restTimerSeconds,
       restNotifications: current?.preferences.restNotifications ?? false,

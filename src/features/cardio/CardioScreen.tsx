@@ -9,7 +9,6 @@ import { paceLabel } from '../../domain/measurement'
 import type { XPAward } from '../../domain/progress'
 import { useT } from '../../i18n'
 import { finishCardio } from '../../store/cardio'
-import { useHaptics } from '../../store/hooks'
 import { useProfile } from '../../store/profile'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Group, PrimaryButton, TextButton } from '../../ui/controls'
@@ -30,7 +29,6 @@ export function CardioScreen() {
 function CardioSession({ blueprint, activity }: { blueprint: import('../../data/types').Blueprint | null; activity: string }) {
   const { t, locale } = useT()
   const navigate = useNavigate()
-  const haptic = useHaptics()
   const profile = useProfile()
   const unit = profile?.distance_unit ?? 'km'
   const loadUnit = profile?.load_unit ?? 'kg'
@@ -48,7 +46,6 @@ function CardioSession({ blueprint, activity }: { blueprint: import('../../data/
   const finish = async () => {
     try {
       const saved = await finishCardio(draft, { blueprint: blueprint ?? undefined, planTicket: routeState.planTicket ?? null, notes })
-      haptic('success')
       setResult(saved)
     } catch (failure) {
       setError((failure as Error).message)

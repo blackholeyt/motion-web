@@ -4,7 +4,6 @@ import type { Workout } from '../../data/types'
 import * as timer from '../../domain/restTimer'
 import { useT } from '../../i18n'
 import { platform } from '../../platform'
-import { useHaptics } from '../../store/hooks'
 import { usePreferences } from '../../store/profile'
 import { Menu } from '../../ui/controls'
 import * as engine from './engine'
@@ -13,7 +12,6 @@ import styles from './workout.module.css'
 /** FloatingRestTimer.swift: a stable bar below the sets; time comes from the stored deadline. */
 export function RestTimerBar({ workout, onNotifications }: { workout: Workout; onNotifications: () => void }) {
   const { t } = useT()
-  const haptic = useHaptics()
   const preferences = usePreferences()
   const state = timer.restored(workout.rest_timer)
   const [now, setNow] = useState(() => new Date())
@@ -26,7 +24,6 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
       setNow(new Date())
       if (document.visibilityState !== 'visible') return
       if (await engine.tickRest(workout.id, true)) {
-        haptic('success')
         setAnnouncement(t('Rest complete. Ready for your next set.'))
       }
     })
@@ -70,10 +67,7 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
           type="button"
           className={styles.restStop}
           aria-label={t('Stop rest timer')}
-          onClick={() => {
-            void engine.cancelRest(workout.id)
-            haptic('selection')
-          }}
+          onClick={() => void engine.cancelRest(workout.id)}
         >
           <Square size={16} fill="currentColor" /> {t('Stop')}
         </button>

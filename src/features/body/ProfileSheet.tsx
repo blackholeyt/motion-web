@@ -4,7 +4,6 @@ import { parseBodyWeight, validName } from '../../domain/body'
 import { loadInput } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { saveProfile } from '../../store/body'
-import { useHaptics } from '../../store/hooks'
 import { usePreferences, useProfile } from '../../store/profile'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { Group, RowButton, SelectRow, TextButton, TextRow } from '../../ui/controls'
@@ -23,7 +22,6 @@ export function ProfileSheet({ open, onClose }: { open: boolean; onClose: () => 
 
 function Editor({ profile, onClose }: { profile: Profile; onClose: () => void }) {
   const { t, locale } = useT()
-  const haptic = useHaptics()
   const showWeight = usePreferences().bodyWeightTrackingVisible
   const [name, setName] = useState(profile.name === 'Motion' ? '' : profile.name)
   const [unit, setUnit] = useState<WeightUnit>(profile.body_weight_unit)
@@ -41,7 +39,6 @@ function Editor({ profile, onClose }: { profile: Profile; onClose: () => void })
   const save = async () => {
     try {
       await saveProfile({ name, body_weight_unit: unit, target_weight_kg: targetKg, load_unit: loadUnit, distance_unit: distanceUnit })
-      haptic('success')
       setMessage('Profile saved.')
     } catch (failure) {
       setMessage((failure as Error).message)

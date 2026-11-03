@@ -6,7 +6,7 @@ import { sameName } from '../../domain/catalogue'
 import { targetLabel } from '../../domain/guidance'
 import { useT } from '../../i18n'
 import { addEntry, deleteBlueprint, DuplicateEntryError, moveEntry, removeEntry, renameBlueprint, updateEntry, type BlueprintEntry } from '../../store/blueprints'
-import { useBlueprint, useEntries, useHaptics, useLibrary } from '../../store/hooks'
+import { useBlueprint, useEntries, useLibrary } from '../../store/hooks'
 import { createExercise } from '../../store/library'
 import { usePreferences } from '../../store/profile'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
@@ -24,7 +24,6 @@ export function BlueprintDetailScreen() {
   const { id } = useParams()
   const { t } = useT()
   const navigate = useNavigate()
-  const haptic = useHaptics()
   const blueprint = useBlueprint(id)
   const entries = useEntries(id) ?? []
   const library = useLibrary() ?? []
@@ -46,7 +45,6 @@ export function BlueprintDetailScreen() {
   const add = async (exercise: Exercise, sets = 3) => {
     try {
       await addEntry(blueprint.id, exercise, sets)
-      haptic('action')
     } catch (failure) {
       setError(failure instanceof DuplicateEntryError ? t(failure.message) : String(failure))
     }
@@ -135,7 +133,6 @@ export function BlueprintDetailScreen() {
             role: 'destructive',
             onSelect: async () => {
               await deleteBlueprint(blueprint)
-              haptic('action')
               navigate('/blueprints')
             },
           },

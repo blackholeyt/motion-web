@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { newCardioDraft, draftValid, type CardioDraft } from '../../domain/cardio'
 import { useT } from '../../i18n'
 import { createCardioBlueprint } from '../../store/cardio'
-import { useHaptics } from '../../store/hooks'
 import { useProfile } from '../../store/profile'
 import { Sheet } from '../../ui/Sheet'
 import { Group, TextButton, TextRow } from '../../ui/controls'
@@ -15,13 +14,11 @@ export function CardioBlueprintSheet({ open, onClose }: { open: boolean; onClose
 
 function Editor({ onClose }: { onClose: () => void }) {
   const { t } = useT()
-  const haptic = useHaptics()
   const [name, setName] = useState('')
   const unit = useProfile()?.distance_unit ?? 'km'
   const [draft, setDraft] = useState<CardioDraft>(() => newCardioDraft(unit))
   const save = async () => {
     await createCardioBlueprint(name, draft)
-    haptic('action')
     onClose()
   }
   return (

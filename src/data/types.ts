@@ -156,7 +156,6 @@ export interface SetLog extends SyncedRecord {
 
 export interface Preferences {
   bodyWeightTrackingVisible: boolean
-  haptics: boolean
   trackReps: boolean
   restTimerSeconds: number
   restNotifications: boolean

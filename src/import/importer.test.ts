@@ -151,8 +151,8 @@ describe('importing iOS backups', () => {
     expect(plan.entries[0]!.blueprintID).toBe(ids.push.toLowerCase())
     const profile = (await db.profiles.get(stableID('profiles')))!
     expect(profile).toMatchObject({ name: 'Mathis', target_weight_kg: 70, body_weight_goal: 'gain', celebrated_weight_goals: ['gain:68000'], created_at: '2026-04-11T09:00:00.000Z' })
-    expect(profile.preferences).toMatchObject({ haptics: false, restTimerSeconds: 120 })
-    expect(profile.preferences).not.toHaveProperty('quietMode')
+    expect(profile.preferences).toMatchObject({ restTimerSeconds: 120 })
+    expect(Object.keys(profile.preferences)).not.toEqual(expect.arrayContaining(['quietMode', 'haptics']))
     expect(getSettings()).toMatchObject({ appearance: 'light', openingAnimation: false })
     // XP comes from the file: the completed workout plus one daily weight receipt.
     expect(await totalXP()).toBe(200)

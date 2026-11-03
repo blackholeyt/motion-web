@@ -148,7 +148,6 @@ export interface LegacyPreferences {
   appearance: string
   bodyWeightTrackingVisible: boolean
   launchAnimationEnabled: boolean
-  xpHapticsEnabled: boolean
   isRepTrackingEnabled: boolean
   restTimerSeconds: number
   stepGoalEnabled: boolean
@@ -315,7 +314,6 @@ const backupFields: Record<string, Spec> = {
     appearance: 'string',
     bodyWeightTrackingVisible: 'bool',
     launchAnimationEnabled: 'bool',
-    xpHapticsEnabled: 'bool',
     isRepTrackingEnabled: 'bool',
     restTimerSeconds: 'int',
     stepGoalEnabled: 'bool',
