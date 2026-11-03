@@ -92,3 +92,33 @@ test('the finish dialog is never cut off, even with large text on a small phone'
   await page.addStyleTag({ content: 'html { font-size: 250% }' })
   await check('finish-dialog-se-large-text')
 })
+
+test('every set shows its kind as a badge', async ({ page }) => {
+  await startPush(page)
+  const bench = page.getByRole('region', { name: 'Bench Press' })
+  const badge = (index: number) => bench.getByTestId(`set-Bench Press-${index}`).getByTestId(`setBadge-${index}`)
+  await expect(badge(1)).toHaveText('1')
+  await expect(badge(1)).toHaveAttribute('aria-label', 'Working set 1')
+
+  await bench.getByTestId('set-Bench Press-1').getByRole('button', { name: 'Working set' }).click()
+  await page.getByRole('menuitem', { name: 'Make warm-up' }).click()
+  await expect(badge(1)).toHaveText('W')
+  await expect(badge(1)).toHaveAttribute('aria-label', 'Warm-up set')
+  await expect(badge(2)).toHaveText('1')
+  await expect(badge(3)).toHaveText('2')
+
+  for (const name of ['Bench Press', 'Overhead Press']) {
+    const section = page.getByRole('region', { name })
+    await section.getByRole('button', { name: 'Exercise options' }).click()
+    await section.getByLabel('Superset').selectOption('A')
+    await section.getByRole('button', { name: 'Exercise options' }).click()
+  }
+  await expect(badge(1)).toHaveText('W')
+  await expect(badge(2)).toHaveText('A1')
+  await expect(badge(2)).toHaveAttribute('aria-label', 'Superset A1, working set 1')
+  await expect(bench.getByTestId('set-Bench Press-3')).toContainText('Working set 2')
+  const press = page.getByRole('region', { name: 'Overhead Press' })
+  await expect(press.getByTestId('setBadge-1')).toHaveText('A2')
+  await bench.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: `${shots}/set-badges.png` })
+})

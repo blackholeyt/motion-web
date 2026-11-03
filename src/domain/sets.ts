@@ -24,6 +24,30 @@ export const isWorkingResult = (set: SetLog, exercise?: WorkoutExercise) => isPe
 export const isWeightComparable = (set: SetLog, exercise: WorkoutExercise) =>
   isWorkingResult(set, exercise) && supportsWeightComparisons(exercise.measurement) && Number.isFinite(set.weight_kg) && set.weight_kg >= 0
 
+export interface SetBadge {
+  kind: 'warmUp' | 'working' | 'superset'
+  /** Short text on the badge: "W", the working-set number, or the superset slot such as "A1". */
+  text: string
+  /** Position among the exercise's working sets; null for warm-ups. */
+  number: number | null
+}
+
+/**
+ * The marker in front of a set row. Superset slots follow the exercise order inside the group
+ * (A1, A2 …); warm-ups stay "W" because they are done outside the superset rounds.
+ */
+export function setBadge(row: Row, exercises: ExerciseRows[]): SetBadge {
+  if (row.set.is_warm_up) return { kind: 'warmUp', text: 'W', number: null }
+  const owner = exercises.find((candidate) => candidate.exercise.id === row.exercise.id)
+  const working = (owner?.rows ?? [row]).filter((candidate) => !candidate.set.is_warm_up)
+  const number = working.findIndex((candidate) => candidate.set.id === row.set.id) + 1 || working.length + 1
+  const group = row.exercise.superset_group
+  if (!group) return { kind: 'working', text: String(number), number }
+  const members = exercises.filter((candidate) => candidate.exercise.superset_group === group)
+  const slot = members.findIndex((candidate) => candidate.exercise.id === row.exercise.id) + 1 || 1
+  return { kind: 'superset', text: `${group}${slot}`, number }
+}
+
 export function setUnit(set: SetLog, fallback: WeightUnit): WeightUnit {
   return set.draft_weight_unit ?? fallback
 }

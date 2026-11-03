@@ -564,4 +564,6 @@ export const de: Record<string, string> = {
   "Blueprint": "Routine",
   "Set": "Satz",
   "Body weight": "Körpergewicht",
+  'Working set {0}': 'Arbeitssatz {0}',
+  'Superset {0}, working set {1}': 'Supersatz {0}, Arbeitssatz {1}',
 }

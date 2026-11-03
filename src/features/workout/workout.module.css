@@ -212,9 +212,45 @@
 }
 
 .setType {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--secondary-text);
+}
+
+/* Set kind: letter or number first, shape second (dashed warm-up, rounded superset), colour last. */
+.badge {
+  display: inline-grid;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-family: var(--font-rounded);
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.warmUp {
+  border: 1px dashed var(--border);
+  color: var(--secondary-text);
+}
+
+.working {
+  background: color-mix(in srgb, var(--action) 16%, transparent);
+  color: var(--action);
+}
+
+.superset {
+  border-color: color-mix(in srgb, var(--chart-history) 70%, transparent);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--chart-history) 18%, transparent);
+  color: var(--text);
 }
 
 .setType small {

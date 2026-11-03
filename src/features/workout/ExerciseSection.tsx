@@ -3,7 +3,7 @@ import { Fragment, useState, type RefObject } from 'react'
 import type { SupersetGroup } from '../../data/types'
 import { targetLabel } from '../../domain/guidance'
 import { needsReps, quantityLabel, supportsWeightComparisons } from '../../domain/measurement'
-import type { ExerciseRows } from '../../domain/sets'
+import { setBadge, type ExerciseRows } from '../../domain/sets'
 import { useT } from '../../i18n'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Menu, SelectRow } from '../../ui/controls'
@@ -77,6 +77,7 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
               else rowRefs.current?.delete(row.set.id)
             }}
             row={row}
+            badge={setBadge(row, session.exercises)}
             previous={previousFor(row, session, history)}
             canCopyPrevious={engine.rowAbove(session, row) !== undefined}
             context={context}

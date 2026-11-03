@@ -1,7 +1,7 @@
 import { CheckCircle2, CheckSquare, Ellipsis, Square } from 'lucide-react'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { needsReps, quantityLabel } from '../../domain/measurement'
-import { comparisonText, quantityText, repsText, setUnit, type HistoricalSet, type Row } from '../../domain/sets'
+import { comparisonText, quantityText, repsText, setUnit, type HistoricalSet, type Row, type SetBadge } from '../../domain/sets'
 import { useT } from '../../i18n'
 import { Menu, type MenuItem } from '../../ui/controls'
 import type { WorkoutContext } from './engine'
@@ -15,6 +15,7 @@ export interface SetRowHandle {
 
 interface Props {
   row: Row
+  badge: SetBadge
   previous: HistoricalSet | undefined
   canCopyPrevious: boolean
   context: WorkoutContext
@@ -90,6 +91,9 @@ export const SetRow = forwardRef<SetRowHandle, Props>(function SetRow(props, han
   menuItems.push({ label: t(skipped ? 'Unskip set' : 'Skip set'), onSelect: props.onSkip }, { label: t('Remove set'), role: 'destructive', onSelect: props.onRemove })
 
   const label = t(quantityLabel(measurement))
+  const badge = props.badge
+  const badgeLabel =
+    badge.kind === 'warmUp' ? t('Warm-up set') : badge.kind === 'superset' ? t('Superset {0}, working set {1}', [badge.text, badge.number ?? 1]) : t('Working set {0}', [badge.number ?? 1])
   const quantityUnit = measurement === 'Duration' ? 'sec' : unit
   return (
     <div className={`${styles.setRow} ${set.is_completed ? styles.completed : ''}`} data-testid={`set-${exercise.exercise_name}-${set.set_index}`}>
@@ -100,7 +104,11 @@ export const SetRow = forwardRef<SetRowHandle, Props>(function SetRow(props, han
       )}
       <div className={styles.setHead}>
         <span className={styles.setType}>
-          {t(set.is_warm_up ? 'Warm-up set' : 'Working set')} {skipped && <small>{t('Skip')}</small>}
+          <span role="img" className={`${styles.badge} ${styles[badge.kind]}`} aria-label={badgeLabel} title={badgeLabel} data-testid={`setBadge-${set.set_index}`}>
+            {badge.text}
+          </span>
+          {/* A superset badge names the slot (A1), so the set number moves into the label. */}
+          {badge.kind === 'superset' ? t('Working set {0}', [badge.number ?? 1]) : t(set.is_warm_up ? 'Warm-up set' : 'Working set')} {skipped && <small>{t('Skip')}</small>}
         </span>
         <Menu label={t(set.is_warm_up ? 'Warm-up set' : 'Working set')} icon={<Ellipsis size={18} />} items={menuItems} />
       </div>

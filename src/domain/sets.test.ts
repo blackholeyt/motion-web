@@ -1,6 +1,6 @@
 import type { SetLog, WorkoutExercise } from '../data/types'
 import { formatNumber, needsReps, parseNumber } from './measurement'
-import { orderedRows, parseWeightText, startsRest, type ExerciseRows } from './sets'
+import { orderedRows, parseWeightText, setBadge, startsRest, type ExerciseRows } from './sets'
 
 const base = { user_id: null, created_at: '', updated_at: '', deleted_at: null }
 const exercise = (id: string, group: 'A' | null = null): WorkoutExercise => ({
@@ -65,5 +65,24 @@ describe('supersets (SupersetSequence)', () => {
     const b1 = orderedRows(done).find((row) => row.set.id === 'b1')!
     expect(startsRest(b1, done)).toBe(true)
     expect(startsRest(ordered[0]!, groups)).toBe(true) // warm-up
+  })
+})
+
+describe('set badges', () => {
+  it('marks warm-ups, numbers working sets and names superset slots', () => {
+    const a = exercise('a', 'A')
+    const b = exercise('b', 'A')
+    const c = exercise('c')
+    const groups = [
+      rows(a, [set('a0', 'a', 1, { is_warm_up: true }), set('a1', 'a', 2), set('a2', 'a', 3)]),
+      rows(c, [set('c0', 'c', 1, { is_warm_up: true }), set('c1', 'c', 2), set('c2', 'c', 3, { is_skipped: true })]),
+      rows(b, [set('b1', 'b', 1)]),
+    ]
+    const badge = (group: number, index: number) => setBadge(groups[group]!.rows[index]!, groups)
+    expect(badge(0, 0)).toEqual({ kind: 'warmUp', text: 'W', number: null })
+    expect(badge(0, 2)).toEqual({ kind: 'superset', text: 'A1', number: 2 })
+    expect(badge(2, 0)).toEqual({ kind: 'superset', text: 'A2', number: 1 })
+    expect(badge(1, 1)).toEqual({ kind: 'working', text: '1', number: 1 })
+    expect(badge(1, 2)).toEqual({ kind: 'working', text: '2', number: 2 })
   })
 })
