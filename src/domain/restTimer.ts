@@ -5,6 +5,8 @@ import type { RestTimerState } from '../data/types'
  * display cache. Every function returns a new state.
  */
 
+const noticeMilliseconds = 4000
+
 export const emptyTimer = (): RestTimerState => ({
   deadline: null,
   noticeUntil: null,
@@ -14,7 +16,20 @@ export const emptyTimer = (): RestTimerState => ({
   exerciseName: null,
 })
 
-export const isVisible = (state: RestTimerState) => state.deadline !== null || state.noticeUntil !== null
+export type RestDisplay = { phase: 'running'; remaining: number } | { phase: 'complete' } | { phase: 'idle' }
+
+/**
+ * What the bar shows at `now`, from the stored dates alone. An expiry that has not been
+ * ticked yet (closed app, frozen page, reload) already reads as complete, never as a stale count.
+ */
+export function display(state: RestTimerState, now: Date): RestDisplay {
+  if (state.deadline) {
+    // The next tick turns a passed deadline into a notice that starts from then.
+    return now.getTime() < Date.parse(state.deadline) ? { phase: 'running', remaining: secondsUntil(state.deadline, now) } : { phase: 'complete' }
+  }
+  if (state.noticeUntil && now.getTime() < Date.parse(state.noticeUntil)) return { phase: 'complete' }
+  return { phase: 'idle' }
+}
 
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
 const secondsUntil = (deadline: string, now: Date) => clamp(Math.ceil((Date.parse(deadline) - now.getTime()) / 1000), 0, 3600)
@@ -58,7 +73,7 @@ export function tick(state: RestTimerState, now: Date): { state: RestTimerState;
   if (deadline) {
     next = { ...next, remaining: secondsUntil(deadline, now) }
     if (now.getTime() >= Date.parse(deadline)) {
-      return { state: { ...next, deadline: null, noticeUntil: new Date(now.getTime() + 4000).toISOString() }, expired: true }
+      return { state: { ...next, deadline: null, noticeUntil: new Date(now.getTime() + noticeMilliseconds).toISOString() }, expired: true }
     }
   }
   if (next.noticeUntil && now.getTime() >= Date.parse(next.noticeUntil)) next = { ...next, noticeUntil: null }
@@ -69,7 +84,7 @@ export const skip = (state: RestTimerState, now: Date): RestTimerState => ({
   ...state,
   deadline: null,
   remaining: 0,
-  noticeUntil: new Date(now.getTime() + 4000).toISOString(),
+  noticeUntil: new Date(now.getTime() + noticeMilliseconds).toISOString(),
 })
 
 export const cancel = (state: RestTimerState): RestTimerState => ({ ...state, deadline: null, noticeUntil: null, remaining: 0, sourceSetID: null })

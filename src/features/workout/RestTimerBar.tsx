@@ -19,7 +19,13 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
 
   useEffect(() => {
     // Returning to the app shows elapsed rest silently; only a watched expiry gives feedback.
-    void engine.tickRest(workout.id, false)
+    // iOS freezes or discards a backgrounded PWA, so every way back re-reads the clock at once.
+    const resume = () => {
+      if (document.visibilityState !== 'visible') return
+      setNow(new Date())
+      void engine.tickRest(workout.id, false)
+    }
+    resume()
     const stop = platform.timers.every(250, async () => {
       setNow(new Date())
       if (document.visibilityState !== 'visible') return
@@ -27,11 +33,14 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
         setAnnouncement(t('Rest complete. Ready for your next set.'))
       }
     })
-    const onVisible = () => document.visibilityState === 'visible' && void engine.tickRest(workout.id, false)
-    document.addEventListener('visibilitychange', onVisible)
+    document.addEventListener('visibilitychange', resume)
+    window.addEventListener('pageshow', resume)
+    window.addEventListener('focus', resume)
     return () => {
       stop()
-      document.removeEventListener('visibilitychange', onVisible)
+      document.removeEventListener('visibilitychange', resume)
+      window.removeEventListener('pageshow', resume)
+      window.removeEventListener('focus', resume)
     }
   }, [workout.id])
 
@@ -48,21 +57,22 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
     } else platform.notifications.cancel(id)
   }, [state.deadline, preferences.restNotifications])
 
-  const remaining = state.deadline ? Math.max(0, Math.ceil((Date.parse(state.deadline) - now.getTime()) / 1000)) : 0
-  const title = state.noticeUntil
-    ? t('Rest complete')
-    : state.deadline
-      ? t('Rest {0}:{1}', [Math.floor(remaining / 60), String(remaining % 60).padStart(2, '0')])
-      : t('Rest timer')
-  const subtitle = timer.isVisible(state) ? (state.exerciseName ?? t('Ready for your next set')) : t('Starts after a completed set')
+  const shown = timer.display(state, now)
+  const title =
+    shown.phase === 'complete'
+      ? t('Rest complete')
+      : shown.phase === 'running'
+        ? t('Rest {0}:{1}', [Math.floor(shown.remaining / 60), String(shown.remaining % 60).padStart(2, '0')])
+        : t('Rest timer')
+  const subtitle = shown.phase !== 'idle' ? (state.exerciseName ?? t('Ready for your next set')) : t('Starts after a completed set')
 
   return (
     <div className={styles.restBar}>
       <div className={styles.restText}>
-        <strong data-testid={state.noticeUntil ? 'restCompleteNotice' : 'restCountdown'}>{title}</strong>
+        <strong data-testid={shown.phase === 'complete' ? 'restCompleteNotice' : 'restCountdown'}>{title}</strong>
         <span>{subtitle}</span>
       </div>
-      {state.deadline && (
+      {shown.phase === 'running' && (
         <button
           type="button"
           className={styles.restStop}
@@ -78,8 +88,8 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
         className={styles.restMenu}
         items={[
           ...(state.exerciseName ? [{ label: t('Restart last interval'), onSelect: () => void engine.restartRest(workout.id) }] : []),
-          ...(state.deadline ? [{ label: t('Skip rest'), onSelect: () => void engine.skipRest(workout.id) }] : []),
-          ...(timer.isVisible(state) ? [{ label: t('Cancel timer'), onSelect: () => void engine.cancelRest(workout.id) }] : []),
+          ...(shown.phase === 'running' ? [{ label: t('Skip rest'), onSelect: () => void engine.skipRest(workout.id) }] : []),
+          ...(shown.phase !== 'idle' ? [{ label: t('Cancel timer'), onSelect: () => void engine.cancelRest(workout.id) }] : []),
           { label: t('Rest notifications…'), onSelect: onNotifications },
         ]}
       />
