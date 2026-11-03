@@ -205,10 +205,10 @@ export function SettingsScreen() {
           </Group>
           <Group
             title={t('Backup')}
-            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. JSON is the complete backup. CSV is a table of workouts, sets, body weight and sleep scores for spreadsheets.')}
+            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. A JSON backup from this app is restored the same way. JSON is the complete backup. CSV is a table of workouts, sets, body weight and sleep scores for spreadsheets.')}
           >
             <RowButton tone="plain" onClick={() => setImporting(true)} testID="importBackup">
-              {t('Import from the iOS app')}
+              {t('Import or restore backup')}
             </RowButton>
             <RowButton tone="plain" onClick={() => void download(exportBackup)} testID="exportBackup">
               {t('Export backup (JSON)')}

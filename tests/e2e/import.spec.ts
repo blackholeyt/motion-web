@@ -61,3 +61,40 @@ test('imports an older Motion CSV and the simple workout CSV', async ({ page }) 
   await page.getByTestId('confirmImport').click()
   await expect(page.getByTestId('importReport')).toContainText('Import finished')
 })
+
+test('restores a backup exported here after the device data was deleted', async ({ page }) => {
+  await page.goto('./#/settings')
+  await expect(page.getByTestId('opening')).toBeHidden({ timeout: 5_000 })
+  const hint = page.getByTestId('install-hint')
+  if (await hint.isVisible()) await hint.getByRole('button', { name: 'Not now' }).first().click()
+
+  await page.getByTestId('importBackup').click()
+  await page.getByTestId('importFile').setInputFiles({ name: 'Motion-Backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(legacyBackup())) })
+  await page.getByTestId('confirmImport').click()
+  await page.getByTestId('importDone').click()
+
+  const download = page.waitForEvent('download')
+  await page.getByTestId('exportBackup').click()
+  const file = await (await download).path()
+
+  await page.getByTestId('deleteDeviceData').click()
+  await page.getByTestId('confirmDeletion').check()
+  await page.getByTestId('confirmDelete').click()
+  await expect(page.getByTestId('consentTitle')).toBeVisible()
+
+  // A fresh start of the app; the init script gives the consent again.
+  await page.reload()
+  await expect(page.getByTestId('opening')).toBeHidden({ timeout: 5_000 })
+  await page.getByTestId('importBackup').click()
+  await page.getByTestId('importFile').setInputFiles(file)
+  await expect(page.getByTestId('webBackup')).toBeVisible()
+  await expect(page.getByTestId('count-workouts').locator('td')).toHaveText(['1', '1', '0'])
+  await page.getByTestId('confirmImport').click()
+  await expect(page.getByTestId('importReport')).toContainText('Backup restored.')
+  await expect(page.getByTestId('count-xp')).toContainText('200')
+  await page.getByTestId('importDone').click()
+
+  await page.getByTestId('importBackup').click()
+  await page.getByTestId('importFile').setInputFiles(file)
+  await expect(page.getByTestId('count-workouts').locator('td')).toHaveText(['1', '0', '1'])
+})

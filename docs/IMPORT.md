@@ -131,3 +131,19 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 - Doppelte Satznummern in einer Übung und ungültige Zeiten brechen mit Zeilennummer ab.
 
 **Abnahme (offen):** Mathis importiert seine alte CSV-Datei. Zahlen und Stichproben müssen zur alten App passen.
+
+## 8. Web-Sicherung wiederherstellen (03.11.2026)
+
+**Wo:** derselbe Dialog wie der Import (Einstellungen → Sicherung → „Sicherung importieren oder wiederherstellen“, Einführung → „Restore backup“). Eine JSON-Datei mit `"format": "motion-web-backup"` geht an die Wiederherstellung, alles andere an den iOS-Import.
+
+**Code:** `src/import/webBackup.ts`, Tests `src/import/webBackup.test.ts` und `tests/e2e/import.spec.ts`.
+
+**Regeln**
+- Prüfung: Format und Version, dann jeder Eintrag: gültige ID, keine doppelte ID je Tabelle, gültige Zeitpunkte, Pflichtfelder je Tabelle. Alle Probleme (höchstens 50) mit Fundstelle, z. B. „Satz 2: ungültige ID“. Bei einem Fehler wird nichts geschrieben.
+- Pro Eintrag gewinnt die neuere Fassung (`updated_at`), wie beim Sync: Was nach dem Export hier geändert wurde, bleibt. Eine Löschung in der Datei, die neuer ist, löscht hier; was hier später gelöscht wurde, bleibt gelöscht.
+- Ein Training, das auf diesem Gerät gerade offen ist, behält seinen Stand.
+- Alles Übernommene kommt in die Sync-Warteschlange. Mit Konto landet es also auch wieder in der Cloud.
+- Sicherungen von vor Phase 5a ohne `legacy_imports` werden angenommen.
+- Ein zweites Wiederherstellen derselben Datei ändert nichts; deshalb gibt es hier keinen Doppelschutz-Beleg.
+- Die Spalte „Neu“ der Vorschau zählt auch Einträge, die in der Datei in neuerer Fassung stehen.
+- Nicht in der Sicherung und deshalb nicht wiederhergestellt: Geräte-Einstellungen wie Darstellung, Sprache und Startanimation.

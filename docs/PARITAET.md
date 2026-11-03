@@ -14,8 +14,8 @@ Ehrliche Gesamtliste. Die Abschnitte „Stand nach Phase …“ weiter unten sin
 ### A. Fehlt noch, obwohl es im Web ginge
 | Nr | Was | Folge | Zeile |
 |---|---|---|---|
-| A1 | Die **neue Web-Sicherung (JSON) lässt sich nicht zurückspielen.** Der Import liest nur Dateien der iOS-App. | Mit Konto ist die Cloud die Wiederherstellung. Ohne Konto ist der Export nur zum Aufbewahren; nach „Daten auf diesem Gerät löschen“ oder verlorenem Browser-Speicher kommt man damit nicht zurück. | 78, 79 |
-| A2 | Der **CSV-Export ist eine lesbare Tabelle** und wird nicht wieder eingelesen. In der iOS-App war die CSV eine vollständige, importierbare Sicherung. | Für eine vollständige Kopie das JSON nehmen (siehe A1). | 80 |
+| A1 | ~~Die neue Web-Sicherung (JSON) lässt sich nicht zurückspielen.~~ **Gebaut am 03.11.2026:** Einstellungen → Sicherung → „Sicherung importieren oder wiederherstellen“ erkennt die Web-Sicherung und stellt sie mit Vorschau und Bericht wieder her. Pro Eintrag gewinnt die neuere Fassung (wie beim Sync). | – | 78, 79 |
+| A2 | Der **CSV-Export ist eine lesbare Tabelle** und wird nicht wieder eingelesen. In der iOS-App war die CSV eine vollständige, importierbare Sicherung. | Für eine vollständige Kopie das JSON nehmen. | 80 |
 
 ### B. Geht, aber anders als in der iOS-App
 | Nr | Was | Zeile |
@@ -139,7 +139,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 76 | Einstellungen: Pausen-Mitteilungen (6.7, 11) | `RestConfigurationViews.swift` | Web-Anpassung nötig | 2 | siehe Nr. 50; Texte an Web-Verhalten anpassen | manuell (Browser): Einstellungen → Pausen-Mitteilungen |
 | 77 | Hilfe & Datenschutz (12) | `HelpPrivacyView.swift` | Web-Anpassung nötig | 6 | Texte zu Konto, Cloud und Health neu; Links zu Datenschutz und Impressum; Einwilligung beim Start | E2E: `privacy.spec.ts`; Unit: `legal.test.ts`, `privacy.test.ts` |
 | 78 | JSON-Backup exportieren (13) | `MotionBackupStore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 3 (Export)/6 | Download statt Datei-Dialog; neues Format plus Import des alten Formats | Unit: `backup.test.ts` (Export), `importer.test.ts` (Import) |
-| 79 | JSON-Backup importieren mit Vorschau und Zusammenführung (13) | `MotionBackupRestore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 5 | Upload statt Datei-Dialog; Regeln gleich. Gilt für Sicherungen der iOS-App; die neue Web-Sicherung lässt sich noch nicht zurückspielen (siehe Abweichungen, A1) | Unit: `importer.test.ts`; E2E: `import.spec.ts` |
+| 79 | JSON-Backup importieren mit Vorschau und Zusammenführung (13) | `MotionBackupRestore.swift`, `FullBackupSection.swift` | Web-Anpassung nötig | 5 | Upload statt Datei-Dialog; Regeln gleich. Gilt für Sicherungen der iOS-App und für die Web-Sicherung (A1) | Unit: `importer.test.ts`, `webBackup.test.ts`; E2E: `import.spec.ts` |
 | 80 | CSV exportieren und importieren (13) | `CompleteCSVCodec.swift`, `WorkoutCSVImporter.swift`, `MotionBackupCSV.swift` | Web-Anpassung nötig | 5/6 | Pflicht: alle alten CSV-Formate (v1–v18 und einfache Workout-CSV) importierbar; Export als lesbare Tabelle im neuen Format | E2E: `import.spec.ts`, `privacy.spec.ts`; Unit: `csvExport.test.ts` |
 | 81 | Demo-Modus mit synthetischen Daten (14) | `DemoSession.swift`, `SampleDataStore.swift` | übernehmen | 3 | eigene temporäre IndexedDB | E2E: `introduction.spec.ts` (Demo, persönliche Daten unberührt) |
 | 82 | Alte Beispieldaten entfernen (14) | `SettingsView.swift`, `SampleDataStore.swift` | entfällt | – | Der Import lässt markierte Beispieltrainings weg, deshalb gibt es im Web keine zu entfernen (siehe Abweichungen, B9) | Unit: `importer.test.ts`, `olderCSV.test.ts` (Beispieltrainings weggelassen) |

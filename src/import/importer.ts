@@ -1,3 +1,4 @@
+import { decodeWebBackup, isWebBackup, type WebBackupSource } from './webBackup'
 import { db, syncedTables } from '../data/db'
 import { derivedID, stableID } from '../data/ids'
 import { enqueue, live, stamp, transaction, update, type Draft } from '../data/repo'
@@ -59,7 +60,7 @@ const maximumJSONBytes = 32 * 1024 * 1024
 const maximumCSVBytes = 64 * 1024 * 1024
 
 /** Which file the backup came from: the full backup, a Motion CSV before version 18, or the plain workout CSV. */
-export type ImportOrigin = { kind: 'backup' } | { kind: 'olderCSV'; version: number } | { kind: 'workoutCSV' }
+export type ImportOrigin = { kind: 'backup' } | { kind: 'olderCSV'; version: number } | { kind: 'workoutCSV' } | { kind: 'webBackup' }
 
 export interface ImportSource {
   fileName: string
@@ -107,9 +108,25 @@ export interface ImportSummary {
 // Reading the file ------------------------------------------------------------------------------
 
 /** JSON or CSV, recognised by content; every CSV format turns into the same backup object. */
-export async function readImportFile(file: File): Promise<ImportSource> {
-  const text = await file.text()
-  return readImportText(text, file.name, file.size)
+/** A file for the import sheet: a backup of the iOS app or Motion Web's own backup. */
+export type BackupFile = { kind: 'ios'; source: ImportSource } | { kind: 'web'; source: WebBackupSource }
+
+export async function readImportFile(file: File): Promise<BackupFile> {
+  return readBackupText(await file.text(), file.name, file.size)
+}
+
+export async function readBackupText(text: string, fileName: string, size = new TextEncoder().encode(text).length): Promise<BackupFile> {
+  const json = text.replace(/^\uFEFF/, '')
+  if (json.trimStart().startsWith('{') && size <= maximumJSONBytes) {
+    let object: unknown = null
+    try {
+      object = JSON.parse(json)
+    } catch {
+      // Reported by readImportText below.
+    }
+    if (isWebBackup(object)) return { kind: 'web', source: decodeWebBackup(object, fileName) }
+  }
+  return { kind: 'ios', source: await readImportText(text, fileName, size) }
 }
 
 export async function readImportText(text: string, fileName: string, size = new TextEncoder().encode(text).length): Promise<ImportSource> {

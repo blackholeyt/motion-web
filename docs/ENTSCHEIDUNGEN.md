@@ -75,4 +75,4 @@
 |---|---|---|
 | 1 | Kompletter Durchlauf | Als ein automatischer Test gegen die echten Migrationen in eingebettetem Postgres (`src/sync/sync.test.ts`), läuft in CI. Gegen das echte Projekt lege ich keine Konten an; dort decken `test:rls-live` und `test:delete-live` die Server-Regeln ab, den Rest die Geräte-Checkliste in `ABNAHME.md`. |
 | 2 | Geheimnis-Scan | Einmalig über die ganze Historie (keine Funde) und dauerhaft als CI-Job mit gitleaks. |
-| 3 | Fehlende Wiederherstellung der Web-Sicherung | Nicht in Phase 7 gebaut, sondern ehrlich als Abweichung A1 in `PARITAET.md` geführt. |
+| 3 | Wiederherstellen der Web-Sicherung (A1) | Nachgebaut am 03.11.2026 im selben Import-Dialog. Regel wie beim Sync: pro Eintrag gewinnt die neuere Fassung, auch Löschungen; ein auf diesem Gerät offenes Training behält seinen Stand. Kein Doppelschutz-Beleg nötig, weil ein zweites Wiederherstellen nichts ändert. |

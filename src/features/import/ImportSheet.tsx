@@ -2,7 +2,8 @@ import { useRef, useState } from 'react'
 import { useT, type Translate } from '../../i18n'
 import { formatNumber, loadLabel } from '../../domain/measurement'
 import { ImportError, type ImportErrorCode, type ImportIssue } from '../../import/errors'
-import { previewImport, readImportFile, runImport, type ImportCounts, type ImportSource, type ImportSummary, type SampleWorkout } from '../../import/importer'
+import { previewImport, readImportFile, runImport, type BackupFile, type ImportCounts, type ImportSummary, type SampleWorkout } from '../../import/importer'
+import { previewRestore, runRestore } from '../../import/webBackup'
 import { useProfile } from '../../store/profile'
 import { useSandbox } from '../../app/sandbox'
 import { Sheet } from '../../ui/Sheet'
@@ -10,21 +11,22 @@ import { Group, PrimaryButton, RowButton, TextButton } from '../../ui/controls'
 import styles from './import.module.css'
 
 /*
- * Import of the iOS app's backup (phase 5a) and its older CSV files (phase 5b): choose the file,
- * read the preview, import, read the report. Every step before "Import" only reads; the import itself is one transaction.
+ * Import of the iOS app's backup (phase 5a) and its older CSV files (phase 5b), and restoring Motion
+ * Web's own JSON backup: choose the file, read the preview, import, read the report. Every step
+ * before "Import" only reads; the import itself is one transaction.
  */
 
 type Step =
   | { kind: 'choose' }
   | { kind: 'reading' }
-  | { kind: 'preview'; source: ImportSource; summary: ImportSummary }
-  | { kind: 'importing'; source: ImportSource; summary: ImportSummary }
+  | { kind: 'preview'; source: BackupFile; summary: ImportSummary }
+  | { kind: 'importing'; source: BackupFile; summary: ImportSummary }
   | { kind: 'done'; summary: ImportSummary }
   | { kind: 'failed'; error: ImportError }
 
 const errorTexts: Record<ImportErrorCode, string> = {
   tooLarge: 'The file is too large. Motion backups have at most 32 MB as JSON and 64 MB as CSV.',
-  unreadable: 'This file is not a Motion backup. Choose the JSON file from “Export Backup” or the CSV file from “Export CSV” in the iOS app.',
+  unreadable: 'This file is not a Motion backup. Choose the JSON file from “Export Backup” or the CSV file from “Export CSV” in the iOS app, or a backup exported here.',
   csvMalformed: 'The CSV file is damaged or incomplete.',
   csvRow: 'The CSV file is damaged in row {0}.',
   wrongType: 'This is not a backup of the Motion iOS app.',
@@ -59,6 +61,14 @@ const pathNames: Record<string, string> = {
   sleepScores: 'Sleep score',
   undoHistory: 'Undo step',
   rows: 'Row',
+  blueprints: 'Blueprint',
+  blueprint_exercises: 'Blueprint exercise',
+  workout_exercises: 'Exercise',
+  set_logs: 'Set',
+  body_weights: 'Body weight',
+  weight_rewards: 'Daily XP receipt',
+  workout_awards: 'Workout XP receipt',
+  sleep_scores: 'Sleep score',
 }
 
 /** "workouts[3].exercises[0].sets[2]" → "Workout 4 › Exercise 1 › Set 3". */
@@ -95,15 +105,16 @@ export function ImportSheet({ open, onClose, onImported }: { open: boolean; onCl
     setStep({ kind: 'reading' })
     try {
       const source = await readImportFile(file)
-      setStep({ kind: 'preview', source, summary: await previewImport(source) })
+      const summary = source.kind === 'web' ? await previewRestore(source.source) : await previewImport(source.source)
+      setStep({ kind: 'preview', source, summary })
     } catch (error) {
       fail(error)
     }
   }
-  const start = async (source: ImportSource, summary: ImportSummary) => {
+  const start = async (source: BackupFile, summary: ImportSummary) => {
     setStep({ kind: 'importing', source, summary })
     try {
-      setStep({ kind: 'done', summary: await runImport(source) })
+      setStep({ kind: 'done', summary: source.kind === 'web' ? await runRestore(source.source) : await runImport(source.source) })
     } catch (error) {
       fail(error)
     }
@@ -127,14 +138,14 @@ export function ImportSheet({ open, onClose, onImported }: { open: boolean; onCl
     <Sheet
       open={open}
       onClose={close}
-      title={t('Import from the iOS app')}
+      title={t('Import or restore')}
       leading={step.kind !== 'done' ? <TextButton onClick={close} disabled={busy}>{t('Cancel')}</TextButton> : undefined}
       trailing={step.kind === 'done' ? <TextButton strong onClick={close} testID="importDone">{t('Done')}</TextButton> : undefined}
     >
       {chooser}
       {(step.kind === 'choose' || step.kind === 'reading') && (
         <Group
-          footer={t('In the iOS app open Settings and use “Export Backup” (JSON) or “Export CSV”. Older Motion CSV files and the simple workout CSV work too. Send the file to this device, for example with AirDrop or the Files app. Nothing is imported before you confirm the preview.')}
+          footer={t('In the iOS app open Settings and use “Export Backup” (JSON) or “Export CSV”. Older Motion CSV files and the simple workout CSV work too. Send the file to this device, for example with AirDrop or the Files app. A backup exported here (JSON) is restored the same way. Nothing is imported before you confirm the preview.')}
         >
           <RowButton onClick={() => input.current?.click()} disabled={step.kind === 'reading'} testID="chooseImportFile">
             {step.kind === 'reading' ? t('Checking file…') : t('Choose backup file')}
@@ -210,7 +221,7 @@ function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: 
   return (
     <div className={styles.stack} data-testid="importPreview">
       <p className={styles.lead}>
-        {summary.origin.kind === 'backup'
+        {summary.origin.kind === 'backup' || summary.origin.kind === 'webBackup'
           ? t('{0} · exported {1}', [summary.fileName, date(summary.exportedAt)])
           : t('{0} · newest entry {1}', [summary.fileName, date(summary.exportedAt)])}
       </p>
@@ -229,11 +240,18 @@ function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: 
           {t('This backup was already imported on {0}. Records that already exist are skipped, so importing again adds nothing twice.', [date(summary.previous.imported_at)])}
         </p>
       )}
+      {summary.origin.kind === 'webBackup' && (
+        <p className={styles.muted} data-testid="webBackup">
+          {t('Motion backup from this app. Per entry the newer version wins: what you changed here after the export stays, and entries deleted later stay deleted. “New” also counts entries the file holds in a newer version.')}
+        </p>
+      )}
       <CountTable summary={summary} t={t} report={false} />
       {summary.file.healthWorkouts > 0 && (
         <p className={styles.muted}>{t('{0} workouts from Apple Health or Strava are skipped. They stay in your file for the native app.', [summary.file.healthWorkouts])}</p>
       )}
-      <p className={styles.muted}>{t('No XP is calculated: workouts keep the XP they earned in the iOS app. Your profile and training settings are taken from the backup; a training plan only when this device has none.')}</p>
+      {summary.origin.kind !== 'webBackup' && (
+        <p className={styles.muted}>{t('No XP is calculated: workouts keep the XP they earned in the iOS app. Your profile and training settings are taken from the backup; a training plan only when this device has none.')}</p>
+      )}
       {summary.samples.length > 0 && (
         <Group title={t('Latest workouts in the file')}>
           {summary.samples.map((sample, index) => (
@@ -281,7 +299,7 @@ function Sample({ sample, t, date }: { sample: SampleWorkout; t: Translate; date
 function Report({ summary, t }: { summary: ImportSummary; t: Translate }) {
   return (
     <div className={styles.stack} data-testid="importReport">
-      <p className={styles.lead}>{t('Import finished. Compare these numbers with the iOS app.')}</p>
+      <p className={styles.lead}>{summary.origin.kind === 'webBackup' ? t('Backup restored.') : t('Import finished. Compare these numbers with the iOS app.')}</p>
       <CountTable summary={summary} t={t} report />
       {summary.file.healthWorkouts > 0 && <p className={styles.muted}>{t('Skipped: {0} workouts from Apple Health or Strava.', [summary.file.healthWorkouts])}</p>}
       <p className={styles.muted}>{t('Everything new is saved on this device and, when you are signed in, backed up to your account in the background.')}</p>

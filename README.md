@@ -18,7 +18,7 @@ Alle Phasen 0–7 sind gebaut. Live: https://motion-web.pages.dev. Motion läuft
 | 4 | Konto (Google, E-Mail-Code), Schema mit RLS, Sync, Schutz offener Trainings | RLS live 13/13; Geräte offen |
 | 5a/5b | Import der iOS-Sicherung: JSON, CSV v18, ältere CSV v1–v17, einfache Workout-CSV | offen: mit deinen echten Dateien |
 | 6 | Einwilligung, Export JSON/CSV, Konto löschen, Gerätedaten löschen, privater Betrieb | Löschtest live 2/2 |
-| 7 | Kompletter Durchlauf als Test, Geheimnis-Scan, Einrichtung/Betrieb, Abweichungsliste | Geräte-Checkliste offen (`docs/ABNAHME.md`) |
+| 7 | Kompletter Durchlauf als Test, Geheimnis-Scan, Einrichtung/Betrieb, Abweichungsliste, Wiederherstellen der Web-Sicherung | Geräte-Checkliste offen (`docs/ABNAHME.md`) |
 
 Was anders ist als in der iOS-App oder noch fehlt: `docs/PARITAET.md`, Abschnitt „Abweichungen“.
 
