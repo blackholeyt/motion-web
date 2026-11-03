@@ -1,6 +1,6 @@
 import { db } from '../data/db'
 import { freshDatabase } from '../test/db'
-import { checkIn, saveSleepScore } from './body'
+import { checkIn } from './body'
 import { buildCSVRows, csvColumns, toCSV } from './csvExport'
 
 const time = '2026-11-02T12:00:00.000Z'
@@ -29,18 +29,16 @@ async function seedWorkout(completed: boolean, name = 'Push') {
 describe('CSV export', () => {
   beforeEach(freshDatabase)
 
-  it('lists completed workouts with their sets, body weight and sleep scores', async () => {
+  it('lists completed workouts with their sets and body weight', async () => {
     await seedWorkout(true)
     await seedWorkout(false, 'Open draft')
     await checkIn(67.05, new Date('2026-11-01T07:00:00'))
-    await saveSleepScore(84, new Date('2026-11-03T08:00:00'))
     const rows = await buildCSVRows()
-    expect(rows.map((row) => row.type)).toEqual(['body_weight', 'workout', 'set', 'set', 'sleep_score'])
+    expect(rows.map((row) => row.type)).toEqual(['body_weight', 'workout', 'set', 'set'])
     expect(rows.find((row) => row.workout === 'Open draft')).toBeUndefined()
     expect(rows[2]).toMatchObject({ exercise: '=Bankdrücken', set: 1, set_type: 'warm-up', weight_kg: 40, reps: 8, completed: true })
     expect(rows[3]).toMatchObject({ set: 2, set_type: 'working', weight_kg: 62.5 })
     expect(rows[0]).toMatchObject({ date: '2026-11-01', value: 67.05 })
-    expect(rows[4]).toMatchObject({ date: '2026-11-03', value: 84 })
   })
 
   it('quotes text, neutralises formulas and keeps one header', async () => {

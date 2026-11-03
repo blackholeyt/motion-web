@@ -61,11 +61,11 @@ export function ConsentScreen() {
         <ul className={styles.points}>
           <li>
             <Smartphone size={20} aria-hidden="true" />
-            <span>{t('Training, body weight and sleep scores are saved on this device. No ads, no tracking, no analytics.')}</span>
+            <span>{t('Training and body weight are saved on this device. No ads, no tracking, no analytics.')}</span>
           </li>
           <li>
             <HeartPulse size={20} aria-hidden="true" />
-            <span>{t('Body weight and sleep scores are health data. Motion uses them only to show your progress.')}</span>
+            <span>{t('Body weight is health data. Motion uses it only to show your progress.')}</span>
           </li>
           <li>
             <Cloud size={20} aria-hidden="true" />
@@ -79,7 +79,7 @@ export function ConsentScreen() {
         <LegalLinks onOpen={setLegal} />
         <div className={styles.points}>
           <ConsentCheck checked={health} onChange={setHealth} testID="consentHealth">
-            {t('I have read the privacy policy and agree that Motion processes my training and health data (body weight, sleep score) on this device.')}
+            {t('I have read the privacy policy and agree that Motion processes my training and health data (body weight) on this device.')}
           </ConsentCheck>
           <ConsentCheck checked={age} onChange={setAge} testID="consentAge">
             {t('I am at least 16 years old, or a parent agrees.')}

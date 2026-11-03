@@ -48,7 +48,7 @@ export const privacyPolicy: LegalSection[] = [
     list: [
       'Ohne Konto bleiben alle Daten auf deinem Gerät. Niemand sonst sieht sie.',
       'Keine Werbung, kein Tracking, keine Analyse-Tools, keine Werbe-Cookies.',
-      'Körpergewicht und Schlafindex sind Gesundheitsdaten. Motion nutzt sie nur, um dir deinen Fortschritt zu zeigen.',
+      'Körpergewicht ist ein Gesundheitsdatum. Motion nutzt es nur, um dir deinen Fortschritt zu zeigen.',
       'Mit Konto werden deine Daten zur Sicherung auf Servern in Frankfurt am Main gespeichert.',
       'Export als JSON oder CSV und Löschen von Konto oder Gerätedaten gehen jederzeit in den Einstellungen.',
     ],
@@ -56,7 +56,7 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Auf deinem Gerät',
     paragraphs: [
-      'Motion speichert im Speicher des Browsers bzw. der installierten App: Trainings und Sätze, Routinen, Trainingsplan, Übungen, Ausdauer-Einheiten, Körpergewicht, Schlafindex, XP, dein Profil (Name, Einheiten, Zielgewicht), Einstellungen und deine Einwilligung.',
+      'Motion speichert im Speicher des Browsers bzw. der installierten App: Trainings und Sätze, Routinen, Trainingsplan, Übungen, Ausdauer-Einheiten, Körpergewicht, XP, dein Profil (Name, Einheiten, Zielgewicht), Einstellungen und deine Einwilligung.',
       'Löschen: Einstellungen → „Daten auf diesem Gerät löschen“, oder die Website-Daten bzw. die App entfernen.',
     ],
   },

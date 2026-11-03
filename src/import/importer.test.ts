@@ -101,7 +101,6 @@ describe('importing iOS backups', () => {
       exercises: 2,
       routines: 1,
       bodyWeights: 2,
-      sleepScores: 1,
       xpReceipts: 3,
       records: 1,
       xp: 200,
@@ -147,7 +146,6 @@ describe('importing iOS backups', () => {
       guidance: { minimumReps: 6, maximumReps: 8, progression: 'Build external load', notes: '', measurement: null },
     })
     expect(await db.body_weights.get(stableID('body_weights', '2026-11-01'))).toMatchObject({ day: '2026-11-01', kilograms: 67.05 })
-    expect(await db.sleep_scores.get(stableID('sleep_scores', '2026-11-01'))).toMatchObject({ score: 84 })
     const plan = (await db.training_plans.get(stableID('training_plans')))!.schedule
     expect(plan.consumed).toEqual([`${ids.entry.toLowerCase()}/${ids.token.toLowerCase()}`, 'cardio/2026-10-30'])
     expect(plan.entries[0]!.blueprintID).toBe(ids.push.toLowerCase())
@@ -159,7 +157,7 @@ describe('importing iOS backups', () => {
     expect(await totalXP()).toBe(200)
     expect(await db.legacy_imports.toArray()).toEqual([expect.objectContaining({ file_name: 'Motion-Backup.json', source_format: 'json', imported_at: '2026-11-02T09:00:00.000Z' })])
     const queued = new Set((await db.outbox.toArray()).map((entry) => entry.table))
-    expect(queued).toEqual(new Set(['exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises', 'set_logs', 'workout_awards', 'body_weights', 'weight_rewards', 'sleep_scores', 'training_plans', 'profiles', 'legacy_imports']))
+    expect(queued).toEqual(new Set(['exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises', 'set_logs', 'workout_awards', 'body_weights', 'weight_rewards', 'training_plans', 'profiles', 'legacy_imports']))
   })
 
   it('adds nothing twice and points out a file that was already imported', async () => {
@@ -168,7 +166,7 @@ describe('importing iOS backups', () => {
     const again = await readImportText(completeCSV(legacyBackup()), 'MotionBackup.csv')
     const preview = await previewImport(again)
     expect(preview.previous?.file_name).toBe('Motion-Backup.json')
-    expect(preview.added).toMatchObject({ workouts: 0, drafts: 0, sets: 0, exercises: 0, routines: 0, bodyWeights: 0, sleepScores: 0, xpReceipts: 0, xp: 0 })
+    expect(preview.added).toMatchObject({ workouts: 0, drafts: 0, sets: 0, exercises: 0, routines: 0, bodyWeights: 0, xpReceipts: 0, xp: 0 })
     await runImport(again)
     expect(await Promise.all([db.workouts.count(), db.set_logs.count(), db.exercises.count(), db.workout_awards.count()])).toEqual(counts)
     expect(await db.legacy_imports.count()).toBe(1)

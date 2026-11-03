@@ -172,7 +172,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 - Einheiten in der Datenbank: kg, km, Sekunden, Sekunden pro km, wie in der alten App.
 - Zeitpunkte als ISO-Zeitstempel mit Zeitzone.
 - Kalendertage als `date` im Format `JJJJ-MM-TT` nach der lokalen Zeitzone des Geräts. Das ersetzt das alte dayKey-Format.
-- **Tägliche Datensätze** (Körpergewicht, Gewichts-XP, Schlafwert) bekommen eine **aus Konto und Tag abgeleitete UUID** (UUIDv5). So erzeugen zwei Geräte am selben Tag dieselbe ID, und der Upsert führt sie zusammen, statt ein Duplikat anzulegen. Dasselbe gilt für den XP-Beleg pro Workout (aus der Workout-ID) und den einen Trainingsplan pro Konto.
+- **Tägliche Datensätze** (Körpergewicht, Gewichts-XP) bekommen eine **aus Konto und Tag abgeleitete UUID** (UUIDv5). So erzeugen zwei Geräte am selben Tag dieselbe ID, und der Upsert führt sie zusammen, statt ein Duplikat anzulegen. Dasselbe gilt für den XP-Beleg pro Workout (aus der Workout-ID) und den einen Trainingsplan pro Konto.
 - Verschachtelte Strukturen, die immer als Ganzes gelesen werden (Ziele, Plan, Timer, Undo-Verlauf), bleiben JSON-Spalten (`jsonb`).
 
 ### 2.2 Tabellen
@@ -188,7 +188,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 | `body_weights` | day, recorded_at, kilograms |
 | `weight_rewards` | day, awarded_at, earned_xp (immer 25; wird nie weich gelöscht) |
 | `workout_awards` | workout_id, earned_xp (wird nie weich gelöscht) |
-| `sleep_scores` | day, score |
+| `sleep_scores` | day, score (seit 03.11.2026 von der App weder gelesen noch geschrieben; Tabelle bleibt in der Cloud) |
 | `training_plans` | schedule jsonb (ein Datensatz pro Konto) |
 | `legacy_imports` | Fingerabdruck der importierten Datei, Datum, Anzahlen (Schutz vor doppeltem Import, Phase 5) |
 
@@ -253,7 +253,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 ## 5. Ergänzungen in Phase 3
 - XP: `workouts.earned_xp` plus ein Beleg in `workout_awards` pro Training. Der Beleg wird nie gelöscht; ein erneut abgeschlossenes oder wiederhergestelltes Training bekommt dadurch keine XP doppelt. Die Gesamt-XP sind die Summe aus `earned_xp` aller nicht gelöschten, abgeschlossenen Trainings und allen `weight_rewards`.
 - Körpergewicht: ein Eintrag pro Kalendertag (`body_weights.day`), Tages-XP in `weight_rewards` (bleibt beim Löschen der Messung erhalten). Gefeierte Gewichtsziele stehen in `profiles.celebrated_weight_goals` als `richtung:gramm`.
-- Schlaf: ein manueller Wert pro Tag in `sleep_scores`.
+- Schlaf: ein manueller Wert pro Tag in `sleep_scores`. Am 03.11.2026 entfernt: Dexie-Version 4 löscht die lokale Tabelle samt wartender Uploads; die Cloud-Tabelle bleibt unangetastet.
 - Cardio: `workouts.cardio_*` in kg/km/Sekunden; Plan-Abgleich am selben Tag wird in `training_plans.schedule.consumed` als `cardio/JJJJ-MM-TT` vermerkt.
 - Einführung und Lerntipps sind **Gerätezustand** und liegen nicht in der Datenbank, sondern in `localStorage` (`motion.onboarding.v1.<Datenbankname>`). Sie werden nicht synchronisiert und nicht gesichert, wie in der iOS-App.
 - Demo und Einführungstest laufen in einer eigenen IndexedDB (`motion-demo-…`, `motion-onboardingTest-…`), die beim Beenden gelöscht wird. Übrig gebliebene werden beim nächsten Start entfernt.
@@ -263,7 +263,7 @@ Die Anleitungstexte stehen wörtlich in `ExerciseCatalogue.swift`, Zeilen 34–6
 ## 6. Umsetzung in Phase 4 (Konto und Sync)
 - **Schema:** `supabase/migrations/20261102120000_initial_schema.sql`, Spalten 1:1 wie die Gerätedatensätze (`src/data/types.ts`). Ein Test (`src/sync/sync.test.ts`) prüft, dass jedes Feld, das die App speichert, eine Spalte in der Cloud hat.
 - **Primärschlüssel `(user_id, id)`** statt nur `id`: Eine ID, die ein Konto wählt, kann nie die Zeile eines anderen Kontos treffen. Dadurch dürfen stabile IDs (unten) ohne Konto berechnet werden.
-- **Stabile IDs (UUIDv5)** aus `src/data/ids.ts` für Profil, Trainingsplan, Körpergewicht/Gewichts-XP/Schlafwert pro Tag und den XP-Beleg pro Training. Zwei Geräte erzeugen für denselben Tag dieselbe ID; die Cloud führt sie zu einer Zeile zusammen. Abweichung zum Entwurf in 2.1: Die ID hängt nicht vom Konto ab, weil der Schlüssel das Konto schon enthält; so behalten Gastdaten ihre IDs beim ersten Login.
+- **Stabile IDs (UUIDv5)** aus `src/data/ids.ts` für Profil, Trainingsplan, Körpergewicht/Gewichts-XP pro Tag und den XP-Beleg pro Training. Zwei Geräte erzeugen für denselben Tag dieselbe ID; die Cloud führt sie zu einer Zeile zusammen. Abweichung zum Entwurf in 2.1: Die ID hängt nicht vom Konto ab, weil der Schlüssel das Konto schon enthält; so behalten Gastdaten ihre IDs beim ersten Login.
 - **Gerätedatenbank Version 2:** neue Tabellen `sync_state` (Stand des letzten Abgleichs pro Tabelle) und `conflicts` (Konfliktkopien). Beim Update stellt das Gerät seine bisherigen Tages- und Einzeldatensätze auf die stabilen IDs um. Gab es lokal mehrere für denselben Tag, bleibt der nicht gelöschte, zuletzt geänderte.
 - **Standardprofil** (`Motion`, kg, km) wird mit Zeitstempel 1970 angelegt. So gewinnt beim ersten Abgleich eines neuen Geräts immer das echte Profil aus der Cloud.
 - **Serverspalte `synced_at`:** wird bei jedem angenommenen Schreibvorgang von der Datenbank gesetzt (`clock_timestamp()`). Geräte laden alles mit neuerem `synced_at` als beim letzten Mal, mit 2 Minuten Überlappung. So kommen auch Daten an, die ein anderes Gerät erst Tage später hochlädt.

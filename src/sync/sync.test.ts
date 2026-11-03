@@ -13,7 +13,7 @@ import { seedDemo } from '../features/demo/seed'
 import * as engine from '../features/workout/engine'
 import { loadSession } from '../features/workout/session'
 import { addEntry, createBlueprint } from '../store/blueprints'
-import { checkIn, saveSleepScore } from '../store/body'
+import { checkIn, correctWeight } from '../store/body'
 import { createExercise } from '../store/library'
 import { savePlan } from '../store/plan'
 import { ensureProfile, updateProfile } from '../store/profile'
@@ -105,14 +105,12 @@ describe('sync between two devices of one account', () => {
     const laptop = await device()
     await phone.use(async () => {
       await checkIn(67.1)
-      await saveSleepScore(81, new Date())
       await savePlan({ ...newSchedule(), enabled: true })
       await pushWorkout()
     })
     at('2026-11-02T07:05:00Z')
     await laptop.use(async () => {
       await checkIn(67.3)
-      await saveSleepScore(84, new Date())
       await pushWorkout()
     })
     for (let round = 0; round < 3; round++) {
@@ -121,13 +119,11 @@ describe('sync between two devices of one account', () => {
     }
     expect(await serverCount('body_weights')).toBe(1)
     expect(await serverCount('weight_rewards')).toBe(1)
-    expect(await serverCount('sleep_scores')).toBe(1)
     expect(await serverCount('profiles')).toBe(1)
     expect(await serverCount('training_plans')).toBe(1)
     expect(await serverCount('workouts')).toBe(2)
     for (const { database } of [phone, laptop]) {
       expect((await database.body_weights.toArray()).map((entry) => entry.kilograms)).toEqual([67.3])
-      expect((await database.sleep_scores.toArray()).map((entry) => entry.score)).toEqual([84])
       expect(await database.workouts.count()).toBe(2)
       expect(await database.weight_rewards.count()).toBe(1)
     }
@@ -280,11 +276,40 @@ describe('database version 2', () => {
   })
 })
 
+describe('database version 4', () => {
+  it('drops the sleep index with its queued uploads, cursor and conflict copies', async () => {
+    const name = `upgrade-${crypto.randomUUID()}`
+    const old = new Dexie(name)
+    old.version(3).stores({
+      profiles: 'id', exercises: 'id, name, catalogue_id', blueprints: 'id, name', blueprint_exercises: 'id, blueprint_id, exercise_id',
+      workouts: 'id, performed_at, blueprint_id', workout_exercises: 'id, workout_id, exercise_id', set_logs: 'id, workout_id, workout_exercise_id',
+      training_plans: 'id', body_weights: 'id, day', weight_rewards: 'id, day', workout_awards: 'id, workout_id', sleep_scores: 'id, day', outbox: 'key, table, queued_at',
+      sync_state: 'table', conflicts: 'key, table, record_id', legacy_imports: 'id, fingerprint',
+    })
+    const time = '2026-11-01T08:00:00.000Z'
+    await old.table('sleep_scores').put({ id: 's', day: '2026-11-01', score: 84, user_id: null, created_at: time, updated_at: time, deleted_at: null })
+    await old.table('outbox').bulkPut([
+      { key: 'sleep_scores:s', table: 'sleep_scores', record_id: 's', queued_at: time },
+      { key: 'body_weights:b', table: 'body_weights', record_id: 'b', queued_at: time },
+    ])
+    await old.table('sync_state').bulkPut([{ table: 'sleep_scores', synced_at: time }, { table: 'body_weights', synced_at: time }])
+    await old.table('conflicts').put({ key: 'sleep_scores:s', table: 'sleep_scores', record_id: 's', workout_id: 'w', remote: {}, detected_at: time })
+    old.close()
+
+    const upgraded = new MotionDatabase(name)
+    await upgraded.open()
+    expect(upgraded.tables.map((table) => table.name)).not.toContain('sleep_scores')
+    expect((await upgraded.outbox.toArray()).map((entry) => entry.key)).toEqual(['body_weights:b'])
+    expect((await upgraded.sync_state.toArray()).map((cursor) => cursor.table)).toEqual(['body_weights'])
+    expect(await upgraded.conflicts.count()).toBe(0)
+  })
+})
+
 describe('ids and schema', () => {
   it('computes RFC 9562 UUIDv5 values', () => {
     expect(uuidV5('6ba7b810-9dad-11d1-80b4-00c04fd430c8', 'www.example.com')).toBe('2ed6657d-e927-568b-95e1-2665a8aea6a2')
     expect(stableID('body_weights', '2026-11-02')).toBe(stableID('body_weights', '2026-11-02'))
-    expect(stableID('body_weights', '2026-11-02')).not.toBe(stableID('sleep_scores', '2026-11-02'))
+    expect(stableID('body_weights', '2026-11-02')).not.toBe(stableID('weight_rewards', '2026-11-02'))
   })
 
   it('has a cloud column for every field the app stores', async () => {
@@ -302,7 +327,6 @@ describe('ids and schema', () => {
       await seedDemo()
       await ensureProfile()
       await checkIn(70)
-      await saveSleepScore(80, new Date())
       await savePlan({ ...newSchedule(), enabled: true })
       const id = await engine.startFreestyle()
       await update('workouts', id, {})
@@ -411,10 +435,10 @@ describe('complete run-through (phase 7)', () => {
     expect(await laptop.database.workouts.get(workoutID)).toMatchObject({ is_completed: true })
     expect((await laptop.database.set_logs.where('workout_id').equals(workoutID).toArray()).map((set) => set.weight_kg)).toEqual([62.5, 62.5])
     expect(await laptop.database.body_weights.count()).toBe(1)
-    await laptop.use(() => saveSleepScore(83, new Date()))
+    await laptop.use(async () => correctWeight((await db.body_weights.toArray())[0]!, 68))
     await laptop.sync()
     await phone.sync()
-    expect(await phone.database.sleep_scores.count()).toBe(1)
+    expect((await phone.database.body_weights.toArray()).map((entry) => entry.kilograms)).toEqual([68])
 
     // 6. Export on the second device holds the workout in both formats.
     const backup = await laptop.use(() => buildBackup())

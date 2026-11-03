@@ -67,10 +67,10 @@ export function DeleteDataSheet({ mode, onClose }: { mode: DeleteMode | null; on
     <Sheet open onClose={close} title={heading} leading={<TextButton onClick={close}>{t('Cancel')}</TextButton>}>
       <p className={styles.note}>
         {mode === 'account'
-          ? t('This deletes your account and all its training, body weight, sleep scores, routines, plans, XP and profile, in the cloud and on this device. Other devices keep their copy until you sign out there.')
-          : t('This deletes all training, body weight, sleep scores, routines, plans, XP, your profile and your consent on this device. Motion then starts over.')}
+          ? t('This deletes your account and all its training, body weight, routines, plans, XP and profile, in the cloud and on this device. Other devices keep their copy until you sign out there.')
+          : t('This deletes all training, body weight, routines, plans, XP, your profile and your consent on this device. Motion then starts over.')}
       </p>
-      <Group title={t('Export first')} footer={t('JSON is the complete backup. CSV is a table of workouts, sets, body weight and sleep scores for spreadsheets.')}>
+      <Group title={t('Export first')} footer={t('JSON is the complete backup. CSV is a table of workouts, sets and body weight for spreadsheets.')}>
         <RowButton tone="plain" onClick={() => void save(exportBackup)} testID="deleteExportJSON">
           {t('Export backup (JSON)')}
         </RowButton>

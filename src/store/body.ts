@@ -2,9 +2,9 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../data/db'
 import { stableID } from '../data/ids'
 import { insertOne, live, softDelete, transaction, update } from '../data/repo'
-import type { BodyWeight, Profile, SleepScore, WeightReward } from '../data/types'
+import type { BodyWeight, Profile, WeightReward } from '../data/types'
 import { claimGoal, validName } from '../domain/body'
-import { dayKey, startOfDay } from '../domain/measurement'
+import { dayKey } from '../domain/measurement'
 import { XP } from '../domain/progress'
 import { ensureProfile } from './profile'
 
@@ -13,7 +13,6 @@ const invalidWeight = () => new BodyError('Enter a valid weight between 1 and 70
 
 export const useBodyWeights = () =>
   useLiveQuery(async () => live(await db.body_weights.toArray()).sort((a, b) => a.recorded_at.localeCompare(b.recorded_at)), [])
-export const useSleepScores = () => useLiveQuery(async () => live(await db.sleep_scores.toArray()).sort((a, b) => b.day.localeCompare(a.day)), [])
 
 export interface CheckInResult {
   kilograms: number
@@ -69,17 +68,3 @@ export async function saveProfile(change: Pick<Profile, 'name' | 'body_weight_un
   await update<Profile>('profiles', profile.id, { ...change, name: change.name.trim() })
 }
 
-/** SleepScoreStore.save: one score per day; null deletes it. */
-export async function saveSleepScore(score: number | null, date: Date, now = new Date()) {
-  if (startOfDay(date) > now || (score !== null && !(Number.isInteger(score) && score >= 0 && score <= 100))) {
-    throw new BodyError('Choose a past or current date and a score from 0 to 100.')
-  }
-  await transaction(async () => {
-    const day = dayKey(date)
-    const entries = live(await db.sleep_scores.where('day').equals(day).toArray())
-    if (score === null) return softDelete('sleep_scores', entries.map((entry) => entry.id))
-    if (entries[0]) await update<SleepScore>('sleep_scores', entries[0].id, { score })
-    else await insertOne<SleepScore>('sleep_scores', { id: stableID('sleep_scores', day), day, score })
-    await softDelete('sleep_scores', entries.slice(1).map((entry) => entry.id))
-  })
-}

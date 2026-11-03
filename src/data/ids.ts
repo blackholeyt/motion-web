@@ -2,8 +2,8 @@ import type { SyncedTable } from './types'
 
 /*
  * Stable ids (UUIDv5, RFC 9562) for records that exist once per account or once per day: the
- * profile, the training plan, a day's body weight, weight reward and sleep score, and the XP receipt
- * of a workout. Two devices create the same id for the same day, so the server merges them into one
+ * profile, the training plan, a day's body weight and weight reward, and the XP receipt of a
+ * workout. Two devices create the same id for the same day, so the server merges them into one
  * row. The cloud key is (user_id, id), which keeps equal ids of different accounts apart.
  *
  * SHA-1 is computed synchronously because Dexie upgrade transactions cannot await crypto.subtle.
@@ -11,7 +11,7 @@ import type { SyncedTable } from './types'
 
 const namespace = '6f1c8f7e-4b5d-4c39-9a2e-6d6f74696f6e'
 
-export type StableKind = Extract<SyncedTable, 'profiles' | 'training_plans' | 'body_weights' | 'weight_rewards' | 'sleep_scores' | 'workout_awards'>
+export type StableKind = Extract<SyncedTable, 'profiles' | 'training_plans' | 'body_weights' | 'weight_rewards' | 'workout_awards'>
 
 /** profiles and training_plans exist once; the others need their day or workout id as key. */
 export function stableID(kind: StableKind, key = 'singleton'): string {

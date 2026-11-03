@@ -1,11 +1,11 @@
 import { db } from '../data/db'
 import { live } from '../data/repo'
 import { freshDatabase } from '../test/db'
-import { checkIn, correctWeight, deleteWeight, saveSleepScore } from './body'
+import { checkIn, correctWeight, deleteWeight } from './body'
 import { updateProfile } from './profile'
 import { totalXP } from './progress'
 
-describe('body weight and sleep', () => {
+describe('body weight', () => {
   beforeEach(freshDatabase)
 
   it('awards 25 XP once per day, replaces the day’s weight and keeps the award on delete', async () => {
@@ -29,15 +29,5 @@ describe('body weight and sleep', () => {
     const profile = (await db.profiles.toArray())[0]!
     await updateProfile({ preferences: { ...profile.preferences, quietMode: true } })
     expect((await checkIn(67, new Date('2026-11-03T07:00:00'))).achievedTarget).toBeNull()
-  })
-
-  it('stores one sleep score per day and rejects future dates', async () => {
-    const now = new Date('2026-11-02T09:00:00')
-    await saveSleepScore(80, new Date('2026-11-01T12:00:00'), now)
-    await saveSleepScore(84, new Date('2026-11-01T23:00:00'), now)
-    expect(live(await db.sleep_scores.toArray()).map((entry) => entry.score)).toEqual([84])
-    await expect(saveSleepScore(70, new Date('2026-11-03T08:00:00'), now)).rejects.toThrow('past or current date')
-    await saveSleepScore(null, new Date('2026-11-01T12:00:00'), now)
-    expect(live(await db.sleep_scores.toArray())).toEqual([])
   })
 })

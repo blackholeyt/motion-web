@@ -23,8 +23,8 @@ import {
  *
  * Differences to the full backup: dates are Unix seconds, not seconds since 2001. Workouts without a
  * draft id, exercises without a snapshot id and sets without a set id get ids derived from their
- * content, so importing the same file again finds them. Preferences, sleep scores and the training
- * plan do not exist in these files. Sample workouts are left out like in the full backup.
+ * content, so importing the same file again finds them. Preferences and the training plan do not
+ * exist in these files. Sample workouts are left out like in the full backup.
  */
 
 const versionAdditions: string[][] = [
@@ -162,7 +162,6 @@ function emptyBackup(): LegacyBackup {
     weightRewards: [],
     workoutAwards: [],
     healthReceipts: [],
-    sleepScores: null,
     healthArchive: null,
     nutrition: null,
     trainingPlan: null,

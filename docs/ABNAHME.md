@@ -46,7 +46,7 @@ Abhaken in dieser Reihenfolge:
 **Löschen**
 - [ ] Am Desktop Einstellungen → Konto → Konto löschen
 - [ ] Supabase → Authentication → Users: Test-Konto ist weg. Optional im SQL Editor `select count(*) from public.workouts where user_id = '<ID>'` → 0
-- [ ] Auf Android etwas eintragen (z. B. Schlafindex): Einstellungen → Konto zeigt, dass das Konto gelöscht ist, lokale Kopie entfernen. Ohne neue Änderung merkt ein Gerät das Löschen erst, wenn es seine Anmeldung erneuern will (Supabase-Standard: nach einer Stunde). Was es dann zeigt, habe ich nicht gegen das echte Projekt geprüft; bitte notieren
+- [ ] Auf Android etwas eintragen (z. B. Körpergewicht): Einstellungen → Konto zeigt, dass das Konto gelöscht ist, lokale Kopie entfernen. Ohne neue Änderung merkt ein Gerät das Löschen erst, wenn es seine Anmeldung erneuern will (Supabase-Standard: nach einer Stunde). Was es dann zeigt, habe ich nicht gegen das echte Projekt geprüft; bitte notieren
 - [ ] iPhone genauso
 
 Wenn etwas hakt: Gerät, Schritt und was du gesehen hast an mich, gern mit Screenshot.

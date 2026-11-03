@@ -23,7 +23,7 @@ Quellen: `MotionBackup.swift`, `MotionBackupStore.swift`, `MotionBackupValidatio
 - `profile`: Name, Einheiten, Zielgewicht, bereits gefeierte Gewichtsziele
 - `weights`, `weightRewards`: Körpergewicht und tägliche XP-Belege
 - `workoutAwards`: XP-Belege pro Workout
-- `sleepScores`: manuell eingetragene Schlafwerte
+- `sleepScores`: manuell eingetragene Schlafwerte (die Web-App übergeht sie seit 03.11.2026)
 - `trainingPlan`: Trainingsplan
 - `preferences`: Einstellungen (Darstellung, Quiet Mode, Haptik, Opening, Wiederholungen, Pausendauer, Schrittziel, Körpergewicht-Ziel)
 - `healthReceipts`, `healthArchive`, `nutrition`: Health-Daten, in V1 nicht gebraucht
@@ -54,7 +54,7 @@ Quellen: `MotionBackup.swift`, `MotionBackupStore.swift`, `MotionBackupValidatio
 **Aufteilung seit 02.11.2026:** Phase 5a baut den Import für JSON und CSV v18. Ältere Dateien von Mathis werden einmalig außerhalb der App in v18/JSON umgewandelt. Ein eingebauter Import für v1–v17 und die einfache Workout-CSV kommt nur bei Bedarf (Phase 5b). Siehe README, „Nächste Phasen“.
 1. Datei wählen (JSON oder CSV v18). Die CSV wird intern in dasselbe JSON zurückverwandelt.
 2. Prüfung mit den Regeln der alten App. Bei einem Fehler wird nichts importiert, und ein verständlicher Fehlerbericht erscheint.
-3. **Vorschau** mit Anzahlen: Workouts, Entwürfe, Sätze, Übungen, Routinen, Körpergewicht, Schlafwerte, XP-Belege, Rekorde. Dazu Stichproben, z. B. die letzten 3 Workouts mit Sätzen.
+3. **Vorschau** mit Anzahlen: Workouts, Entwürfe, Sätze, Übungen, Routinen, Körpergewicht, XP-Belege, Rekorde. Dazu Stichproben, z. B. die letzten 3 Workouts mit Sätzen.
 4. **Import nach den Regeln der alten App:**
    - Fehlende Datensätze werden ergänzt, vorhandene bleiben unverändert (Abgleich über die IDs).
    - Es werden **keine neuen XP berechnet**, XP und Belege kommen aus der Datei.
@@ -86,13 +86,13 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 **Ablauf**
 1. Datei wählen. JSON oder CSV wird am Inhalt erkannt, nicht an der Endung. Größen: JSON bis 32 MB, CSV bis 64 MB.
 2. Prüfung: zuerst Dateityp und Version, dann die vollständige Struktur, dann die Regeln der alten App. Anders als die alte App sammelt der Import **alle** Probleme (höchstens 50) mit Fundstelle, z. B. „Training 4 › Übung 1 › Satz 3: ungültiger Satz“. Ältere Motion-CSV (v1–v17) und die einfache Workout-CSV werden seit Phase 5b ebenfalls gelesen (Abschnitt 7).
-3. Vorschau: Tabelle „In der Datei / Neu / Schon vorhanden“ für Trainings, Entwürfe, erledigte Sätze, Übungen, Routinen, Körpergewicht, Schlafwerte, XP-Belege, Übungen mit Rekord und XP. Dazu die 3 neuesten Trainings mit Übungen und Sätzen. Es wird noch nichts geschrieben.
+3. Vorschau: Tabelle „In der Datei / Neu / Schon vorhanden“ für Trainings, Entwürfe, erledigte Sätze, Übungen, Routinen, Körpergewicht, XP-Belege, Übungen mit Rekord und XP. Dazu die 3 neuesten Trainings mit Übungen und Sätzen. Es wird noch nichts geschrieben.
 4. Import in **einer** Transaktion: entweder alles Neue oder nichts. Alles Neue kommt in die Sync-Warteschlange.
 5. Abschlussbericht mit denselben Spalten.
 
 **Regeln**
 - Abgleich über die IDs der Datei (in Kleinbuchstaben, weil Swift UUIDs groß schreibt und Postgres sie klein zurückgibt). Vorhandene Datensätze bleiben unverändert, auch gelöschte (sie werden nicht wiederbelebt).
-- Körpergewicht, Tages-XP und Schlafwerte bekommen die stabile Tages-ID der Web-App. Ein Tag, der hier schon existiert, bleibt unverändert.
+- Körpergewicht und Tages-XP bekommen die stabile Tages-ID der Web-App. Ein Tag, der hier schon existiert, bleibt unverändert.
 - Routineneinträge haben in der alten App keine ID; sie bekommen eine feste ID aus Routine und Übung.
 - Keine neuen XP: Trainings behalten `earnedXP`, XP-Belege kommen aus der Datei. Ein vorhandener Beleg gewinnt. Ein abgeschlossenes Training ohne Beleg bekommt einen mit seinen XP aus der Datei.
 - Health- und Strava-Workouts (`healthWorkoutID` gesetzt) werden übersprungen und gezählt. Ihre XP-Belege werden wie in der alten App übernommen; sie zählen nicht zu den Gesamt-XP, weil die Web-App XP aus den Trainings summiert.
@@ -123,7 +123,7 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 - XP: Ein Trainings-XP-Beleg in der Datei gewinnt gegen die XP des Trainings. Abgeschlossene Trainings ohne Beleg bekommen einen mit ihren XP aus der Datei.
 - Rückgängig-Verlauf und Pausentimer kommen mit. Verweisen sie auf Sätze, die es in der Datei nicht gibt, wird der Verlauf bzw. der Bezug des Timers weggelassen statt den Import abzubrechen.
 - Beispieltrainings werden weggelassen. Health- und Strava-Workouts werden wie bisher übersprungen und gezählt. Ernährung wird nicht übernommen.
-- Nicht enthalten in diesen Dateien: Einstellungen, Schlafwerte, Trainingsplan, gefeierte Gewichtsziele. Das Gerät behält seine eigenen; Darstellung und Startanimation bleiben unverändert.
+- Nicht enthalten in diesen Dateien: Einstellungen, Trainingsplan, gefeierte Gewichtsziele. Das Gerät behält seine eigenen; Darstellung und Startanimation bleiben unverändert.
 
 **Einfache Workout-CSV** (`workout_date,workout_name,exercise,set_index,weight_kg,reps,set_completed`)
 - Eine Zeile pro Satz. Ein Training sind alle Zeilen mit gleicher Zeit (ISO 8601) und gleichem Namen, eine Übung alle Zeilen mit gleichem Übungsnamen darin.

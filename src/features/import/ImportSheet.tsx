@@ -43,7 +43,6 @@ const countRows: { key: keyof ImportCounts; label: string }[] = [
   { key: 'exercises', label: 'Exercises' },
   { key: 'routines', label: 'Blueprints' },
   { key: 'bodyWeights', label: 'Body weight entries' },
-  { key: 'sleepScores', label: 'Sleep scores' },
   { key: 'xpReceipts', label: 'XP receipts' },
   { key: 'records', label: 'Exercises with a record' },
   { key: 'xp', label: 'XP' },
@@ -58,7 +57,6 @@ const pathNames: Record<string, string> = {
   weights: 'Body weight',
   weightRewards: 'Daily XP receipt',
   workoutAwards: 'Workout XP receipt',
-  sleepScores: 'Sleep score',
   undoHistory: 'Undo step',
   rows: 'Row',
   blueprints: 'Blueprint',
@@ -68,7 +66,6 @@ const pathNames: Record<string, string> = {
   body_weights: 'Body weight',
   weight_rewards: 'Daily XP receipt',
   workout_awards: 'Workout XP receipt',
-  sleep_scores: 'Sleep score',
 }
 
 /** "workouts[3].exercises[0].sets[2]" → "Workout 4 › Exercise 1 › Set 3". */
@@ -227,7 +224,7 @@ function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: 
       </p>
       {summary.origin.kind === 'olderCSV' && (
         <p className={styles.muted} data-testid="olderFormat">
-          {t('Older Motion CSV (version {0}). It has no settings, sleep scores or training plan; this device keeps its own.', [summary.origin.version])}
+          {t('Older Motion CSV (version {0}). It has no settings or training plan; this device keeps its own.', [summary.origin.version])}
         </p>
       )}
       {summary.origin.kind === 'workoutCSV' && (

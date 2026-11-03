@@ -237,7 +237,7 @@ export async function removeAccountFromDevice() {
 }
 
 /**
- * Without an account: deletes all training, body weight, sleep scores and settings on this device
+ * Without an account: deletes all training, body weight and settings on this device
  * and withdraws the consent, so Motion starts over with the consent screen.
  */
 export async function deleteDeviceData() {

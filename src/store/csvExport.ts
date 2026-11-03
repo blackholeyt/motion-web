@@ -1,10 +1,10 @@
 import { db } from '../data/db'
 import { live } from '../data/repo'
-import type { BodyWeight, SetLog, SleepScore, Workout, WorkoutExercise } from '../data/types'
+import type { BodyWeight, SetLog, Workout, WorkoutExercise } from '../data/types'
 
 /*
- * CSV export for spreadsheets (phase 6): one row per completed workout, set, cardio session, body
- * weight and sleep score, filterable by the first column. Units are always kg, km and seconds.
+ * CSV export for spreadsheets (phase 6): one row per completed workout, set, cardio session and body
+ * weight, filterable by the first column. Units are always kg, km and seconds.
  * Open workouts, plans, routines and the profile are only in the JSON backup, which stays the
  * complete copy of all data (docs/DATENSCHUTZ.md, section 4).
  */
@@ -102,9 +102,6 @@ export async function buildCSVRows(): Promise<Row[]> {
   }
   for (const weight of live(await db.body_weights.toArray()) as BodyWeight[]) {
     rows.push({ at: weight.recorded_at, row: { type: 'body_weight', date: weight.day, time: localTime(weight.recorded_at), value: weight.kilograms } })
-  }
-  for (const sleep of live(await db.sleep_scores.toArray()) as SleepScore[]) {
-    rows.push({ at: `${sleep.day}T12:00:00`, row: { type: 'sleep_score', date: sleep.day, value: sleep.score } })
   }
   // Stable sort: a workout's own rows keep their order.
   return rows.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()).map((entry) => entry.row)

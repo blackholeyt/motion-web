@@ -195,11 +195,6 @@ export interface WorkoutAward extends SyncedRecord {
   earned_xp: number
 }
 
-export interface SleepScore extends SyncedRecord {
-  day: string
-  score: number
-}
-
 /** Receipt of an imported iOS backup; the id derives from the file's fingerprint (phase 5a). */
 export interface LegacyImport extends SyncedRecord {
   fingerprint: string
@@ -248,5 +243,4 @@ export type SyncedTable =
   | 'body_weights'
   | 'weight_rewards'
   | 'workout_awards'
-  | 'sleep_scores'
   | 'legacy_imports'

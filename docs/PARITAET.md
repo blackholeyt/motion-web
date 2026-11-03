@@ -125,7 +125,7 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 | 62 | Körpergewicht: Karte, Diagramm, Eintrag pro Tag, +25 XP, Verlauf, Korrektur, Löschen (9) | `BodyWeightViews.swift`, `LocalProfile.swift` | übernehmen | 3 | manuelle Daten, bleiben | Unit: `body.test.ts` (+25 XP/Tag, Löschen behält XP) |
 | 63 | Gewichtsziel erreicht: einmalige Feier und Vorschau (9) | `WeightGoalAchievement.swift`, `WeightCheckInCelebration.swift` | übernehmen | 3 | | Unit: `body.test.ts` (einmalige Feier, Quiet Mode) |
 | 64 | Körpergewicht-Ziel (abnehmen/zunehmen/halten) und „Show body-weight tracking“ (9, 11) | `BodyWeightGoal.swift`, `SettingsView.swift` | übernehmen | 3 | | Unit: `body.test.ts`; manuell (Browser): Vorschau in den Einstellungen |
-| 65 | Manueller Apple Sleep Score mit Karte, Diagramm, Editor, Liste (10) | `SleepScoreEntry.swift`, `SleepViews.swift` | übernehmen | 3 | manuelle Daten, bleiben; Health-Teile der Karte entfallen | Unit: `body.test.ts` (ein Wert pro Tag, keine Zukunft) |
+| 65 | Manueller Apple Sleep Score mit Karte, Diagramm, Editor, Liste (10) | `SleepScoreEntry.swift`, `SleepViews.swift` | entfällt | – | am 03.11.2026 auf Wunsch entfernt; Schlafwerte in alten Sicherungen werden beim Import still übergangen | Unit: `webBackup.test.ts`, `sync.test.ts` (Datenbank-Version 4)
 | 66 | Schlafdauer und -phasen aus Apple Health (18) | `SleepStore.swift`, `SleepViews.swift` | später nativ | – | | – (nativ) |
 | 67 | Schritte und Tagesziel (18) | `StepsStore.swift`, `StepsViews.swift` | später nativ | – | Schrittziel-Einstellung aus dem Backup wird aufbewahrt | – (nativ) |
 | 68 | Ernährung aus Health (18) | `Nutrition*.swift` | später nativ | – | | – (nativ) |

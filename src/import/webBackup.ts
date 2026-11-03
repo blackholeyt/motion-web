@@ -36,7 +36,6 @@ const required: Partial<Record<SyncedTable, string[]>> = {
   body_weights: ['day', 'kilograms'],
   weight_rewards: ['day', 'earned_xp'],
   workout_awards: ['workout_id', 'earned_xp'],
-  sleep_scores: ['day', 'score'],
   legacy_imports: ['fingerprint'],
 }
 
@@ -81,7 +80,7 @@ export function decodeWebBackup(object: unknown, fileName: string): WebBackupSou
 }
 
 function emptyCounts(): ImportCounts {
-  return { workouts: 0, drafts: 0, sets: 0, exercises: 0, routines: 0, bodyWeights: 0, sleepScores: 0, xpReceipts: 0, records: 0, xp: 0, healthWorkouts: 0 }
+  return { workouts: 0, drafts: 0, sets: 0, exercises: 0, routines: 0, bodyWeights: 0, xpReceipts: 0, records: 0, xp: 0, healthWorkouts: 0 }
 }
 
 /** The same rows as the iOS import, counted over live records only. */
@@ -99,7 +98,6 @@ function count(tables: Record<SyncedTable, Row[]>): ImportCounts {
   counts.records = live('exercises').filter((exercise) => exercise.is_pr_tracked).length
   counts.routines = live('blueprints').length
   counts.bodyWeights = live('body_weights').length
-  counts.sleepScores = live('sleep_scores').length
   counts.xpReceipts = live('workout_awards').length + live('weight_rewards').length
   counts.xp += live('weight_rewards').reduce((sum, reward) => sum + Number(reward.earned_xp ?? 0), 0)
   return counts

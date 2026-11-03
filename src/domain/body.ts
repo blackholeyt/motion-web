@@ -1,7 +1,7 @@
 import type { Profile, WeightUnit } from '../data/types'
 import { parseNumber, toKilograms } from './measurement'
 
-/* LocalProfile.swift, WeightGoalAchievement.swift and SleepScoreEntry.swift. */
+/* LocalProfile.swift and WeightGoalAchievement.swift. */
 
 export type BodyWeightGoal = Profile['body_weight_goal']
 export const bodyWeightGoals: { value: BodyWeightGoal; title: string }[] = [
@@ -33,11 +33,4 @@ export function claimGoal(target: number | null, weight: number, goal: BodyWeigh
   const key = `${goal}:${Math.round(target * 1000)}`
   if (celebrated.includes(key)) return null
   return { target, celebrated: [...celebrated, key] }
-}
-
-export function validSleepScore(text: string): number | null {
-  const trimmed = text.trim()
-  if (!/^\d+$/.test(trimmed)) return null
-  const value = Number(trimmed)
-  return value >= 0 && value <= 100 ? value : null
 }

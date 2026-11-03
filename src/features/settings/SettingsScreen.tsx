@@ -20,7 +20,6 @@ import { downloadFile } from '../../ui/download'
 import { useConsent } from '../../privacy/consent'
 import { LegalSheet, type LegalPage } from '../privacy/LegalSheet'
 import { DeleteDataSheet, type DeleteMode } from '../privacy/DeleteDataSheet'
-import { SleepScores } from '../body/SleepScores'
 import { WeightCelebration } from '../body/WeightCelebration'
 import { bodyWeightGoals, type BodyWeightGoal } from '../../domain/body'
 import { updateProfile, useProfile } from '../../store/profile'
@@ -41,7 +40,6 @@ export function SettingsScreen() {
   const opening = useOpening()
   const [notifications, setNotifications] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
-  const [sleep, setSleep] = useState(false)
   const [goalPreview, setGoalPreview] = useState(false)
   const profile = useProfile()
   const sandbox = useSandbox()
@@ -68,14 +66,9 @@ export function SettingsScreen() {
   if (howItWorks) return <MiniDemo onClose={() => setHowItWorks(false)} onStart={() => setChoosing(true)} />
   const rest = preferences.restTimerSeconds
   const profileRows = (
-    <>
-      <RowButton tone="plain" onClick={() => setProfileOpen(true)} testID="openProfile">
-        {t('Profile & body weight')}
-      </RowButton>
-      <RowButton tone="plain" onClick={() => setSleep(true)}>
-        {t('Sleep scores')}
-      </RowButton>
-    </>
+    <RowButton tone="plain" onClick={() => setProfileOpen(true)} testID="openProfile">
+      {t('Profile & body weight')}
+    </RowButton>
   )
   return (
     <>
@@ -205,7 +198,7 @@ export function SettingsScreen() {
           </Group>
           <Group
             title={t('Backup')}
-            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, sleep scores, XP and your profile from a backup of the iOS app; existing records stay unchanged. A JSON backup from this app is restored the same way. JSON is the complete backup. CSV is a table of workouts, sets, body weight and sleep scores for spreadsheets.')}
+            footer={t('Import adds workouts, drafts, exercises, blueprints, body weight, XP and your profile from a backup of the iOS app; existing records stay unchanged. A JSON backup from this app is restored the same way. JSON is the complete backup. CSV is a table of workouts, sets and body weight for spreadsheets.')}
           >
             <RowButton tone="plain" onClick={() => setImporting(true)} testID="importBackup">
               {t('Import or restore backup')}
@@ -225,7 +218,6 @@ export function SettingsScreen() {
       <LegalSheet page={legal} onClose={() => setLegal(null)} />
       <DeleteDataSheet mode={deleting} onClose={() => setDeleting(null)} />
       <ProfileSheet open={profileOpen} onClose={() => setProfileOpen(false)} />
-      <SleepScores open={sleep} onClose={() => setSleep(false)} />
       {goalPreview && (
         <WeightCelebration
           preview

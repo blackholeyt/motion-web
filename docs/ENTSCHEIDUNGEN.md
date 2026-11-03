@@ -63,7 +63,7 @@
 | 2 | Konto löschen | Datenbankfunktion `delete_account()` statt Edge Function: kein Secret Key, keine weitere Einrichtung außer der Migration. Endgültig gelöscht, keine Grabsteine. Der Live-Test prüft, dass Supabase das Löschen aus `auth.users` per Funktion erlaubt. |
 | 3 | Andere Geräte nach dem Löschen | Schreibregel nimmt nur Zeilen existierender Konten an; das Gerät erkennt die Ablehnung und bietet an, die lokale Kopie zu entfernen. |
 | 4 | Gastdaten | Gehören nicht zum Konto und bleiben beim Konto-Löschen. Ohne Konto gibt es „Daten auf diesem Gerät löschen“, das auch die Einwilligung zurücksetzt. |
-| 5 | CSV-Format | Lesbare Tabelle (eine Zeile je Training, Satz, Ausdauer, Gewicht, Schlaf) statt einer Kopie des JSON. Die vollständige Kopie bleibt das JSON. |
+| 5 | CSV-Format | Lesbare Tabelle (eine Zeile je Training, Satz, Ausdauer, Gewicht) statt einer Kopie des JSON. Die vollständige Kopie bleibt das JSON. |
 | 6 | Rechtstexte | Nur Deutsch, als Entwurf mit markierten Platzhaltern; ein Test verhindert das Abschalten des Entwurfshinweises mit offenen Platzhaltern. Ehrliche Angaben zu Cloudflare, Supabase, Gmail und Google. |
 | 7 | Gmail-Versand | Bleibt für den privaten Betrieb. Bei einer Veröffentlichung nötig: Mailanbieter mit AVV (siehe `DATENSCHUTZ.md`, Abschnitt 5). |
 | 8 | Privater Betrieb (03.11.2026) | Motion bleibt privat für Mathis und ein, zwei Freunde: Registrierung in Supabase geschlossen, App legt keine Konten an, Freunde werden im Dashboard angelegt. Statt Impressum und langer Datenschutzerklärung ein kurzer Datenschutzhinweis und „Über dieses Projekt“ ohne Namen und Anschrift. Die Entwürfe für eine Veröffentlichung liegen in Commit `22223c3`. |
@@ -76,3 +76,9 @@
 | 1 | Kompletter Durchlauf | Als ein automatischer Test gegen die echten Migrationen in eingebettetem Postgres (`src/sync/sync.test.ts`), läuft in CI. Gegen das echte Projekt lege ich keine Konten an; dort decken `test:rls-live` und `test:delete-live` die Server-Regeln ab, den Rest die Geräte-Checkliste in `ABNAHME.md`. |
 | 2 | Geheimnis-Scan | Einmalig über die ganze Historie (keine Funde) und dauerhaft als CI-Job mit gitleaks. |
 | 3 | Wiederherstellen der Web-Sicherung (A1) | Nachgebaut am 03.11.2026 im selben Import-Dialog. Regel wie beim Sync: pro Eintrag gewinnt die neuere Fassung, auch Löschungen; ein auf diesem Gerät offenes Training behält seinen Stand. Kein Doppelschutz-Beleg nötig, weil ein zweites Wiederherstellen nichts ändert. |
+
+## Aufräumen (03.11.2026)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Schlafindex | Ganz entfernt (Karte, Einstellungen, Speicher, Sync, Export, Import). Dexie-Version 4 löscht die lokale Tabelle samt wartender Uploads. Alte Sicherungen mit Schlafwerten lassen sich weiter importieren; die Werte werden still übergangen. Die Cloud-Tabelle `sleep_scores` bleibt, die App liest und schreibt sie nur nicht mehr. |

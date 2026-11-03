@@ -14,7 +14,7 @@ Stand: 03.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die 
 
 ## 2. Einwilligung
 **Erster Start:** Ein Bildschirm erklärt in vier Punkten, was wo gespeichert wird, verlinkt Datenschutzhinweis und „Über dieses Projekt“ und verlangt zwei Häkchen:
-1. Datenschutzerklärung gelesen, ausdrückliche Einwilligung in die Verarbeitung von Trainings- und Gesundheitsdaten (Körpergewicht, Schlafindex) auf dem Gerät (Art. 9 Abs. 2 lit. a DSGVO).
+1. Datenschutzerklärung gelesen, ausdrückliche Einwilligung in die Verarbeitung von Trainings- und Gesundheitsdaten (Körpergewicht) auf dem Gerät (Art. 9 Abs. 2 lit. a DSGVO).
 2. Mindestens 16 Jahre alt oder Eltern einverstanden (Art. 8 DSGVO, Altersgrenze in Deutschland 16).
 
 Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-Sicherung oder meldet sich ab und nutzt Motion ohne Konto.
@@ -41,9 +41,9 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 
 ## 4. Export
 - **JSON** (`Motion-Backup-JJJJ-MM-TT.json`): vollständige Kopie aller 13 Tabellen inklusive gelöschter Einträge (Grabsteine). Das ist die Kopie für Art. 15 und Art. 20 DSGVO.
-- **CSV** (`Motion-Export-JJJJ-MM-TT.csv`): Tabelle zum Auswerten in Numbers, Excel oder Google Sheets. Eine Zeile je abgeschlossenem Training, Satz, Ausdauer-Einheit, Körpergewicht und Schlafindex; erste Spalte `type` zum Filtern. Einheiten immer kg, km, Sekunden; Datum und Uhrzeit in der Zeit des Geräts. Offene Trainings, Routinen, Pläne und das Profil stehen nur im JSON. UTF-8 mit BOM, Komma als Trenner, Texte, die mit `= + - @` beginnen, bekommen ein `'` vorangestellt (Schutz vor Formeln).
+- **CSV** (`Motion-Export-JJJJ-MM-TT.csv`): Tabelle zum Auswerten in Numbers, Excel oder Google Sheets. Eine Zeile je abgeschlossenem Training, Satz, Ausdauer-Einheit und Körpergewicht; erste Spalte `type` zum Filtern. Einheiten immer kg, km, Sekunden; Datum und Uhrzeit in der Zeit des Geräts. Offene Trainings, Routinen, Pläne und das Profil stehen nur im JSON. UTF-8 mit BOM, Komma als Trenner, Texte, die mit `= + - @` beginnen, bekommen ein `'` vorangestellt (Schutz vor Formeln).
 
-Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm, bei `sleep_score` der Index.
+Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm.
 
 ## 5. Betrieb: privat, nur auf Einladung (Entscheidung vom 03.11.2026)
 Motion läuft für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:
@@ -66,7 +66,7 @@ declare
   t text;
 begin
   foreach t in array array['profiles', 'exercises', 'blueprints', 'blueprint_exercises', 'workouts', 'workout_exercises',
-    'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores', 'legacy_imports'] loop
+    'set_logs', 'training_plans', 'body_weights', 'weight_rewards', 'workout_awards', 'sleep_scores', 'legacy_imports'] loop  -- sleep_scores: Altbestand vor dem 03.11.2026
     execute format('delete from public.%I where user_id = $1', t) using account;
   end loop;
   delete from auth.users where id = account;

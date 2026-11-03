@@ -177,7 +177,6 @@ export interface LegacyBackup {
   weightRewards: { dayKey: Day; awardedAt: Seconds2001; earnedXP: number }[]
   workoutAwards: { sessionID: string; earnedXP: number }[]
   healthReceipts: string[]
-  sleepScores?: { date: Seconds2001; dayKey: Day; score: number }[] | null
   healthArchive?: object | null
   nutrition?: object | null
   trainingPlan?: LegacySchedule | null
@@ -298,7 +297,6 @@ const backupFields: Record<string, Spec> = {
   weightRewards: list({ dayKey: 'string', awardedAt: 'date', earnedXP: 'int' }),
   workoutAwards: list({ sessionID: 'uuid', earnedXP: 'int' }),
   healthReceipts: list('uuid'),
-  sleepScores: opt(list({ date: 'date', dayKey: 'string', score: 'int' })),
   healthArchive: opt('object'),
   nutrition: opt('object'),
   trainingPlan: opt({
@@ -471,11 +469,6 @@ export function validateBackup(backup: LegacyBackup): ImportIssue[] {
     return condition
   }
   if (backup.trainingPlan) require(scheduleValid(backup.trainingPlan), 'trainingPlan', 'invalid training plan')
-  const sleep = backup.sleepScores ?? []
-  require(sleep.length <= 100_000 && unique(sleep.map((score) => score.dayKey)), 'sleepScores', 'invalid sleep score identities')
-  sleep.forEach((score, index) =>
-    require(date(score.date) && isLegacyDay(score.dayKey) && inRange(score.score, 0, 100), `sleepScores[${index}]`, 'invalid sleep score'),
-  )
   require(date(backup.exportedAt), 'exportedAt', 'invalid export date')
   const snapshots = backup.workouts.flatMap((session) => session.exercises)
   const sets = snapshots.flatMap((exercise) => exercise.sets)

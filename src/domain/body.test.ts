@@ -1,6 +1,6 @@
-import { claimGoal, goalReached, parseBodyWeight, validSleepScore } from './body'
+import { claimGoal, goalReached, parseBodyWeight } from './body'
 
-describe('body weight and sleep rules', () => {
+describe('body weight rules', () => {
   it('parses weights within 1–700 kg in either unit', () => {
     expect(parseBodyWeight('72,5', 'kg')).toBe(72.5)
     expect(parseBodyWeight('160', 'lb')).toBeCloseTo(72.57, 2)
@@ -19,12 +19,5 @@ describe('body weight and sleep rules', () => {
     expect(claimGoal(70, 68, 'lose', first!.celebrated)).toBeNull()
     expect(claimGoal(70, 71, 'gain', first!.celebrated)?.celebrated).toEqual(['lose:70000', 'gain:70000'])
     expect(claimGoal(null, 70, 'maintain', [])).toBeNull()
-  })
-
-  it('accepts sleep scores from 0 to 100', () => {
-    expect(validSleepScore('0')).toBe(0)
-    expect(validSleepScore(' 87 ')).toBe(87)
-    expect(validSleepScore('101')).toBeNull()
-    expect(validSleepScore('8.5')).toBeNull()
   })
 })

@@ -14,7 +14,6 @@ import type {
   Profile,
   RestTimerState,
   SetLog,
-  SleepScore,
   SyncedRecord,
   SyncedTable,
   TrainingPlanRecord,
@@ -77,7 +76,6 @@ export interface ImportCounts {
   exercises: number
   routines: number
   bodyWeights: number
-  sleepScores: number
   xpReceipts: number
   records: number
   xp: number
@@ -279,7 +277,6 @@ const emptyCounts = (): ImportCounts => ({
   exercises: 0,
   routines: 0,
   bodyWeights: 0,
-  sleepScores: 0,
   xpReceipts: 0,
   records: 0,
   xp: 0,
@@ -373,7 +370,6 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   file.exercises = backup.library.length
   file.routines = backup.routines.length
   file.bodyWeights = backup.weights.length
-  file.sleepScores = backup.sleepScores?.length ?? 0
   file.xpReceipts = backup.workoutAwards.length + backup.weightRewards.length
   file.records = countRecords(backup, sessions)
   file.xp += backup.weightRewards.reduce((sum, reward) => sum + reward.earnedXP, 0)
@@ -561,14 +557,6 @@ async function prepare(source: ImportSource): Promise<Prepared> {
     add<WeightReward>('weight_rewards', { id, day: key, awarded_at: iso(reward.awardedAt), earned_xp: reward.earnedXP })
     added.xpReceipts++
     added.xp += reward.earnedXP
-  })
-  const sleepIDs = await keys('sleep_scores')
-  ;(backup.sleepScores ?? []).forEach((score, index) => {
-    const key = day(score.dayKey, `sleepScores[${index}]`)
-    const id = stableID('sleep_scores', key)
-    if (!key || sleepIDs.has(id)) return
-    add<SleepScore>('sleep_scores', { id, day: key, score: score.score })
-    added.sleepScores++
   })
 
   // The plan is only adopted when this device has none.

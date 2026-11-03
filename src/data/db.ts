@@ -9,7 +9,6 @@ import type {
   OutboxEntry,
   Profile,
   SetLog,
-  SleepScore,
   SyncConflict,
   SyncCursor,
   SyncedRecord,
@@ -34,7 +33,6 @@ export class MotionDatabase extends Dexie {
   body_weights!: EntityTable<BodyWeight, 'id'>
   weight_rewards!: EntityTable<WeightReward, 'id'>
   workout_awards!: EntityTable<WorkoutAward, 'id'>
-  sleep_scores!: EntityTable<SleepScore, 'id'>
   legacy_imports!: EntityTable<LegacyImport, 'id'>
   outbox!: EntityTable<OutboxEntry, 'key'>
   sync_state!: EntityTable<SyncCursor, 'table'>
@@ -61,6 +59,7 @@ export class MotionDatabase extends Dexie {
       .stores({ sync_state: 'table', conflicts: 'key, table, record_id' })
       .upgrade(adoptStableIDs)
     this.version(3).stores({ legacy_imports: 'id, fingerprint' })
+    this.version(4).stores({ sleep_scores: null }).upgrade(forgetRemovedTables)
   }
 
   table_<T extends SyncedRecord>(name: SyncedTable) {
@@ -98,7 +97,6 @@ export const syncedTables: SyncedTable[] = [
   'body_weights',
   'weight_rewards',
   'workout_awards',
-  'sleep_scores',
   'legacy_imports',
 ]
 
@@ -107,7 +105,6 @@ const stableKeys: Record<StableKind, (record: SyncedRecord & Record<string, unkn
   training_plans: () => undefined,
   body_weights: (record) => record.day as string,
   weight_rewards: (record) => record.day as string,
-  sleep_scores: (record) => record.day as string,
   workout_awards: (record) => record.workout_id as string,
 }
 
@@ -135,5 +132,15 @@ async function adoptStableIDs(transaction: Transaction) {
       await transaction.table('outbox').bulkDelete(replaced.map((old) => `${kind}:${old}`))
       await transaction.table('outbox').put({ key: `${kind}:${id}`, table: kind, record_id: id, queued_at: new Date().toISOString() })
     }
+  }
+}
+
+/** Tables dropped from the app (version 4: the sleep index); the cloud keeps its rows, nothing syncs them anymore. */
+const removedTables = ['sleep_scores']
+
+/** Version 4: queued uploads, pull cursors and conflict copies of dropped tables would otherwise stay forever. */
+async function forgetRemovedTables(transaction: Transaction) {
+  for (const name of ['outbox', 'sync_state', 'conflicts']) {
+    await transaction.table(name).filter((entry: { table: string }) => removedTables.includes(entry.table)).delete()
   }
 }

@@ -5,7 +5,7 @@ import * as engine from '../features/workout/engine'
 import { loadSession } from '../features/workout/session'
 import { buildBackup } from '../store/backup'
 import { addEntry, createBlueprint } from '../store/blueprints'
-import { checkIn, saveSleepScore } from '../store/body'
+import { checkIn } from '../store/body'
 import { createExercise } from '../store/library'
 import { ensureProfile, updateProfile } from '../store/profile'
 import { totalXP } from '../store/progress'
@@ -17,7 +17,7 @@ import { previewRestore, runRestore, type WebBackupSource } from './webBackup'
 
 const context: engine.WorkoutContext = { trackReps: true, globalRestSeconds: 90, unit: 'kg', locale: 'en-US', now: () => new Date() }
 
-/** A device with a profile, a finished workout, body weight and a sleep score; returns its backup as text. */
+/** A device with a profile, a finished workout and body weight; returns its backup as text. */
 async function exportedDevice() {
   await freshDatabase()
   await ensureProfile()
@@ -31,7 +31,6 @@ async function exportedDevice() {
   }
   await engine.finishWorkout(id, context)
   await checkIn(67.4, new Date('2026-11-02T07:00:00'))
-  await saveSleepScore(81, new Date('2026-11-02T07:00:00'))
   return { text: JSON.stringify(await buildBackup()), workoutID: id, xp: await totalXP() }
 }
 
@@ -59,7 +58,7 @@ describe('restoring the web backup', () => {
     const source = await webSource(text)
     const preview = await previewRestore(source)
     expect(preview.origin).toEqual({ kind: 'webBackup' })
-    expect(preview.file).toMatchObject({ workouts: 1, drafts: 0, sets: 2, routines: 1, bodyWeights: 1, sleepScores: 1, records: 0 })
+    expect(preview.file).toMatchObject({ workouts: 1, drafts: 0, sets: 2, routines: 1, bodyWeights: 1, records: 0 })
     expect(preview.added).toEqual(preview.file)
     expect(await db.workouts.count()).toBe(0)
 
@@ -69,6 +68,17 @@ describe('restoring the web backup', () => {
     expect((await db.profiles.toArray()).map((profile) => profile.name)).toEqual(['Restored'])
     expect(await totalXP()).toBe(xp)
     expect(await db.outbox.where('table').equals('workouts').count()).toBe(1)
+  })
+
+  it('ignores the sleep scores of backups made before the sleep index was removed', async () => {
+    const { text, workoutID } = await exportedDevice()
+    const older = JSON.parse(text)
+    const time = new Date().toISOString()
+    older.tables.sleep_scores = [{ id: '0b5c7a39-3f0e-4c55-9b7e-2f7e1d6a9c01', day: '2026-11-02', score: 81, created_at: time, updated_at: time, deleted_at: null }]
+    await freshDatabase()
+    await runRestore(await webSource(JSON.stringify(older)))
+    expect(await db.workouts.get(workoutID)).toMatchObject({ is_completed: true })
+    expect(db.tables.map((table) => table.name)).not.toContain('sleep_scores')
   })
 
   it('adds nothing when restored twice', async () => {
@@ -81,14 +91,14 @@ describe('restoring the web backup', () => {
 
   it('keeps newer changes of this device and newer deletions from the file', async () => {
     const { text, workoutID } = await exportedDevice()
-    // After the export: the workout is renamed here, the sleep score deleted.
+    // After the export: the workout is renamed here, the blueprint deleted.
     await new Promise((resolve) => setTimeout(resolve, 5))
     await update<Workout>('workouts', workoutID, { name: 'Push renamed' })
-    const sleep = (await db.sleep_scores.toArray())[0]!
-    await softDelete('sleep_scores', [sleep.id])
+    const blueprint = (await db.blueprints.toArray())[0]!
+    await softDelete('blueprints', [blueprint.id])
     await runRestore(await webSource(text))
     expect((await db.workouts.get(workoutID))!.name).toBe('Push renamed')
-    expect((await db.sleep_scores.get(sleep.id))!.deleted_at).not.toBeNull()
+    expect((await db.blueprints.get(blueprint.id))!.deleted_at).not.toBeNull()
 
     // A file whose tombstone is newer deletes the record here.
     const later = JSON.parse(text)
