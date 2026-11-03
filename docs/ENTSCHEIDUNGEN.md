@@ -50,3 +50,7 @@
 | 5 | Erneuter Import derselben Datei | Hinweis mit Datum des ersten Imports, Import bleibt möglich und fügt nichts doppelt hinzu (Abgleich über IDs). |
 | 6 | Gelöschte Datensätze | Ein Datensatz, der hier gelöscht wurde, wird durch einen Import nicht wiederbelebt. |
 | 7 | Unbekannte Kalendertage | Ära 0 oder Monat 13 (nicht-gregorianischer Kalender auf dem iPhone) brechen den Import mit Fehlerbericht ab, statt Tage falsch umzurechnen. |
+| 8 | Phase 5b gebaut (03.11.2026) | Auf Wunsch von Mathis doch eingebaut: v1–v17 und die einfache Workout-CSV werden in der App gelesen. Damit gilt Phase-0-Entscheidung 1 wieder, die einmalige Umwandlung außerhalb der App (Nr. 2) ist nicht mehr nötig. |
+| 9 | IDs in älteren Dateien | Trainings ohne Entwurfs-ID, Übungen ohne Snapshot-ID und Sätze ohne Satz-ID bekommen eine aus dem Inhalt abgeleitete ID. Dieselbe Datei ergibt so immer dieselben IDs, ein zweiter Import fügt nichts doppelt hinzu. |
+| 10 | Abgleich ohne IDs | Wie in der alten App gilt ein Training aus einer älteren Datei als vorhanden, wenn hier eines mit gleichem Namen, gleichem Abschlussstatus und gleicher Sekunde existiert. Es bleibt dann unverändert. |
+| 11 | Fehlende Teile älterer Dateien | Einstellungen, Schlafwerte und Trainingsplan stehen nicht darin; das Gerät behält seine eigenen. Beispieltrainings werden wie in der vollständigen Sicherung weggelassen. |

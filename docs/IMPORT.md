@@ -44,7 +44,7 @@ Quellen: `MotionBackup.swift`, `MotionBackupStore.swift`, `MotionBackupValidatio
 |---|---|---|---|
 | **A. JSON-Backup** aus der alten App exportieren und in der Web-App hochladen | gering: 1× exportieren, Datei per AirDrop, Dateien-App oder Mail auf das Gerät mit der Web-App | vollständig | **empfohlen** |
 | **B. CSV v18** aus der alten App | gleich wie A | vollständig, identisch zu A | als Alternative, gleicher Importcode |
-| C. Ältere CSV-Dateien (`motion_backup_v1` bis `v17`) oder die einfache Workout-CSV | nur wenn du solche Dateien noch hast | je nach Version unvollständig | nur auf Wunsch |
+| C. Ältere CSV-Dateien (`motion_backup_v1` bis `v17`) oder die einfache Workout-CSV | nur wenn du solche Dateien noch hast | je nach Version unvollständig | eingebaut seit Phase 5b |
 | D. Datenbankdatei direkt vom iPhone auslesen | hoch (Xcode, Geräte-Container) | technisch möglich, fehleranfällig | nicht empfohlen |
 
 **Wichtig zur alten App:** Wurde sie mit einem kostenlosen Apple-Account aus Xcode installiert, startet sie nach etwa 7 Tagen nicht mehr, bis man sie erneut aus Xcode installiert. Die Daten bleiben dabei erhalten. Für den Export muss die App also noch starten. Am sichersten exportierst du das Backup bald einmal und hebst die Datei auf.
@@ -85,7 +85,7 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 
 **Ablauf**
 1. Datei wählen. JSON oder CSV wird am Inhalt erkannt, nicht an der Endung. Größen: JSON bis 32 MB, CSV bis 64 MB.
-2. Prüfung: zuerst Dateityp und Version, dann die vollständige Struktur, dann die Regeln der alten App. Anders als die alte App sammelt der Import **alle** Probleme (höchstens 50) mit Fundstelle, z. B. „Training 4 › Übung 1 › Satz 3: ungültiger Satz“. Ältere Motion-CSV (v1–v17) und die einfache Workout-CSV bekommen eine eigene Meldung.
+2. Prüfung: zuerst Dateityp und Version, dann die vollständige Struktur, dann die Regeln der alten App. Anders als die alte App sammelt der Import **alle** Probleme (höchstens 50) mit Fundstelle, z. B. „Training 4 › Übung 1 › Satz 3: ungültiger Satz“. Ältere Motion-CSV (v1–v17) und die einfache Workout-CSV werden seit Phase 5b ebenfalls gelesen (Abschnitt 7).
 3. Vorschau: Tabelle „In der Datei / Neu / Schon vorhanden“ für Trainings, Entwürfe, erledigte Sätze, Übungen, Routinen, Körpergewicht, Schlafwerte, XP-Belege, Übungen mit Rekord und XP. Dazu die 3 neuesten Trainings mit Übungen und Sätzen. Es wird noch nichts geschrieben.
 4. Import in **einer** Transaktion: entweder alles Neue oder nichts. Alles Neue kommt in die Sync-Warteschlange.
 5. Abschlussbericht mit denselben Spalten.
@@ -107,3 +107,27 @@ Details in `ENTSCHEIDUNGEN.md`. Die ursprünglichen Fragen:
 **Tests:** `src/import/importer.test.ts` (Lesen, Prüfung, Umrechnung, Übernahme, Doppelschutz, Konflikt), `tests/e2e/import.spec.ts` (Ablauf im Browser auf Chrome mobil/Desktop und iPhone-WebKit). Testdaten im Format der alten App: `src/test/legacyBackup.ts`.
 
 **Abnahme (offen):** Mathis exportiert in der alten App „Export Backup“ und importiert die Datei. Die Zahlen und Stichproben müssen zur alten App passen.
+
+## 7. Ältere CSV-Dateien (Phase 5b, 03.11.2026)
+
+**Code:** `src/import/olderCSV.ts` (Umwandlung wie `MotionBackupCSV.swift` und `WorkoutCSVImporter.swift`), Tests `src/import/olderCSV.test.ts` und `tests/e2e/import.spec.ts`, Testdateien `src/test/olderCSV.ts`.
+
+**Ablauf:** Die Kopfzeile bestimmt das Format. Sie muss exakt einer der 17 Versionen der alten App oder der einfachen Workout-CSV entsprechen. Die Datei wird in die vollständige Sicherung umgewandelt; danach gelten Prüfung, Vorschau, Übernahme, Doppelschutz und Abschlussbericht aus Abschnitt 6 unverändert. Die Vorschau nennt das Format und statt des Exportdatums den neuesten Eintrag der Datei.
+
+**Motion-CSV v1–v17**
+- Eine Zeile pro Datensatz (`workout`, `exercise`, `set`, `library_exercise`, `blueprint`, `blueprint_exercise`, `profile`, `body_weight`, `weight_reward`, `workout_award`, `nutrition`), verknüpft über Schlüssel innerhalb der Datei. Ältere Versionen haben weniger Spalten; fehlende gelten als leer.
+- Zeilenprüfung wie in der alten App: erlaubte Spalten je Zeilenart, Wahrheitswerte, UUIDs, Zahlenbereiche, Namen mit Apostroph-Schutz, Cardio-Werte mit passender Pace, Regeln für Dauer-Übungen, Verweise auf vorhandene Trainings, Übungen und Routinen, doppelte Schlüssel und Satznummern. Alle Probleme (höchstens 50) erscheinen mit Zeilennummer, die Kopfzeile ist Zeile 1.
+- **Datumswerte sind Unix-Sekunden** (nicht Sekunden seit 2001) und werden umgerechnet.
+- IDs: Entwurfs-ID, Snapshot-ID und Satz-ID werden übernommen, wenn vorhanden. Sonst wird eine feste ID aus dem Inhalt abgeleitet (Training: Status, Sekunde, Name; Übung: Training und Position; Satz: Übung und Satznummer).
+- Ein Training mit gleichem Namen, Status und gleicher Sekunde wie eines auf diesem Gerät gilt als vorhanden (Regel der alten App). So entstehen keine Doppelten, wenn vorher schon die vollständige Sicherung importiert wurde.
+- XP: Ein Trainings-XP-Beleg in der Datei gewinnt gegen die XP des Trainings. Abgeschlossene Trainings ohne Beleg bekommen einen mit ihren XP aus der Datei.
+- Rückgängig-Verlauf und Pausentimer kommen mit. Verweisen sie auf Sätze, die es in der Datei nicht gibt, wird der Verlauf bzw. der Bezug des Timers weggelassen statt den Import abzubrechen.
+- Beispieltrainings werden weggelassen. Health- und Strava-Workouts werden wie bisher übersprungen und gezählt. Ernährung wird nicht übernommen.
+- Nicht enthalten in diesen Dateien: Einstellungen, Schlafwerte, Trainingsplan, gefeierte Gewichtsziele. Das Gerät behält seine eigenen; Darstellung und Startanimation bleiben unverändert.
+
+**Einfache Workout-CSV** (`workout_date,workout_name,exercise,set_index,weight_kg,reps,set_completed`)
+- Eine Zeile pro Satz. Ein Training sind alle Zeilen mit gleicher Zeit (ISO 8601) und gleichem Namen, eine Übung alle Zeilen mit gleichem Übungsnamen darin.
+- Alle Trainings gelten als abgeschlossen, mit 0 XP und Messart „Gewicht & Wiederholungen“. Ein Apostroph vor Namen, die wie eine Formel beginnen, wird entfernt.
+- Doppelte Satznummern in einer Übung und ungültige Zeiten brechen mit Zeilennummer ab.
+
+**Abnahme (offen):** Mathis importiert seine alte CSV-Datei. Zahlen und Stichproben müssen zur alten App passen.
