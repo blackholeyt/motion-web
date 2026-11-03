@@ -66,3 +66,5 @@ Einmal gegen dein echtes Projekt (machst du selbst):
 2. `.env.test.local` wie für den Zwei-Konten-Test füllen.
 3. `npm run test:delete-live`
 4. Erwartet: 2 bestandene Tests. Der Test legt zwei Wegwerf-Konten an, füllt alle Tabellen, löscht das erste über `delete_account()` wie die App, zählt danach mit dem Secret Key in jeder Tabelle 0 Zeilen für dieses Konto, prüft, dass der Login weg ist und das zweite Konto alles behalten hat, und räumt am Ende auf.
+
+**Ergebnis am 03.11.2026:** Migration im Projekt eingespielt (Funktionen vorhanden, Besitzer `postgres` darf aus `auth.users` löschen, kein bestehendes Konto blockiert). `npm run test:delete-live`: 2 von 2 bestanden, keine Testkonten übrig.
