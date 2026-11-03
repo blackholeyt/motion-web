@@ -19,7 +19,7 @@ import { savePlan } from '../store/plan'
 import { ensureProfile, updateProfile } from '../store/profile'
 import { deleteWorkout } from '../store/history'
 import { newSchedule } from '../domain/schedule'
-import { migratedDatabase, pgSupabase } from '../../supabase/tests/pgSupabase'
+import { addUsers, migratedDatabase, pgSupabase } from '../../supabase/tests/pgSupabase'
 import { setSupabase } from './client'
 import { hasGuestData } from './account'
 import { syncOnce } from './engine'
@@ -35,6 +35,7 @@ let pg: PGlite
 
 beforeAll(async () => {
   pg = await migratedDatabase()
+  await addUsers(pg, userA)
 }, 60_000)
 
 beforeEach(async () => {
@@ -311,5 +312,35 @@ describe('ids and schema', () => {
       expect(records.length, table).toBeGreaterThan(0)
       for (const record of records) for (const key of Object.keys(record)) expect(columns.get(table)?.has(key), `${table}.${key}`).toBe(true)
     }
+  })
+})
+
+describe('deleting the account (phase 6)', () => {
+  const userD = '00000000-0000-4000-8000-00000000000d'
+
+  it('removes the account’s rows in the cloud, and its other device can no longer upload', async () => {
+    await addUsers(pg, userD)
+    const phone = await device(userD)
+    const laptop = await device(userD)
+    await phone.use(async () => {
+      await pushWorkout()
+      await checkIn(70, new Date())
+    })
+    await phone.sync()
+    await laptop.sync()
+    const counted = async () => (await pg.query<{ n: number }>(`select count(*)::int as n from public.workouts where user_id = '${userD}'`)).rows[0]!.n
+    expect(await counted()).toBe(1)
+
+    const result = await pgSupabase(pg, userD).rpc('delete_account')
+    expect(result.error).toBeNull()
+    for (const table of syncedTables) {
+      const rows = await pg.query<{ n: number }>(`select count(*)::int as n from public.${table} where user_id = '${userD}'`)
+      expect(rows.rows[0]!.n).toBe(0)
+    }
+
+    // The laptop still holds a valid token and a queued change; the server refuses it.
+    await laptop.use(() => checkIn(71, new Date()))
+    await expect(laptop.sync()).rejects.toThrow(/account deleted/)
+    expect(await counted()).toBe(0)
   })
 })

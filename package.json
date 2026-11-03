@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "icons": "sh scripts/make-icons.sh",
-    "test:rls-live": "vitest run supabase/tests/rls.live.test.ts"
+    "test:rls-live": "vitest run supabase/tests/rls.live.test.ts",
+    "test:delete-live": "vitest run supabase/tests/deleteAccount.live.test.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

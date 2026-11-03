@@ -1,7 +1,7 @@
 // @vitest-environment node
 import type { PGlite } from '@electric-sql/pglite'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { migratedDatabase } from './pgSupabase'
+import { addUsers, migratedDatabase } from './pgSupabase'
 
 /*
  * Runs the real migrations in an embedded Postgres with the pieces Supabase provides (roles anon and
@@ -63,6 +63,7 @@ const count = async (table: string) => (await pg.query<{ n: number }>(`select co
 
 beforeAll(async () => {
   pg = await migratedDatabase()
+  await addUsers(pg, A, B)
   for (const [index, table] of tables.entries()) {
     const id = `aaaaaaaa-0000-4000-8000-${String(index).padStart(12, '0')}`
     await as(A, () => pg.exec(insertSQL(table, row(table, id, A))))

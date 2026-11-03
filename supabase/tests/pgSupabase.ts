@@ -4,7 +4,7 @@ import { PGlite } from '@electric-sql/pglite'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /*
- * Test double for the few Supabase calls the sync engine makes (upsert/select on a table, the
+ * Test double for the few Supabase calls the app makes (upsert/select on a table, rpc, the
  * session), executed as SQL on an embedded Postgres with the real migrations and RLS. So the tests
  * exercise the real server rules: last change wins, synced_at, and per-account rows.
  */
@@ -13,6 +13,7 @@ export const supabaseStubs = `
   create role anon nologin;
   create role authenticated nologin;
   create schema auth;
+  create table auth.users (id uuid primary key);
   grant usage on schema auth, public to anon, authenticated;
   create function auth.uid() returns uuid language sql stable as $$
     select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid
@@ -26,6 +27,11 @@ export async function migratedDatabase(): Promise<PGlite> {
   const folder = join(import.meta.dirname, '..', 'migrations')
   for (const file of readdirSync(folder).sort()) await pg.exec(readFileSync(join(folder, file), 'utf8'))
   return pg
+}
+
+/** Accounts that exist in auth.users; the write rule accepts rows only for them. */
+export async function addUsers(pg: PGlite, ...ids: string[]) {
+  for (const id of ids) await pg.query('insert into auth.users (id) values ($1) on conflict do nothing', [id])
 }
 
 type Result = { data: unknown[] | null; error: Error | null }
@@ -114,6 +120,17 @@ export function pgSupabase(pg: PGlite, user: string | null) {
   const client = {
     auth: { getSession: async () => ({ data: { session: current ? { user: { id: current } } : null }, error: null }) },
     from: (table: string) => new Query(pg, table, () => current),
+    rpc: async (name: string) => {
+      await pg.exec(`set role authenticated; set request.jwt.claims = '${JSON.stringify({ sub: current, role: 'authenticated' })}'`)
+      try {
+        const result = await pg.query<{ result: unknown }>(`select public.${name}() as result`)
+        return { data: result.rows[0]!.result, error: null }
+      } catch (error) {
+        return { data: null, error: error as Error }
+      } finally {
+        await pg.exec('reset role; reset request.jwt.claims')
+      }
+    },
     as: (next: string | null) => {
       current = next
     },
