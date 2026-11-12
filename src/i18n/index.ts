@@ -8,7 +8,8 @@ type Values = Record<string, string | number> | (string | number)[]
 
 // Translations from the iOS string catalog first; web-specific texts override them.
 const dictionaries: Record<Language, Record<string, string>> = {
-  en: { ...(englishPlurals as Record<string, string>), '{0} sets#one': '{0} set', '{0} exercises#one': '{0} exercise', '{0} saved sessions#one': '{0} saved session',
+  en: { ...(englishPlurals as Record<string, string>), 'Back (muscle)': 'Back', 'Core (muscle)': 'Core', 'Average of {0} exercises#one': 'From 1 exercise',
+    '{0} sets#one': '{0} set', '{0} exercises#one': '{0} exercise', '{0} saved sessions#one': '{0} saved session',
     '{0} exercises · {1} working · {2} warm-up#one': '{0} exercise · {1} working · {2} warm-up',
     '{0} exercises · {1} sets#one': '{0} exercise · {1} sets',
     '{0} changes waiting#one': '{0} change waiting',

@@ -1,0 +1,181 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.segmented button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--secondary-text);
+  font-size: 0.9375rem;
+}
+
+.segmented .selected {
+  background: color-mix(in srgb, var(--action) 18%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.subject {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.subject select {
+  appearance: none;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 40px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--text);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.subject svg {
+  position: absolute;
+  right: 14px;
+  pointer-events: none;
+  color: var(--secondary-text);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon,
+.iconLoss {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--completed-surface);
+  color: var(--action);
+}
+
+.iconLoss {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--secondary-text);
+}
+
+.summaryText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.summaryText small {
+  font-size: 0.75rem;
+  color: var(--secondary-text);
+}
+
+.summaryText strong {
+  font-family: var(--font-rounded);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8125rem;
+  color: var(--secondary-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.svg {
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+.area {
+  fill: color-mix(in srgb, var(--action) 12%, transparent);
+}
+
+.line {
+  fill: none;
+  stroke: var(--action);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.point {
+  fill: var(--action);
+}
+
+.baseline {
+  stroke: var(--secondary-text);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: var(--secondary-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty h3 {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.muted {
+  margin: 0;
+  color: var(--secondary-text);
+}

@@ -40,7 +40,7 @@ Apple Health: Workouts importieren und Herzfrequenz (9, 69), Schlafdauer und -ph
 **Beim Import übersprungen und gezählt:** Health- und Strava-Workouts, Ernährung, Health-Archiv, Health-Belege, Schrittziel. Die Originaldatei bleibt bei dir.
 
 ### D. Neu im Web, gab es in der iOS-App nicht
-Konto (Google oder E-Mail-Code, nur auf Einladung), Cloud-Sync und Sync-Status, Einwilligung beim Start und beim Anmelden, Konto löschen und Gerätedaten löschen, CSV-Export als Tabelle, Wake Lock, Installationshinweis, Speicher-Persistenz.
+Konto (Google oder E-Mail-Code, nur auf Einladung), Cloud-Sync und Sync-Status, Einwilligung beim Start und beim Anmelden, Konto löschen und Gerätedaten löschen, CSV-Export als Tabelle, Wake Lock, Installationshinweis, Speicher-Persistenz, Kraftverlauf auf dem Dashboard (Diagramm nach Muskel oder Übung, 12 Wochen, Start bei der größten Veränderung).
 
 ### E. Gebaut, aber noch nicht auf echten Geräten oder mit echten Daten abgenommen
 - Der komplette Durchlauf auf iPhone, Android und Desktop (Checkliste: `ABNAHME.md`, Abschnitt 3). Automatisch geprüft ist er gegen die echten Migrationen in einem eingebetteten Postgres und in Playwright mit Geräteprofilen, nicht in echtem Safari auf dem iPhone.
@@ -160,3 +160,4 @@ Details zu jeder Funktion: `FUNKTIONEN.md` (Abschnittsnummer in Klammern).
 - Konto mit Google-Login und E-Mail-Code, Cloud-Sync und Sync-Status
 - Installationshinweis für das iPhone, Speicher-Persistenz, Wake Lock
 - Einwilligung, Datenschutz-Entwürfe, Konto löschen, Datenexport JSON und CSV im neuen Format
+- Kraftverlauf auf dem Dashboard (12.11.2026): höchstes Arbeitsgewicht pro Training über 12 Wochen als Liniendiagramm, umschaltbar zwischen Muskel (Mittel der prozentualen Veränderung seiner Übungen) und einzelner Übung (Gewicht). Vorauswahl ist jeweils der Eintrag mit der größten Veränderung. Unit: `strengthTrend.test.ts`, E2E: `strengthTrend.spec.ts`

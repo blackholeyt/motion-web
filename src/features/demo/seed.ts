@@ -1,5 +1,6 @@
 import { insert, insertOne } from '../../data/repo'
 import type { BlueprintExercise, BodyWeight, Exercise, Guidance, SetLog, Workout, WorkoutExercise } from '../../data/types'
+import { catalogue } from '../../domain/catalogue'
 import { addDays, dayKey } from '../../domain/measurement'
 import { createBlueprint } from '../../store/blueprints'
 import { ensureProfile, updateProfile } from '../../store/profile'
@@ -21,14 +22,15 @@ export async function seedDemo(now = new Date()) {
     const blueprint = await createBlueprint(name)
     const exercises: Exercise[] = []
     for (const [order, [exerciseName]] of entries.entries()) {
+      const movement = catalogue.find((candidate) => candidate.name === exerciseName)
       const exercise = await insertOne<Exercise>('exercises', {
         name: exerciseName,
         goal_weight_kg: null,
         is_pr_tracked: true,
         rest_seconds: null,
         catalogue_id: null,
-        equipment: 'Other',
-        muscle: 'Other',
+        equipment: movement?.equipment ?? 'Other',
+        muscle: movement?.muscle ?? 'Other',
         measurement: 'Load & reps',
         guidance: '',
         track_progress: true,

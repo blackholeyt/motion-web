@@ -6,6 +6,13 @@ export { catalogue, type CatalogueMovement }
 export const equipmentOptions = ['Barbell', 'Dumbbell', 'Cable', 'Machine', 'Bodyweight', 'Other']
 export const muscleOptions = ['Chest', 'Back', 'Shoulders', 'Legs', 'Posterior chain', 'Calves', 'Arms', 'Core', 'Other']
 
+/**
+ * "Back" and "Core" also exist as navigation and sleep terms in the string catalog,
+ * so the muscle groups use their own keys.
+ */
+const muscleKeys: Record<string, string> = { Back: 'Back (muscle)', Core: 'Core (muscle)' }
+export const muscleLabel = (t: (text: string) => string, muscle: string) => t(muscleKeys[muscle] ?? muscle)
+
 export interface ExerciseFilter {
   search: string
   equipment: string

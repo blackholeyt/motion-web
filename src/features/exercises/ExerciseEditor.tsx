@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
 import type { CatalogueMeasurement, Exercise } from '../../data/types'
-import { equipmentOptions, muscleOptions, supportsLogging } from '../../domain/catalogue'
+import { equipmentOptions, muscleLabel, muscleOptions, supportsLogging } from '../../domain/catalogue'
 import { measurements } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { deleteExercise, historyCandidates, saveExercise, type ExerciseMetadata } from '../../store/library'
@@ -49,7 +49,7 @@ export function ExerciseEditor({ exercise, onClose }: { exercise: Exercise; onCl
       <Group title={t('Movement')}>
         <TextRow label={t('Name')} value={name} onChange={setName} />
         <SelectRow label={t('Equipment')} value={metadata.equipment} onChange={(equipment) => change({ equipment })} options={equipmentOptions.map((value) => ({ value, label: t(value) }))} />
-        <SelectRow label={t('Muscle')} value={metadata.muscle} onChange={(muscle) => change({ muscle })} options={muscleOptions.map((value) => ({ value, label: t(value) }))} />
+        <SelectRow label={t('Muscle')} value={metadata.muscle} onChange={(muscle) => change({ muscle })} options={muscleOptions.map((value) => ({ value, label: muscleLabel(t, value) }))} />
         <SelectRow<CatalogueMeasurement>
           label={t('Measurement')}
           value={metadata.measurement}

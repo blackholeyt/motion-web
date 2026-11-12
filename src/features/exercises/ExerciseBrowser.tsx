@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Exercise } from '../../data/types'
-import { catalogue, emptyFilter, equipmentOptions, matches, muscleOptions, supportsLogging, type CatalogueMovement, type ExerciseFilter } from '../../domain/catalogue'
+import { catalogue, emptyFilter, equipmentOptions, matches, muscleLabel, muscleOptions, supportsLogging, type CatalogueMovement, type ExerciseFilter } from '../../domain/catalogue'
 import { measurements } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { addCatalogueMovement, adoptMovement } from '../../store/library'
@@ -42,7 +42,7 @@ export function ExerciseBrowser({ requiresLogging = false, onSelect }: { require
       />
       <Group title={t('Filters')}>
         <SelectRow label={t('Equipment')} value={filter.equipment} onChange={(equipment) => set({ equipment })} options={[{ value: '', label: t('All equipment') }, ...equipmentOptions.map((value) => ({ value, label: t(value) }))]} />
-        <SelectRow label={t('Muscle')} value={filter.muscle} onChange={(muscle) => set({ muscle })} options={[{ value: '', label: t('All muscles') }, ...muscleOptions.map((value) => ({ value, label: t(value) }))]} />
+        <SelectRow label={t('Muscle')} value={filter.muscle} onChange={(muscle) => set({ muscle })} options={[{ value: '', label: t('All muscles') }, ...muscleOptions.map((value) => ({ value, label: muscleLabel(t, value) }))]} />
         <SelectRow
           label={t('Measurement')}
           value={filter.measurement}
@@ -70,7 +70,7 @@ export function ExerciseBrowser({ requiresLogging = false, onSelect }: { require
             <span className={styles.stack}>
               <span>{t(movement.name)}</span>
               <small>
-                {t(movement.equipment)} · {t(movement.muscle)}
+                {t(movement.equipment)} · {muscleLabel(t, movement.muscle)}
               </small>
             </span>
           </RowButton>

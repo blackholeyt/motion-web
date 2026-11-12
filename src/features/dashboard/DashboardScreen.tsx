@@ -1,11 +1,12 @@
 import { CalendarPlus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useT } from '../../i18n'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../../data/db'
 import { live } from '../../data/repo'
 import type { Exercise } from '../../data/types'
 import { loadBests, trainingWeeks } from '../../domain/statistics'
+import { strengthTrend, trendWeeks } from '../../domain/strengthTrend'
 import { usePreferences, useProfile } from '../../store/profile'
 import { completedHistory, useProgress } from '../../store/progress'
 import { SectionTitle } from '../../ui/components'
@@ -17,6 +18,7 @@ import { LoadBestsCard } from './LoadBestsCard'
 import { DraftLinks } from '../workout/DraftLinks'
 import { PastWorkoutPicker } from './PastWorkoutPicker'
 import { StartCard } from './StartCard'
+import { StrengthTrendCard } from './StrengthTrendCard'
 import { WorkoutPicker } from './WorkoutPicker'
 import styles from './dashboard.module.css'
 
@@ -38,6 +40,7 @@ export function DashboardScreen() {
     return () => window.clearInterval(handle)
   }, [])
 
+  const trend = useMemo(() => strengthTrend(history ?? [], library ?? [], now), [history, library, now])
   const date = new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'short', day: 'numeric' }).format(now)
   const greeting = profile && profile.name !== 'Motion' ? t('{0},\nyour training in perspective.', [profile.name]) : t('Your training,\nin perspective.')
   return (
@@ -58,6 +61,10 @@ export function DashboardScreen() {
       <section className={styles.section}>
         <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />
         <ConsistencyCard weeks={trainingWeeks((history ?? []).map(({ workout }) => workout.performed_at), now)} />
+      </section>
+      <section className={styles.section}>
+        <SectionTitle title={t('Strength trend')} subtitle={t('Top working load per session over the last {0} weeks. Recorded results, not a strength estimate.', [trendWeeks])} />
+        <StrengthTrendCard trend={trend} unit={profile?.load_unit ?? 'kg'} />
       </section>
       <section className={styles.section}>
         <SectionTitle title={t('Recorded load bests')} subtitle={t('Heaviest completed external-load working sets. Not a strength estimate. Tap to edit a load goal.')} />

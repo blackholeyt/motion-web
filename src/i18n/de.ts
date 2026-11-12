@@ -591,4 +591,22 @@ export const de: Record<string, string> = {
   Now: 'Jetzt',
   'Preparing demo…': 'Demo wird vorbereitet …',
   'Preparing test…': 'Test wird vorbereitet …',
+  'Back (muscle)': 'Rücken',
+  'Core (muscle)': 'Rumpf',
+  'Strength trend': 'Kraftverlauf',
+  'Top working load per session over the last {0} weeks. Recorded results, not a strength estimate.':
+    'Höchstes Arbeitsgewicht pro Training in den letzten {0} Wochen. Gespeicherte Werte, keine Kraftschätzung.',
+  'Show trend by': 'Verlauf anzeigen nach',
+  'By muscle': 'Muskel',
+  'By exercise': 'Übung',
+  'No strength trend yet.': 'Noch kein Kraftverlauf.',
+  'Finish two workouts with the same exercise within {0} weeks to see its trend here.':
+    'Beende zwei Trainings mit derselben Übung innerhalb von {0} Wochen, um ihren Verlauf hier zu sehen.',
+  'Strength gain': 'Kraftzuwachs',
+  'Strength loss': 'Kraftverlust',
+  'No change': 'Unverändert',
+  'Average of {0} exercises': 'Schnitt aus {0} Übungen',
+  'Average of {0} exercises#one': 'Aus 1 Übung',
+  'Strength trend of {0} in {1}': 'Kraftverlauf von {0} in {1}',
+  'Baseline · {0}': 'Start · {0}',
 }
