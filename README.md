@@ -7,7 +7,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - Später optional per Capacitor als native App im App Store
 
 ## Stand (03.11.2026)
-Alle Phasen 0–7 sind gebaut. Live: https://motion-web.pages.dev. Motion läuft privat, nur auf Einladung.
+Alle Phasen 0–7 sind gebaut. Live: https://blackholeyt.github.io/motion-web/ (GitHub Pages). Motion läuft privat, nur auf Einladung.
 
 | Phase | Inhalt | Abnahme |
 |---|---|---|
@@ -28,7 +28,7 @@ Für den Fall, dass alles neu aufgesetzt werden muss (neuer Rechner, neues Supab
 1. **Rechner:** Node.js 26 (`.node-version`), dann im Repo `npm install`. Für Browser-Tests einmalig `npx playwright install chromium webkit`.
 2. **Supabase** (Frankfurt, Free): Projekt anlegen, alle Dateien aus `supabase/migrations/` der Reihe nach im SQL Editor einspielen, Gmail-SMTP, 6-stelliger Code, Adressen, Google-Login, Registrierung schließen. Schritt für Schritt: `docs/SUPABASE.md`, Schritte 1–7 und 12.
 3. **Lokale Werte:** `.env.example` nach `.env.local` kopieren und `VITE_SUPABASE_URL` sowie `VITE_SUPABASE_PUBLISHABLE_KEY` eintragen. Für die Live-Tests zusätzlich `.env.test.local` mit dem Secret Key. Beide Dateien kommen nie ins Repo (`.gitignore`).
-4. **Cloudflare Pages:** Repo verbinden, Build `npm run build`, Ausgabe `dist`, `NODE_VERSION=26` und die beiden `VITE_…`-Werte: `docs/DEPLOYMENT.md` und `docs/SUPABASE.md`, Schritt 8.
+4. **GitHub Pages:** Repo öffentlich, Settings → Pages → Source „GitHub Actions“, Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` anlegen (werden beim Build zu den `VITE_…`-Werten und halten Supabase wach): `docs/DEPLOYMENT.md` und `docs/SUPABASE.md`, Schritt 8.
 5. **GitHub-Secrets** `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` für das tägliche Wachhalten: `docs/SUPABASE.md`, Schritt 9.
 6. **Prüfen:** `npm run test:rls-live` und `npm run test:delete-live` (legen kurz Test-Konten an und löschen sie wieder), dann die Geräte-Checkliste in `docs/ABNAHME.md`.
 
@@ -37,13 +37,13 @@ Ohne Schritt 2–4 läuft Motion rein lokal ohne Konto-Bereich.
 ## Betrieb
 | Aufgabe | Wie | Doku |
 |---|---|---|
-| Neue Version ausliefern | Push auf `main`. Cloudflare baut neu, CI prüft Typen, Unit-, Browser-Tests und die Historie auf Geheimnisse. Installierte Apps holen das Update beim nächsten Öffnen | `docs/DEPLOYMENT.md` |
+| Neue Version ausliefern | Push auf `main`. Die Action „Deploy to GitHub Pages“ baut und veröffentlicht, CI prüft Typen, Unit-, Browser-Tests und die Historie auf Geheimnisse. Installierte Apps holen das Update beim nächsten Öffnen | `docs/DEPLOYMENT.md` |
 | Datenbank ändern | neue Datei in `supabase/migrations/`, im SQL Editor einspielen, **bevor** der Code dazu live geht | `docs/SUPABASE.md`, Schritt 2 |
 | Freund einladen / entfernen | Konto im Supabase-Dashboard anlegen; entfernen per SQL oder er löscht selbst in der App | `docs/DATENSCHUTZ.md`, Abschnitt 5 |
 | Backup der Cloud | monatlich `pg_dump`, verschlüsselt ablegen, nie ins Repo | `docs/BETRIEB.md` |
 | Supabase wach halten | läuft täglich per GitHub Action; ab und zu prüfen, ob der letzte Lauf grün ist | `docs/BETRIEB.md` |
 | Anmeldung geht nicht | Projekt pausiert? Gmail-Limit oder App-Passwort widerrufen? | `docs/BETRIEB.md` |
-| Live-Version testen | `E2E_BASE_URL=https://motion-web.pages.dev/ npm run test:e2e` | `docs/DEPLOYMENT.md` |
+| Live-Version testen | `E2E_BASE_URL=https://blackholeyt.github.io/motion-web/ npm run test:e2e` | `docs/DEPLOYMENT.md` |
 | Vor einer Veröffentlichung | AVV mit Supabase, Mailanbieter mit AVV statt Gmail, Impressum und Datenschutzerklärung aus Commit `22223c3`, Commit-Adresse anonymisieren | `docs/DATENSCHUTZ.md`, Abschnitt 5; `docs/ABNAHME.md`, Abschnitt 2 |
 
 ## Entwickeln
@@ -91,7 +91,7 @@ npm run dev
 - `docs/DESIGN.md`: Design-Werte
 - `docs/IMPORT.md`: Import der alten Daten
 - `docs/ENTSCHEIDUNGEN.md`: getroffene Entscheidungen
-- `docs/DEPLOYMENT.md`: Cloudflare Pages und Installation auf dem Handy
+- `docs/DEPLOYMENT.md`: GitHub Pages und Installation auf dem Handy
 - `docs/PLATTFORM.md`: was im Web auf iPhone und Android geht und was nicht
 - `docs/SUPABASE.md`: Cloud einrichten (Supabase, Google, E-Mail-Code)
 - `docs/BETRIEB.md`: Wachhalten, Backups, regelmäßige Prüfungen

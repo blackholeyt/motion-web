@@ -83,9 +83,9 @@ Das App-Passwort lässt sich unter derselben Google-Seite jederzeit widerrufen; 
 
 ## 6. Adressen freigeben (URL Configuration)
 **Authentication → URL Configuration**:
-- Site URL: `https://motion-web.pages.dev`
+- Site URL: `https://blackholeyt.github.io/motion-web/`
 - Redirect URLs, jeweils **Add URL**:
-  - `https://motion-web.pages.dev/**`
+  - `https://blackholeyt.github.io/motion-web/**`
   - `http://localhost:5173/**` (Entwicklung auf dem Mac)
 
 ## 7. Google-Login
@@ -93,25 +93,24 @@ Das App-Passwort lässt sich unter derselben Google-Seite jederzeit widerrufen; 
 2. **Google Auth Platform → Branding**: App-Name `Motion`, Support-E-Mail deine Adresse. Unter **Audience** „External“ wählen. Solange die App im Modus „Testing“ ist, können sich nur Google-Konten anmelden, die du unter **Test users** einträgst (du und deine Freunde). Für mehr Nutzer später „Publish app“.
 3. **Google Auth Platform → Clients → Create client**:
    - Application type: **Web application**
-   - Authorized JavaScript origins: `https://motion-web.pages.dev` und `http://localhost:5173`
+   - Authorized JavaScript origins: `https://blackholeyt.github.io` und `http://localhost:5173` (Origins haben keinen Pfad)
    - Authorized redirect URIs: die **Callback URL** aus Supabase. Du findest sie unter **Authentication → Sign In / Providers → Google**. Sie sieht so aus: `https://<ref>.supabase.co/auth/v1/callback`
 4. **Create**, dann Client ID und Client Secret kopieren.
 5. In Supabase **Authentication → Sign In / Providers → Google**: aktivieren, Client ID und Client Secret einfügen, speichern.
 
-## 8. Cloudflare Pages: Werte für die App
-1. Cloudflare-Dashboard → **Workers & Pages → motion-web → Settings → Variables and Secrets**.
-2. Für **Production** (und, wenn du willst, Preview) zwei Variablen vom Typ **Text** anlegen:
-   - `VITE_SUPABASE_URL` = Project URL aus Schritt 3
-   - `VITE_SUPABASE_PUBLISHABLE_KEY` = Publishable key aus Schritt 3
-3. **Deployments → letzte Bereitstellung → Retry deployment**, damit neu gebaut wird. Die Werte werden beim Bauen in die App geschrieben.
-4. Danach zeigt Motion unter Einstellungen den Bereich **Konto** mit „Anmelden“.
+## 8. GitHub Pages: Werte für die App
+1. https://github.com/blackholeyt/motion-web → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `SUPABASE_URL` = Project URL aus Schritt 3
+   - `SUPABASE_PUBLISHABLE_KEY` = Publishable key aus Schritt 3
+2. **Actions → Deploy to GitHub Pages → Run workflow**, damit neu gebaut wird. Der Workflow gibt die beiden Werte beim Bauen als `VITE_SUPABASE_URL` und `VITE_SUPABASE_PUBLISHABLE_KEY` in die App. Fehlen sie, bricht er ab.
+3. Danach zeigt Motion unter Einstellungen den Bereich **Konto** mit „Anmelden“.
+
+Beide Werte sind öffentlich (sie stehen in der ausgelieferten App); geschützt sind die Daten durch Row Level Security. Den **Secret key** nie als GitHub-Secret anlegen.
 
 Lokal auf dem Mac: `.env.example` nach `.env.local` kopieren und die zwei `VITE_…`-Werte eintragen.
 
 ## 9. Tägliches Wachhalten (GitHub Action)
-1. https://github.com/blackholeyt/motion-web → **Settings → Secrets and variables → Actions → New repository secret**:
-   - `SUPABASE_URL` = Project URL
-   - `SUPABASE_PUBLISHABLE_KEY` = Publishable key
+1. Nutzt dieselben Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` aus Schritt 8.
 2. **Actions → Keep Supabase awake → Run workflow**, einmal von Hand starten. Erwartet: grüner Haken und im Log `Supabase answered: "ok"`.
 
 Details und Grenzen: `BETRIEB.md`.

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
 // End-to-end tests run against the production build, including the service worker.
-// Set E2E_BASE_URL to test a deployed version instead, e.g. https://motion-web.pages.dev/.
+// Set E2E_BASE_URL to test a deployed version instead, e.g. https://blackholeyt.github.io/motion-web/.
 const deployed = process.env.E2E_BASE_URL
 
 export default defineConfig({

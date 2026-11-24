@@ -56,7 +56,7 @@ Motion läuft für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen r
 1. Supabase → **Authentication → Users → Add user → Create new user**.
 2. E-Mail-Adresse des Freundes eintragen, Passwort leer lassen bzw. ein zufälliges setzen, **Auto Confirm User** anhaken, erstellen. Es wird keine Mail verschickt.
 3. Wenn er sich mit Google anmelden will: dieselbe Adresse in der Google Cloud Console unter **Google Auth Platform → Audience → Test users** eintragen.
-4. Der Freund öffnet https://motion-web.pages.dev, gibt seine Adresse ein und bekommt den 6-stelligen Code.
+4. Der Freund öffnet https://blackholeyt.github.io/motion-web/, gibt seine Adresse ein und bekommt den 6-stelligen Code.
 
 **Einen Freund entfernen:** Am einfachsten löscht er sein Konto selbst in der App. Sonst im SQL Editor (E-Mail eintragen), das entfernt alle seine Zeilen und danach den Login:
 ```sql
@@ -79,7 +79,7 @@ Dann gilt die DSGVO voll, und ein Impressum ist nötig. Die ausführlichen Entw�
 
 1. **Vertrag zur Auftragsverarbeitung (AVV/DPA) mit Supabase** abschließen: im Dashboard auf der Seite **Legal Documents** der Organisation anfordern, die verbindliche Fassung kommt als PandaDoc-Dokument. Lesefassung: https://supabase.com/legal/dpa. Vorher die Anweisungen im PandaDoc lesen (früher musste der DPA zusätzlich an privacy@supabase.com).
 2. **E-Mail-Versand:** Ein privates Gmail-Konto hat keinen AVV; dann auf einen Mailanbieter mit AVV wechseln (verlangt meist eine Postadresse).
-3. **Cloudflare:** Self-Serve-DPA prüfen, Speicherdauer der Zugriffsprotokolle eintragen.
+3. **GitHub Pages:** Datenschutzangaben von GitHub zu Pages prüfen (Zugriffsprotokolle mit IP-Adressen), ggf. eigene Domain.
 4. **Impressum** mit Name und ladungsfähiger Anschrift (oder einem kostenpflichtigen Anschriftsdienst).
 5. **Minderjährigkeit:** Veröffentlichung mit den Eltern absprechen; für Verträge wie den DPA kann ihre Zustimmung nötig sein.
 6. **Aufsichtsbehörde** nennen (in NRW: LDI NRW), `consentVersion` erhöhen, Registrierung wieder öffnen.

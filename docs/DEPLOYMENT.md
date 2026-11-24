@@ -1,48 +1,38 @@
-# Deployment auf Cloudflare Pages
+# Deployment auf GitHub Pages
 
 Die App ist eine rein statische Website: Der Ordner `dist/` aus `npm run build` ist alles, was ausgeliefert wird. Es gibt keinen Server.
 
-## Geprüfte Bedingungen (offizielle Cloudflare-Doku, gelesen am 02.11.2026)
-| Punkt | Free-Tarif |
+Live: **https://blackholeyt.github.io/motion-web/** (seit 24.11.2026; vorher Cloudflare Pages unter `motion-web.pages.dev`).
+
+## Wie es läuft
+- Jeder Push auf `main` startet die GitHub-Action **„Deploy to GitHub Pages“** (`.github/workflows/pages.yml`): `npm ci`, `npm run build` mit den Supabase-Werten, dann Veröffentlichung von `dist/`.
+- Die Supabase-Werte kommen aus den Repository-Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` (dieselben wie fürs Wachhalten, `SUPABASE.md`, Schritt 8). Fehlen sie, bricht der Build ab, statt eine App ohne Konto auszuliefern.
+- Parallel prüft die Action **„CI“** Typen, Unit-Tests, Browser-Tests und die Historie auf Geheimnisse.
+- Von Hand neu veröffentlichen: **Actions → Deploy to GitHub Pages → Run workflow**.
+
+## Geprüfte Bedingungen (offizielle GitHub-Doku, gelesen am 24.11.2026)
+| Punkt | GitHub Free |
 |---|---|
-| Builds | 500 pro Monat, 1 gleichzeitig, Abbruch nach 20 Minuten |
-| Dateien | bis 20.000 pro Website, einzelne Datei bis 25 MiB |
-| Eigene Domains | bis 100 pro Projekt |
-| Bandbreite und Aufrufe für statische Dateien | kein Limit genannt, Aufrufe statischer Dateien sind kostenlos |
-| Single-Page-App | ohne eigene `404.html` liefert Pages bei unbekannten Pfaden automatisch die Startseite aus |
-| `_headers`-Datei | unterstützt (max. 100 Regeln). Motion nutzt sie, damit installierte Apps Updates sofort bekommen |
+| Repo | Pages gibt es im Free-Tarif nur für **öffentliche** Repos. Für ein privates Repo bräuchte es GitHub Pro |
+| Größe | veröffentlichte Website bis 1 GB |
+| Bandbreite | weiches Limit 100 GB pro Monat |
+| Builds | das weiche Limit von 10 Builds pro Stunde gilt nicht für eigene Actions-Workflows wie diesen |
+| Deployment | Abbruch nach 10 Minuten |
 
-Quellen:
-- https://developers.cloudflare.com/pages/platform/limits/
-- https://developers.cloudflare.com/pages/configuration/serving-pages/
-- https://developers.cloudflare.com/pages/configuration/headers/
-- https://developers.cloudflare.com/pages/configuration/build-configuration/
+Quelle: https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
 
-**Abweichung vom Auftrag:** Cloudflare schreibt auf der Pages-Startseite inzwischen „Start new projects with Workers“. Pages wird aber weiter betrieben und ist nicht abgekündigt. Ich bleibe deshalb bei Pages, wie festgelegt. Weil Motion nur aus statischen Dateien besteht, ist ein späterer Umzug zu „Workers Static Assets“ mit wenig Aufwand möglich.
+## Unterschiede zu Cloudflare
+- **Unterpfad:** Die App liegt unter `/motion-web/`. Das ist kein Problem, weil Vite mit relativem `base: './'` baut und Manifest, Service Worker und Icons relative Pfade nutzen.
+- **Keine 404-Weiterleitung nötig:** Motion nutzt `HashRouter` (`#/…`). Es gibt keine Pfade, die der Server kennen müsste.
+- **Keine `_headers`-Datei:** GitHub Pages kann keine eigenen Header setzen; die Cloudflare-Datei ist entfernt. Updates kommen trotzdem an: Browser prüfen den Service Worker bei jedem Start am Netz am HTTP-Cache vorbei, und GitHub liefert alle Dateien mit kurzer Cache-Dauer aus. Die Referrer-Policy steht jetzt als `<meta name="referrer">` in `index.html`. `Permissions-Policy` lässt sich ohne Header nicht setzen; Motion fragt ohnehin weder Kamera, Mikrofon noch Standort an.
+- **Neue Adresse = neuer Speicher:** Der Browser behandelt `blackholeyt.github.io` als andere App als `motion-web.pages.dev`. Wer ein Konto hat, meldet sich neu an und bekommt seine Daten per Sync zurück. Daten ohne Konto vorher in der alten App exportieren (Einstellungen → Export, JSON) und in der neuen importieren. Die alte App vom Home-Bildschirm entfernen und die neue installieren.
 
-**Privates Repo:** Die Doku nennt keine Einschränkung für private Repos. In der GitHub-Verbindung kann man gezielt einzelne Repos freigeben. Dass das im Free-Tarif klappt, ist sehr wahrscheinlich, steht aber nicht ausdrücklich in der Doku. Das prüfen wir bei der Einrichtung.
-
-## Schritt für Schritt (machst du selbst, einmalig)
-
-1. **Konto anlegen:** Öffne https://dash.cloudflare.com/sign-up und registriere dich mit deiner E-Mail-Adresse. Wähle keinen kostenpflichtigen Tarif.
-2. Im Dashboard links **„Workers & Pages“** öffnen, dann **„Create application“** wählen.
-3. Den Reiter bzw. Link **„Pages“** wählen, dann **„Connect to Git“** / **„Import an existing Git repository“**.
-   - Achtung: Cloudflare zeigt zuerst den Workers-Weg an. Für dieses Projekt brauchst du **Pages**.
-4. **GitHub verbinden:** Bei der Frage nach dem Zugriff **„Only select repositories“** wählen und nur `blackholeyt/motion-web` freigeben.
-5. Repo `motion-web` auswählen, dann **„Begin setup“**.
-6. **Build-Einstellungen:**
-   - Project name: `motion-web` (daraus wird die Adresse `https://motion-web.pages.dev`; ist der Name vergeben, hängt Cloudflare etwas an)
-   - Production branch: `main`
-   - Framework preset: **React (Vite)**
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Unter „Environment variables“: Variable `NODE_VERSION`, Wert `26`
-7. **„Save and Deploy“** klicken. Der erste Build dauert 1–3 Minuten.
-8. Fertig. Die Live-Version läuft unter **https://motion-web.pages.dev** (eingerichtet am 02.11.2026).
-
-Für Konto und Sync braucht der Build zwei weitere Variablen (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`), siehe `SUPABASE.md`, Schritt 8. Ohne sie läuft die App rein lokal.
-
-Danach baut Cloudflare bei jedem Push auf `main` automatisch neu. Die GitHub-Action „CI“ prüft parallel Typen, Unit-Tests und Browser-Tests.
+## Einrichtung von Null (einmalig)
+1. Repo **öffentlich** lassen (Settings → General → Danger Zone → Change visibility), sonst bietet GitHub Free kein Pages an.
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` anlegen (`SUPABASE.md`, Schritt 8).
+4. **Actions → Deploy to GitHub Pages → Run workflow**. Nach 1–3 Minuten ist die Seite live.
+5. In Supabase die Adresse freigeben (`SUPABASE.md`, Schritt 6).
 
 ## Auf dem iPhone installieren
 1. Die Adresse in **Safari** öffnen. Andere Browser zeigen einen Hinweis, dass sie die Installation nicht anbieten.
@@ -62,5 +52,5 @@ npx vite preview --port 4173
 
 ## Live-Version testen
 ```bash
-E2E_BASE_URL=https://motion-web.pages.dev/ npm run test:e2e
+E2E_BASE_URL=https://blackholeyt.github.io/motion-web/ npm run test:e2e
 ```

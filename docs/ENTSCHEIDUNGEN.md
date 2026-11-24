@@ -85,3 +85,12 @@
 | 2 | Ruhemodus | Einstellung und alles, was davon abhing, ersatzlos entfernt: Level-Karte und Feiern erscheinen immer. Der Wert aus iOS-Sicherungen wird übergangen; alte Profile verlieren den Schlüssel bei der nächsten Einstellungsänderung. |
 | 3 | Haptik | Ganz entfernt (Plattform-Schnittstelle, Hook, alle Aufrufe, Schalter in den Einstellungen), weil Safari auf dem iPhone nicht vibrieren kann. Kommt bei Bedarf mit der nativen App über die Plattform-Schicht zurück. |
 | 4 | kg/lb im Training | Das Einheiten-Menü im Training und `changeLoadUnit` sind entfernt. Die Einheit kommt aus dem Profil und bleibt in Einstellungen → Profil & Körpergewicht änderbar; Sätze eines offenen Trainings behalten ihre eigene Eingabe-Einheit. |
+
+## Hosting (24.11.2026)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | GitHub Pages statt Cloudflare Pages | Auf Wunsch von Mathis wird nur noch über GitHub gehostet: Action `pages.yml` baut bei jedem Push auf `main` und veröffentlicht unter https://blackholeyt.github.io/motion-web/. Dafür ist das Repo öffentlich, weil GitHub Free Pages nur für öffentliche Repos anbietet. Das Cloudflare-Projekt wird nach dem Umzug gelöscht. |
+| 2 | Supabase-Werte im Build | Kommen aus den vorhandenen Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY`; der Build bricht ab, wenn sie fehlen. Supabase erlaubt die neue Adresse unter Site URL und Redirect URLs. |
+| 3 | `_headers` entfernt | GitHub Pages kann keine eigenen Header setzen. Referrer-Policy jetzt als Meta-Tag; Cache-Regeln sind dank kurzer Cache-Dauer bei GitHub und Service-Worker-Update am HTTP-Cache vorbei nicht nötig. |
+| 4 | Datenschutzhinweis | Abschnitt „Laden der App“ nennt jetzt GitHub statt Cloudflare. `consentVersion` bleibt, weil sich an den gespeicherten Daten und den Einwilligungen nichts ändert. |

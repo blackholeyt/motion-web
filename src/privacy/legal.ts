@@ -63,7 +63,7 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Laden der App',
     paragraphs: [
-      'Die App wird über Cloudflare Pages ausgeliefert (Cloudflare, Inc., USA). Beim Laden verarbeitet Cloudflare technisch nötige Verbindungsdaten wie IP-Adresse, Zeitpunkt und Browserkennung, um die App auszuliefern und vor Angriffen zu schützen.',
+      'Die App wird über GitHub Pages ausgeliefert (GitHub, Inc., USA). Beim Laden verarbeitet GitHub technisch nötige Verbindungsdaten wie IP-Adresse, Zeitpunkt und Browserkennung, um die App auszuliefern und vor Angriffen zu schützen.',
     ],
   },
   {
