@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useT } from '../../i18n'
-import { decideGuestData, dismissSignInError, isNotInvited, useAccount } from '../../sync/account'
+import { decideGuestData, dismissSignInError, useAccount } from '../../sync/account'
 import { ConfirmDialog } from '../../ui/Sheet'
 
 /** First login on a device that already holds training without an account (decision 4, phase 0), and failed Google sign-ins. */
@@ -21,11 +21,7 @@ export function GuestDataPrompt() {
       <ConfirmDialog
         open
         title={t('Sign-in did not work')}
-        message={
-          isNotInvited(signInError)
-            ? t('Motion is invite-only. This e-mail has no account yet; ask Mathis for an invitation.')
-            : t('The sign-in with Google could not be completed. Try again, or sign in with an e-mail code. Details: {0}', [signInError])
-        }
+        message={t('The sign-in with Google could not be completed. Try again, or sign in with an e-mail code. Details: {0}', [signInError])}
         onDismiss={dismissSignInError}
         actions={[{ label: t('OK'), role: 'cancel', onSelect: dismissSignInError }]}
       />

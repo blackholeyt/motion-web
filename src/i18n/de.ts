@@ -522,8 +522,6 @@ export const de: Record<string, string> = {
   "Deleted": "Gelöscht",
   "Delete device data": "Gerätedaten löschen",
   "About this project": "Über dieses Projekt",
-  "Motion is a private project: sign-in works for invited e-mail addresses.": "Motion ist ein privates Projekt: Anmelden geht mit eingeladenen E-Mail-Adressen.",
-  "Motion is invite-only. This e-mail has no account yet; ask Mathis for an invitation.": "Motion gibt es nur auf Einladung. Für diese E-Mail gibt es noch kein Konto; frag Mathis nach einer Einladung.",
   "Deleting…": "Wird gelöscht …",
   "Draft: not yet legally reviewed. Highlighted placeholders must be replaced before Motion is published.": "Entwurf: noch nicht rechtlich geprüft. Die markierten Platzhalter müssen vor der Veröffentlichung ersetzt werden.",
   "Export first": "Vorher exportieren",

@@ -94,3 +94,9 @@
 | 2 | Supabase-Werte im Build | Kommen aus den vorhandenen Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY`; der Build bricht ab, wenn sie fehlen. Supabase erlaubt die neue Adresse unter Site URL und Redirect URLs. |
 | 3 | `_headers` entfernt | GitHub Pages kann keine eigenen Header setzen. Referrer-Policy jetzt als Meta-Tag; Cache-Regeln sind dank kurzer Cache-Dauer bei GitHub und Service-Worker-Update am HTTP-Cache vorbei nicht nötig. |
 | 4 | Datenschutzhinweis | Abschnitt „Laden der App“ nennt jetzt GitHub statt Cloudflare. `consentVersion` bleibt, weil sich an den gespeicherten Daten und den Einwilligungen nichts ändert. |
+
+## Registrierung (24.11.2026)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Keine Einladungspflicht mehr | Auf Wunsch von Mathis: Die App legt beim ersten Code bzw. Google-Login ein Konto an (`shouldCreateUser: true`); der Hinweis „nur auf Einladung“ und `isNotInvited` sind entfernt. In Supabase ist „Allow new users to sign up“ an, das Google-Projekt ist veröffentlicht. Folge: Der private Ausnahmefall aus Datenschutz Nr. 8 trägt nicht mehr sicher, siehe `DATENSCHUTZ.md`, Abschnitt 5. |

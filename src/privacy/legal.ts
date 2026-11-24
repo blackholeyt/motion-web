@@ -1,7 +1,7 @@
 /*
- * Privacy notice and "About this project" for the private operation (decision of 03.11.2026): Motion
- * runs for Mathis and a few invited friends, sign-up is closed and accounts are created by hand. A
- * purely private circle like this needs no imprint, so no name or postal address is published.
+ * Privacy notice and "About this project" for the private, non-commercial operation (decision of
+ * 03.11.2026). Since 24.11.2026 sign-up is open: anyone with the link can create an account. No name
+ * or postal address is published; docs/DATENSCHUTZ.md, section 5, lists what a wider release needs.
  * The longer drafts for a public release (with imprint and placeholders) are in commit 22223c3;
  * docs/DATENSCHUTZ.md, section 5, lists what a public release would need.
  *
@@ -12,7 +12,7 @@
  */
 
 export const legalDraft = false
-export const legalUpdated = '3. November 2026'
+export const legalUpdated = '24. November 2026'
 export const contactEmail = 'motion.web.support@gmail.com'
 
 export interface LegalSection {
@@ -25,8 +25,8 @@ export const about: LegalSection[] = [
   {
     heading: 'Ein privates Projekt',
     paragraphs: [
-      'Motion ist ein privates, nicht kommerzielles Projekt von Mathis für sich selbst und ein paar eingeladene Freunde. Es wird nicht öffentlich angeboten, es gibt keine Werbung, keine Käufe und keine Einnahmen.',
-      'Ein Konto bekommt nur, wer eingeladen wurde. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
+      'Motion ist ein privates, nicht kommerzielles Projekt von Mathis. Es gibt keine Werbung, keine Käufe und keine Einnahmen.',
+      'Ein Konto kann jeder anlegen, der sich mit E-Mail-Code oder Google anmeldet. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
     ],
   },
   {
@@ -39,7 +39,7 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Wer dahintersteckt',
     paragraphs: [
-      `Motion ist ein privates Projekt von Mathis für einen kleinen Kreis eingeladener Freunde. Fragen, Auskunft oder Löschwünsche: ${contactEmail}.`,
+      `Motion ist ein privates, nicht kommerzielles Projekt von Mathis. Fragen, Auskunft oder Löschwünsche: ${contactEmail}.`,
     ],
   },
   {

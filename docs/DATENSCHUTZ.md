@@ -1,6 +1,6 @@
 # Datenschutz und Konto (Phase 6)
 
-Stand: 03.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die App technisch tut. Motion läuft privat und nur auf Einladung (Abschnitt 5).
+Stand: 24.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die App technisch tut. Seit 24.11.2026 ist die Registrierung offen (Abschnitt 5).
 
 ## 1. Überblick
 | Baustein | Wo | Code |
@@ -45,14 +45,17 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 
 Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm.
 
-## 5. Betrieb: privat, nur auf Einladung (Entscheidung vom 03.11.2026)
-Motion läuft für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:
+## 5. Betrieb: offene Registrierung (Entscheidung vom 24.11.2026)
+**Neu seit 24.11.2026:** Auf Wunsch von Mathis ist die Einladungspflicht weg. Wer die Adresse kennt, kann sich mit E-Mail-Code oder Google selbst ein Konto anlegen (`shouldCreateUser: true`, in Supabase „Allow new users to sign up“ an, Google-Projekt veröffentlicht statt Testmodus). Damit ist der Kreis nicht mehr geschlossen, und die Ausnahme unten trägt nicht mehr sicher. Die Punkte unter „Wenn Motion doch öffentlich wird“ gelten deshalb jetzt als offene Aufgaben, vor allem Impressum, AVV mit Supabase und ein Mailanbieter mit AVV statt Gmail.
 
-- **Registrierung geschlossen:** In Supabase ist „Allow new users to sign up“ aus (03.11.2026, geprüft: der Server antwortet `signup_disabled`). Die App fordert keine neuen Konten mehr an (`shouldCreateUser: false`) und sagt Uneingeladenen „Motion gibt es nur auf Einladung“.
-- **Google-Login:** Das Google-Projekt steht im Testmodus; nur eingetragene Test-Nutzer kommen durch. Bei geschlossener Registrierung legt aber auch Google kein neues Konto an.
+Bisherige Begründung (03.11.2026): Motion lief für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:
+
+- ~~**Registrierung geschlossen**~~ (bis 24.11.2026): In Supabase war „Allow new users to sign up“ aus, die App forderte keine neuen Konten an.
+- ~~**Google-Login im Testmodus**~~ (bis 24.11.2026): nur eingetragene Test-Nutzer kamen durch.
 - **Texte:** kurzer, ehrlicher Datenschutzhinweis und „Über dieses Projekt“ statt Impressum, ohne Namen und Anschrift. Kontakt: motion.web.support@gmail.com. Kein Entwurfshinweis mehr (`legalDraft = false`); ein Test stellt sicher, dass keine Anschrift in den Texten steht.
 
-### Einen Freund einladen
+### Einen Freund einladen (nicht mehr nötig)
+Seit der offenen Registrierung meldet sich ein Freund einfach selbst an. Der alte Weg funktioniert weiter:
 1. Supabase → **Authentication → Users → Add user → Create new user**.
 2. E-Mail-Adresse des Freundes eintragen, Passwort leer lassen bzw. ein zufälliges setzen, **Auto Confirm User** anhaken, erstellen. Es wird keine Mail verschickt.
 3. Wenn er sich mit Google anmelden will: dieselbe Adresse in der Google Cloud Console unter **Google Auth Platform → Audience → Test users** eintragen.

@@ -7,7 +7,7 @@ Neuaufbau des Motion-Workout-Trackers als installierbare Web-App (PWA).
 - Später optional per Capacitor als native App im App Store
 
 ## Stand (03.11.2026)
-Alle Phasen 0–7 sind gebaut. Live: https://blackholeyt.github.io/motion-web/ (GitHub Pages). Motion läuft privat, nur auf Einladung.
+Alle Phasen 0–7 sind gebaut. Live: https://blackholeyt.github.io/motion-web/ (GitHub Pages). Jeder mit dem Link kann sich ein Konto anlegen (seit 24.11.2026).
 
 | Phase | Inhalt | Abnahme |
 |---|---|---|
@@ -39,7 +39,7 @@ Ohne Schritt 2–4 läuft Motion rein lokal ohne Konto-Bereich.
 |---|---|---|
 | Neue Version ausliefern | Push auf `main`. Die Action „Deploy to GitHub Pages“ baut und veröffentlicht, CI prüft Typen, Unit-, Browser-Tests und die Historie auf Geheimnisse. Installierte Apps holen das Update beim nächsten Öffnen | `docs/DEPLOYMENT.md` |
 | Datenbank ändern | neue Datei in `supabase/migrations/`, im SQL Editor einspielen, **bevor** der Code dazu live geht | `docs/SUPABASE.md`, Schritt 2 |
-| Freund einladen / entfernen | Konto im Supabase-Dashboard anlegen; entfernen per SQL oder er löscht selbst in der App | `docs/DATENSCHUTZ.md`, Abschnitt 5 |
+| Freund einladen / entfernen | Er meldet sich selbst an; entfernen per SQL oder er löscht selbst in der App | `docs/DATENSCHUTZ.md`, Abschnitt 5 |
 | Backup der Cloud | monatlich `pg_dump`, verschlüsselt ablegen, nie ins Repo | `docs/BETRIEB.md` |
 | Supabase wach halten | läuft täglich per GitHub Action; ab und zu prüfen, ob der letzte Lauf grün ist | `docs/BETRIEB.md` |
 | Anmeldung geht nicht | Projekt pausiert? Gmail-Limit oder App-Passwort widerrufen? | `docs/BETRIEB.md` |
