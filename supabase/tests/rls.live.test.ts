@@ -53,6 +53,9 @@ async function temporaryAccount(label: string) {
   const email = `motion-rls-${label}-${crypto.randomUUID().slice(0, 8)}@example.com`
   const created = await admin.auth.admin.createUser({ email, email_confirm: true })
   if (created.error) throw created.error
+  // Temporary accounts skip the access code; the secret key may unlock them directly.
+  const unlocked = await admin.from('access_grants').insert({ user_id: created.data.user.id })
+  if (unlocked.error) throw unlocked.error
   const link = await admin.auth.admin.generateLink({ type: 'magiclink', email })
   if (link.error) throw link.error
   const client = createClient(url!, publishable!, { auth })

@@ -28,13 +28,15 @@ interface AccountState {
   guestDecision: Account | null
   /** A Google sign-in that came back with an error instead of a session. */
   signInError: string | null
+  /** A login that has not redeemed the access code yet (docs/DATENSCHUTZ.md, section 5). Nothing syncs until it does. */
+  accessNeeded: Account | null
 }
 
 const storageKey = 'motion.account.v1'
 const guestName = 'motion-local'
 export const accountDatabaseName = (id: string) => `motion-${id}`
 
-let state: AccountState = { account: readStored(), guestDecision: null, signInError: null }
+let state: AccountState = { account: readStored(), guestDecision: null, signInError: null, accessNeeded: null }
 const listeners = new Set<() => void>()
 
 function setState(change: Partial<AccountState>) {
@@ -80,7 +82,10 @@ export function restoreAccount() {
 export function startAccount() {
   if (!cloudConfigured) return
   takeRedirectError()
-  if (state.account) startSync(db, state.account.id)
+  if (state.account) {
+    startSync(db, state.account.id)
+    void verifyAccess(state.account)
+  }
   supabase().auth.onAuthStateChange((event, session) => {
     // Supabase must not be called from inside this callback, so the work runs right after it.
     if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) setTimeout(() => void signedIn(session.user))
@@ -125,9 +130,77 @@ async function signedIn(user: User) {
   if (state.account?.id === account.id) return void requestSync()
   // Signing in again with another account after the session expired: the previous one is closed first.
   if (state.account) await closeAccount()
-  if (state.guestDecision || db.name !== guestName) return
+  if (state.guestDecision || state.accessNeeded || db.name !== guestName) return
+  if (!(await accessOrRetry())) return setState({ accessNeeded: account })
+  await continueSignIn(account)
+}
+
+async function continueSignIn(account: Account) {
   if (await hasGuestData(db)) setState({ guestDecision: account })
   else await activate(account, false)
+}
+
+/** Whether the signed-in account redeemed the access code. Throws when the server cannot be asked. */
+export async function hasAccess(): Promise<boolean> {
+  const { data, error } = await supabase().rpc('has_access')
+  if (error) throw error
+  return data === true
+}
+
+/**
+ * Right after a sign-in the answer should come; one retry covers a short network hiccup. If the server
+ * still cannot be asked, the access code prompt shows: for an unlocked account any input passes there.
+ */
+async function accessOrRetry(): Promise<boolean> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await hasAccess()
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+    }
+  }
+  return false
+}
+
+/** An account signed in on this device before the access code existed and never unlocked: sync stops until it is. */
+async function verifyAccess(account: Account) {
+  try {
+    if (await hasAccess()) return
+  } catch {
+    // Offline or the session is not restored yet: nothing to decide now.
+    return
+  }
+  if (state.account?.id !== account.id) return
+  stopSync()
+  setState({ accessNeeded: account })
+}
+
+export type AccessCodeResult = 'ok' | 'wrong' | 'locked'
+
+/** Redeems the access code for the waiting login; on success the sign-in continues where it stopped. */
+export async function redeemAccessCode(code: string): Promise<AccessCodeResult> {
+  const account = state.accessNeeded
+  if (!account) throw new Error('Not signed in.')
+  const { data, error } = await supabase().rpc('redeem_access_code', { code })
+  if (error) throw error
+  const result = data as AccessCodeResult
+  if (result !== 'ok') return result
+  setState({ accessNeeded: null })
+  if (state.account?.id === account.id) startSync(db, account.id)
+  else await continueSignIn(account)
+  return result
+}
+
+/** Gives up on the access code: the login is signed out on this device. */
+export async function cancelAccessCode() {
+  const activated = state.account !== null
+  setState({ accessNeeded: null })
+  if (activated) return signOut()
+  try {
+    await supabase().auth.signOut({ scope: 'local' })
+  } catch {
+    // Offline: the local session is removed anyway.
+  }
 }
 
 /** Answer to the first-login question: take the guest's training into the account or leave it on the device. */
@@ -195,7 +268,7 @@ async function closeAccount() {
   const previous = db
   store(null)
   setDatabase(new MotionDatabase(guestName))
-  setState({ account: null, guestDecision: null, signInError: null })
+  setState({ account: null, guestDecision: null, signInError: null, accessNeeded: null })
   previous.close()
   await ensureProfile()
 }

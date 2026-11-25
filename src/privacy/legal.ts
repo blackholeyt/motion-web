@@ -1,7 +1,8 @@
 /*
  * Privacy notice and "About this project" for the private, non-commercial operation (decision of
- * 03.11.2026). Since 24.11.2026 sign-up is open: anyone with the link can create an account. No name
- * or postal address is published; docs/DATENSCHUTZ.md, section 5, lists what a wider release needs.
+ * 03.11.2026). Since 24.11.2026 anyone can sign in, but an account works only with the access code
+ * Mathis hands out (since 25.11.2026). No name or postal address is published; docs/DATENSCHUTZ.md,
+ * section 5, lists what a wider release needs.
  * The longer drafts for a public release (with imprint and placeholders) are in commit 22223c3;
  * docs/DATENSCHUTZ.md, section 5, lists what a public release would need.
  *
@@ -12,7 +13,7 @@
  */
 
 export const legalDraft = false
-export const legalUpdated = '24. November 2026'
+export const legalUpdated = '25. November 2026'
 export const contactEmail = 'motion.web.support@gmail.com'
 
 export interface LegalSection {
@@ -26,7 +27,7 @@ export const about: LegalSection[] = [
     heading: 'Ein privates Projekt',
     paragraphs: [
       'Motion ist ein privates, nicht kommerzielles Projekt von Mathis. Es gibt keine Werbung, keine Käufe und keine Einnahmen.',
-      'Ein Konto kann jeder anlegen, der sich mit E-Mail-Code oder Google anmeldet. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
+      'Motion ist für Mathis und seine Freunde gedacht. Ein Konto funktioniert nur mit einem Zugangscode, den Mathis persönlich weitergibt. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
     ],
   },
   {

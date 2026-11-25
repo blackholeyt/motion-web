@@ -100,3 +100,13 @@
 | Nr | Punkt | Umsetzung |
 |---|---|---|
 | 1 | Keine Einladungspflicht mehr | Auf Wunsch von Mathis: Die App legt beim ersten Code bzw. Google-Login ein Konto an (`shouldCreateUser: true`); der Hinweis „nur auf Einladung“ und `isNotInvited` sind entfernt. In Supabase ist „Allow new users to sign up“ an, das Google-Projekt ist veröffentlicht. Folge: Der private Ausnahmefall aus Datenschutz Nr. 8 trägt nicht mehr sicher, siehe `DATENSCHUTZ.md`, Abschnitt 5. |
+
+## Zugangscode (25.11.2026)
+
+| Nr | Punkt | Umsetzung |
+|---|---|---|
+| 1 | Fester Zugangscode statt Einladungsliste | Auf Wunsch von Mathis: Anmelden darf jeder, aber ein Konto bekommt erst nach einmaliger Eingabe des Codes Zugriff auf Daten. Geprüft in der Datenbank (`redeem_access_code`, `has_access`, restriktive RLS auf allen 13 Tabellen), nicht nur in der App, weil man die App umgehen kann. |
+| 2 | Speicherung | Gesalzener SHA-256-Hash im Schema `private` (nicht über die API erreichbar), gesetzt per `private.set_access_code` im SQL Editor. Code wird getrimmt und klein geschrieben verglichen. |
+| 3 | Schutz gegen Raten | 10 Fehlversuche je Konto in 15 Minuten, 100 insgesamt pro Stunde. Ein langer Code (z. B. zwei Wörter und eine Zahl) macht Raten praktisch aussichtslos. |
+| 4 | Bestehende Konten | Werden in der Migration freigeschaltet. Ein Gerät, das vorher schon angemeldet war, prüft beim Start die Freischaltung und hält den Sync an, falls sie fehlt. |
+| 5 | Pro Konto, nicht pro Anmeldung | Der Code wird einmal je Konto abgefragt, danach nie wieder, auch nicht auf neuen Geräten. |

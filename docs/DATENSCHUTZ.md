@@ -45,7 +45,13 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 
 Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm.
 
-## 5. Betrieb: offene Registrierung (Entscheidung vom 24.11.2026)
+## 5. Betrieb: offene Anmeldung mit Zugangscode (Entscheidungen vom 24. und 25.11.2026)
+**Neu seit 25.11.2026: Zugangscode.** Anmelden kann sich jeder, aber ein Konto kann erst Daten speichern oder lesen, wenn es einmal den festen Zugangscode eingegeben hat, den Mathis persönlich weitergibt (Migration `20261125120000_access_code.sql`). Die Datenbank prüft das selbst: Ohne Freischaltung verweigern zusätzliche Regeln (RLS, restriktiv) auf allen Tabellen jeden Zugriff. Gespeichert ist nur ein gesalzener SHA-256-Hash im nicht öffentlichen Schema `private`. Nach 10 falschen Codes eines Kontos in 15 Minuten (oder 100 aller Konten in einer Stunde) ist gesperrt. Damit ist der Nutzerkreis wieder auf die Leute begrenzt, denen Mathis den Code gibt.
+
+- Code setzen oder ändern (SQL Editor): `select private.set_access_code('dein Code');` (mindestens 6 Zeichen; Groß-/Kleinschreibung und Leerzeichen am Rand zählen nicht). Ein neuer Code sperrt niemanden aus, der schon freigeschaltet ist.
+- Freischaltung entziehen: `delete from public.access_grants where user_id = (select id from auth.users where email = 'freund@example.com');`
+- Leere Konten von Fremden ohne Code schaden nicht; sie lassen sich bei Bedarf im Dashboard löschen.
+
 **Neu seit 24.11.2026:** Auf Wunsch von Mathis ist die Einladungspflicht weg. Wer die Adresse kennt, kann sich mit E-Mail-Code oder Google selbst ein Konto anlegen (`shouldCreateUser: true`, in Supabase „Allow new users to sign up“ an, Google-Projekt veröffentlicht statt Testmodus). Damit ist der Kreis nicht mehr geschlossen, und die Ausnahme unten trägt nicht mehr sicher. Die Punkte unter „Wenn Motion doch öffentlich wird“ gelten deshalb jetzt als offene Aufgaben, vor allem Impressum, AVV mit Supabase und ein Mailanbieter mit AVV statt Gmail.
 
 Bisherige Begründung (03.11.2026): Motion lief für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:

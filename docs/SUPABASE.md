@@ -109,6 +109,11 @@ Beide Werte sind öffentlich (sie stehen in der ausgelieferten App); geschützt 
 
 Lokal auf dem Mac: `.env.example` nach `.env.local` kopieren und die zwei `VITE_…`-Werte eintragen.
 
+## 8b. Zugangscode
+1. Migration `20261125120000_access_code.sql` im SQL Editor einspielen (wie in Schritt 2).
+2. Im SQL Editor den Code setzen: `select private.set_access_code('dein Code');`
+3. Den Code nur persönlich an Freunde weitergeben. Wer sich neu anmeldet, gibt ihn einmal in der App ein. Alle Konten, die es vor der Migration gab, sind automatisch freigeschaltet.
+
 ## 9. Tägliches Wachhalten (GitHub Action)
 1. Nutzt dieselben Secrets `SUPABASE_URL` und `SUPABASE_PUBLISHABLE_KEY` aus Schritt 8.
 2. **Actions → Keep Supabase awake → Run workflow**, einmal von Hand starten. Erwartet: grüner Haken und im Log `Supabase answered: "ok"`.

@@ -607,4 +607,12 @@ export const de: Record<string, string> = {
   'Average of {0} exercises#one': 'Aus 1 Übung',
   'Strength trend of {0} in {1}': 'Kraftverlauf von {0} in {1}',
   'Baseline · {0}': 'Start · {0}',
+  'Access code': 'Zugangscode',
+  'Unlock': 'Freischalten',
+  'Motion is for friends only. Enter the access code you got from Mathis. You need it only once for this account.': 'Motion ist nur für Freunde. Gib den Zugangscode ein, den du von Mathis bekommen hast. Du brauchst ihn für dieses Konto nur einmal.',
+  'Signed in as {email}.': 'Angemeldet als {email}.',
+  'This access code is not right.': 'Dieser Zugangscode stimmt nicht.',
+  'Too many wrong codes. Wait 15 minutes and try again.': 'Zu viele falsche Codes. Warte 15 Minuten und versuch es dann noch einmal.',
+  'You are offline. Connect to the internet to unlock your account.': 'Du bist offline. Verbinde dich mit dem Internet, um dein Konto freizuschalten.',
+  'New accounts also need the access code from Mathis.': 'Neue Konten brauchen außerdem den Zugangscode von Mathis.',
 }

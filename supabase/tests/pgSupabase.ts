@@ -21,16 +21,30 @@ export const supabaseStubs = `
   grant execute on function auth.uid() to anon, authenticated;
 `
 
-export async function migratedDatabase(): Promise<PGlite> {
+/** All migrations in order. `before` runs right before the first migration whose file name contains its key. */
+export async function migratedDatabase(before?: { migration: string; run: (pg: PGlite) => Promise<void> }): Promise<PGlite> {
   const pg = new PGlite()
   await pg.exec(supabaseStubs)
   const folder = join(import.meta.dirname, '..', 'migrations')
-  for (const file of readdirSync(folder).sort()) await pg.exec(readFileSync(join(folder, file), 'utf8'))
+  let pending = before
+  for (const file of readdirSync(folder).sort()) {
+    if (pending && file.includes(pending.migration)) {
+      await pending.run(pg)
+      pending = undefined
+    }
+    await pg.exec(readFileSync(join(folder, file), 'utf8'))
+  }
   return pg
 }
 
-/** Accounts that exist in auth.users; the write rule accepts rows only for them. */
+/** Accounts that exist in auth.users and redeemed the access code; the write rule accepts rows only for them. */
 export async function addUsers(pg: PGlite, ...ids: string[]) {
+  await addUsersWithoutAccess(pg, ...ids)
+  for (const id of ids) await pg.query('insert into public.access_grants (user_id) values ($1) on conflict do nothing', [id])
+}
+
+/** Logins that have not redeemed the access code yet: Row Level Security gives them nothing. */
+export async function addUsersWithoutAccess(pg: PGlite, ...ids: string[]) {
   for (const id of ids) await pg.query('insert into auth.users (id) values ($1) on conflict do nothing', [id])
 }
 
@@ -120,10 +134,12 @@ export function pgSupabase(pg: PGlite, user: string | null) {
   const client = {
     auth: { getSession: async () => ({ data: { session: current ? { user: { id: current } } : null }, error: null }) },
     from: (table: string) => new Query(pg, table, () => current),
-    rpc: async (name: string) => {
+    rpc: async (name: string, args: Record<string, unknown> = {}) => {
       await pg.exec(`set role authenticated; set request.jwt.claims = '${JSON.stringify({ sub: current, role: 'authenticated' })}'`)
       try {
-        const result = await pg.query<{ result: unknown }>(`select public.${name}() as result`)
+        const keys = Object.keys(args)
+        const named = keys.map((key, index) => `${key} => $${index + 1}`).join(', ')
+        const result = await pg.query<{ result: unknown }>(`select public.${name}(${named}) as result`, keys.map((key) => args[key]))
         return { data: result.rows[0]!.result, error: null }
       } catch (error) {
         return { data: null, error: error as Error }

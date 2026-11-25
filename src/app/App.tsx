@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
 import { db, onDatabaseChange } from '../data/db'
+import { AccessCodeSheet } from '../features/account/AccessCodeSheet'
 import { GuestDataPrompt } from '../features/account/GuestDataPrompt'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { BlueprintDetailScreen } from '../features/blueprints/BlueprintDetailScreen'
@@ -56,6 +57,7 @@ export function App() {
           </Routes>
         </IntroductionGate>
         </ConsentGate>
+        <AccessCodeSheet />
         <GuestDataPrompt />
         <DeletionNotice />
         <InstallHint />
