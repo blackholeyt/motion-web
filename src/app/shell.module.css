@@ -44,6 +44,10 @@
   color: var(--action);
 }
 
+.sidebarOnly {
+  display: none;
+}
+
 @media (min-width: 768px) {
   .nav {
     top: 0;
@@ -63,6 +67,10 @@
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 4px;
+  }
+
+  .tab.sidebarOnly {
+    display: flex;
   }
 
   .tab {

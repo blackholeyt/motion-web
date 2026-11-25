@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { History, NotebookText, Sparkles } from 'lucide-react'
-import { useState } from 'react'
+import { History, NotebookText, Search, Sparkles } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { db } from '../../data/db'
 import { live } from '../../data/repo'
 import type { Workout } from '../../data/types'
@@ -12,14 +13,50 @@ import { EmptyState } from '../../ui/components'
 import { DraftLinks } from '../workout/DraftLinks'
 import { AIAnalysisSheet } from './AIAnalysisSheet'
 import { HistoryEditor } from './HistoryEditor'
+import { WorkoutDetailSheet } from './WorkoutDetailSheet'
 import styles from './history.module.css'
 
-/** WorkoutHistoryView.swift: newest first, tap to edit. */
+/** WorkoutHistoryView.swift: newest first, grouped by month; tap to look, then edit. */
 export function HistoryScreen() {
-  const { t } = useT()
+  const { t, locale } = useT()
   const workouts = useCompletedWorkouts()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const opening = ((location.state ?? {}) as { open?: string }).open
+  const [viewing, setViewing] = useState<Workout | null>(null)
   const [editing, setEditing] = useState<Workout | null>(null)
   const [analysing, setAnalysing] = useState(false)
+  const [query, setQuery] = useState('')
+  // Exercise names per workout, so the search also finds "Bench Press".
+  const names = useLiveQuery(async () => {
+    const map = new Map<string, string[]>()
+    for (const exercise of live(await db.workout_exercises.toArray())) map.set(exercise.workout_id, [...(map.get(exercise.workout_id) ?? []), exercise.exercise_name])
+    return map
+  }, [])
+
+  // "Last workout" on the dashboard opens that workout here.
+  useEffect(() => {
+    if (!opening || !workouts) return
+    const workout = workouts.find((candidate) => candidate.id === opening)
+    if (workout) setViewing(workout)
+    navigate(location.pathname, { replace: true, state: null })
+  }, [opening, workouts !== undefined])
+
+  const months = useMemo(() => {
+    const needle = query.trim().toLocaleLowerCase(locale)
+    const matches = (workouts ?? []).filter(
+      (workout) => !needle || [t(workout.name), workout.notes ?? '', ...(names?.get(workout.id) ?? [])].some((text) => text.toLocaleLowerCase(locale).includes(needle)),
+    )
+    const format = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' })
+    const groups: { label: string; workouts: Workout[] }[] = []
+    for (const workout of matches) {
+      const label = format.format(new Date(workout.performed_at))
+      const last = groups[groups.length - 1]
+      if (last?.label === label) last.workouts.push(workout)
+      else groups.push({ label, workouts: [workout] })
+    }
+    return groups
+  }, [workouts, names, query, locale])
   return (
     <div className={styles.screen}>
       <DraftLinks returnTo="/history" />
@@ -34,10 +71,34 @@ export function HistoryScreen() {
           </button>
         )}
       </header>
-      {workouts?.map((workout) => (
-        <HistoryRow key={workout.id} workout={workout} onOpen={() => setEditing(workout)} />
+      {Boolean(workouts?.length) && (
+        <label className={styles.search}>
+          <Search size={18} aria-hidden="true" />
+          <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('Search workouts or exercises')} aria-label={t('Search workouts or exercises')} data-testid="historySearch" />
+        </label>
+      )}
+      {months.map((month) => (
+        <section key={month.label} className={styles.month}>
+          <h2 className={styles.monthTitle}>
+            {month.label} <small>{t('{0} workouts', [month.workouts.length])}</small>
+          </h2>
+          {month.workouts.map((workout) => (
+            <HistoryRow key={workout.id} workout={workout} onOpen={() => setViewing(workout)} />
+          ))}
+        </section>
       ))}
+      {Boolean(workouts?.length) && months.length === 0 && <p className={styles.muted}>{t('No workouts match “{0}”.', [query.trim()])}</p>}
       {workouts?.length === 0 && <EmptyState icon={<History size={40} />} title={t('Your story starts here')} detail={t('Finish a workout to save it here.')} />}
+      {viewing && (
+        <WorkoutDetailSheet
+          workout={viewing}
+          onClose={() => setViewing(null)}
+          onEdit={() => {
+            setEditing(viewing)
+            setViewing(null)
+          }}
+        />
+      )}
       {editing && <HistoryEditor workout={editing} onClose={() => setEditing(null)} />}
       <AIAnalysisSheet open={analysing} onClose={() => setAnalysing(false)} />
     </div>

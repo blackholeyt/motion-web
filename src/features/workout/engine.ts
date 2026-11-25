@@ -547,6 +547,8 @@ export const startRest = (workoutID: string, exercise: WorkoutExercise, context:
 export const restartRest = (workoutID: string, now = new Date()) => changeRest(workoutID, (state) => timer.restart(state, now))
 export const skipRest = (workoutID: string, now = new Date()) => changeRest(workoutID, (state) => timer.skip(state, now))
 export const cancelRest = (workoutID: string) => changeRest(workoutID, timer.cancel)
+/** Lengthens or shortens a running rest by `seconds` (±15 s buttons). */
+export const adjustRest = (workoutID: string, seconds: number, now = new Date()) => changeRest(workoutID, (state) => timer.adjust(state, seconds, now))
 
 /** Returns true only for an expiry consumed while the timer is being watched. */
 export async function tickRest(workoutID: string, announce: boolean, now = new Date()): Promise<boolean> {

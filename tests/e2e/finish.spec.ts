@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { appleSeconds, legacyBackup } from '../../src/test/legacyBackup'
-import { showFullView } from './helpers'
+import { showFullView, openSettings } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -199,7 +199,7 @@ test('a first session shows its key figures and XP', async ({ page }) => {
 
 test('records and weeks fit every phone without scrolling', async ({ page }) => {
   await open(page)
-  await page.getByRole('link', { name: 'Settings' }).click()
+  await openSettings(page)
   await page.getByTestId('importBackup').click()
   await page.getByTestId('importFile').setInputFiles({ name: 'Motion-Backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(pushHistory())) })
   await page.getByTestId('confirmImport').click()

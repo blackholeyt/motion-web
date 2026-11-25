@@ -1,11 +1,12 @@
-import { Check, ChevronDown, ChevronUp, Ellipsis } from 'lucide-react'
+import { Check, ChevronDown, ChevronUp, Ellipsis, Minus, Plus } from 'lucide-react'
 import { forwardRef, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
-import { quantityLabel } from '../../domain/measurement'
+import { formatNumber, quantityLabel } from '../../domain/measurement'
 import type { Row } from '../../domain/sets'
 import { useT } from '../../i18n'
 import { Menu } from '../../ui/controls'
 import type { WorkoutContext } from './engine'
-import { currentSetIndex, indexAtScroll, nextOpenIndex } from './focus'
+import { currentSetIndex, indexAtScroll, nextOpenIndex, segmentGroups } from './focus'
+import { RestPanel, useRestTimer, type RestTimer } from './RestTimerBar'
 import type { History, Session } from './session'
 import { setViewProps } from './setActions'
 import { useSetInputs, type SetRowHandle, type SetViewProps } from './useSetInputs'
@@ -21,8 +22,9 @@ interface Props {
   rowRefs: RefObject<Map<string, SetRowHandle>>
   /** True while the personal-record notice is on screen; the view advances once it is dismissed. */
   recordOpen: boolean
-  /** The rest bar is fixed at the bottom; the cards stop above it. */
-  restBar: boolean
+  /** False for a past workout: no rest timer. */
+  restTimer: boolean
+  onNotifications: () => void
   onError: (message: string, values?: string[]) => void
   onComplete: (setID: string) => Promise<CompletionOutcome>
   onRemoveSet: (setID: string) => void
@@ -36,7 +38,7 @@ const prefersReducedMotion = () => typeof window.matchMedia === 'function' && wi
  * stack. Swiping (or the arrow buttons) moves between sets; completing a set scrolls on to the
  * next unfinished one. Only one view (this or the full list) is mounted at a time.
  */
-export function FocusView({ session, history, context, rowRefs, recordOpen, restBar, onError, onComplete, onRemoveSet, onShowFull }: Props) {
+export function FocusView({ session, history, context, rowRefs, recordOpen, restTimer, onNotifications, onError, onComplete, onRemoveSet, onShowFull }: Props) {
   const { t } = useT()
   const rows = session.rows
   const scroller = useRef<HTMLDivElement>(null)
@@ -45,6 +47,7 @@ export function FocusView({ session, history, context, rowRefs, recordOpen, rest
   activeRef.current = active
   const [advanceFrom, setAdvanceFrom] = useState<string | null>(null)
   const afterNotice = useRef<string | null>(null)
+  const rest = useRestTimer(session.workout)
 
   const scrollToIndex = (index: number, smooth: boolean) => {
     const element = scroller.current
@@ -97,6 +100,32 @@ export function FocusView({ session, history, context, rowRefs, recordOpen, rest
   }
   const blurOnEnter = () => (document.activeElement as HTMLElement | null)?.blur()
 
+  // Keyboard on a computer: ↑/↓ (or K/J) change the card, Enter completes it. Typing in a field is left alone.
+  const keyState = useRef({ active, rows, complete })
+  keyState.current = { active, rows, complete }
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return
+      if (target && (target.closest('input, textarea, select, [role="menu"], [role="dialog"], [role="alertdialog"]') || target.isContentEditable)) return
+      const { active: index, rows: current, complete: completeSet } = keyState.current
+      if (event.key === 'ArrowDown' || event.key === 'j') {
+        event.preventDefault()
+        scrollToIndex(Math.min(current.length - 1, index + 1), true)
+      } else if (event.key === 'ArrowUp' || event.key === 'k') {
+        event.preventDefault()
+        scrollToIndex(Math.max(0, index - 1), true)
+      } else if (event.key === 'Enter' && (!target || target === document.body)) {
+        const row = current[index]
+        if (!row || row.set.is_skipped) return
+        event.preventDefault()
+        void rowRefs.current?.get(row.set.id)?.flush().then(() => completeSet(row.set.id))
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
   if (rows.length === 0) {
     return (
       <div className={styles.focusView}>
@@ -112,17 +141,25 @@ export function FocusView({ session, history, context, rowRefs, recordOpen, rest
 
   const completed = rows.filter(({ set }) => set.is_completed).length
   return (
-    <div className={`${styles.focusView} ${restBar ? styles.withRest : ''}`} data-testid="focusView">
+    <div className={styles.focusView} data-testid="focusView">
       <div className={styles.focusNav}>
         <button type="button" aria-label={t('Previous set')} disabled={active <= 0} onClick={() => scrollToIndex(active - 1, true)} data-testid="focusPrevious">
           <ChevronUp size={22} aria-hidden="true" />
         </button>
         <div className={styles.focusSegments} aria-hidden="true">
-          {rows.map((row, index) => (
-            <span
-              key={row.set.id}
-              className={`${styles.focusSegment} ${row.set.is_completed ? styles.segmentDone : ''} ${row.set.is_skipped ? styles.segmentSkipped : ''} ${index === active ? styles.segmentActive : ''}`}
-            />
+          {segmentGroups(rows).map((group) => (
+            <span key={group.key} className={styles.segmentGroup} style={{ flexGrow: group.indices.length }}>
+              {group.indices.map((index) => {
+                const row = rows[index]
+                if (!row) return null
+                return (
+                  <span
+                    key={row.set.id}
+                    className={`${styles.focusSegment} ${row.set.is_completed ? styles.segmentDone : ''} ${row.set.is_skipped ? styles.segmentSkipped : ''} ${index === active ? styles.segmentActive : ''}`}
+                  />
+                )
+              })}
+            </span>
           ))}
         </div>
         <span className={styles.focusCount} data-testid="completedSetCount">
@@ -156,6 +193,8 @@ export function FocusView({ session, history, context, rowRefs, recordOpen, rest
               total={rows.length}
               active={index === active}
               following={rows[index + 1]}
+              rest={restTimer && index === active ? rest : null}
+              onNotifications={onNotifications}
             />
           ))}
         </div>
@@ -169,14 +208,19 @@ interface CardProps extends SetViewProps {
   total: number
   active: boolean
   following: Row | undefined
+  /** The running rest, shown on the card on screen only. */
+  rest: RestTimer | null
+  onNotifications: () => void
 }
 
 /** One set as a big card: name, progress, last time, large inputs and a big check button. */
 const FocusCard = forwardRef<SetRowHandle, CardProps>(function FocusCard(props, handle) {
-  const { t } = useT()
+  const { t, locale } = useT()
   const inputs = useSetInputs(props, handle)
   const { set, exercise, badge, skipped } = inputs
   const { index, total, following } = props
+  const step = formatNumber(inputs.quantityStep, locale)
+  const editable = !skipped && !set.is_completed
   return (
     <div className={styles.focusSlide} data-testid="focusSlide" data-index={index} data-active={props.active}>
       <article
@@ -193,20 +237,16 @@ const FocusCard = forwardRef<SetRowHandle, CardProps>(function FocusCard(props, 
           </span>
           <Menu label={inputs.kindLabel} icon={<Ellipsis size={18} />} items={inputs.menuItems} />
         </div>
+        {props.rest && <RestPanel workoutID={set.workout_id} rest={props.rest} onNotifications={props.onNotifications} />}
         <div>
           <h2 id={`focus-title-${set.id}`} className={styles.focusTitle}>
             {exercise.exercise_name}
           </h2>
           <p className={styles.focusProgress}>{t('Set {0} of {1}', [index + 1, total])}</p>
         </div>
-        {(inputs.comparison !== null || (props.previous && !skipped && !set.is_completed)) && (
+        {inputs.comparison !== null && (
           <div className={styles.focusLast}>
-            {inputs.comparison !== null && <p data-testid={`previous-${set.set_index}`}>{inputs.comparison}</p>}
-            {props.previous && !skipped && !set.is_completed && (
-              <button type="button" className={styles.useLast} onClick={props.onUseLast} data-testid={`usePrevious-${set.set_index}`}>
-                {t('Use last')}
-              </button>
-            )}
+            <p data-testid={`previous-${set.set_index}`}>{inputs.comparison}</p>
           </div>
         )}
         <div className={styles.focusInputs}>
@@ -215,11 +255,31 @@ const FocusCard = forwardRef<SetRowHandle, CardProps>(function FocusCard(props, 
               {t(quantityLabel(exercise.measurement))} · {inputs.quantityUnit}
             </span>
             <input className={styles.focusInput} {...inputs.quantityInput} />
+            {editable && (
+              <div className={styles.stepper}>
+                <button type="button" aria-label={t('{0} less', [`${step} ${inputs.quantityUnit}`])} onClick={() => inputs.stepQuantity(-1)} data-testid={`loadMinus-${set.set_index}`}>
+                  <Minus size={16} aria-hidden="true" /> {step}
+                </button>
+                <button type="button" aria-label={t('{0} more', [`${step} ${inputs.quantityUnit}`])} onClick={() => inputs.stepQuantity(1)} data-testid={`loadPlus-${set.set_index}`}>
+                  <Plus size={16} aria-hidden="true" /> {step}
+                </button>
+              </div>
+            )}
           </div>
           {inputs.showReps && (
             <div className={styles.focusField}>
               <span aria-hidden="true">{t('Reps')}</span>
               <input className={styles.focusInput} {...inputs.repsInput} />
+              {editable && (
+                <div className={styles.stepper}>
+                  <button type="button" aria-label={t('One rep less')} onClick={() => inputs.stepReps(-1)} data-testid={`repsMinus-${set.set_index}`}>
+                    <Minus size={16} aria-hidden="true" /> 1
+                  </button>
+                  <button type="button" aria-label={t('One rep more')} onClick={() => inputs.stepReps(1)} data-testid={`repsPlus-${set.set_index}`}>
+                    <Plus size={16} aria-hidden="true" /> 1
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

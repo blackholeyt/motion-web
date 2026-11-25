@@ -1,3 +1,4 @@
+import { openSettings } from './helpers'
 import { expect, test } from '@playwright/test'
 
 test.use({ locale: 'en-US' })
@@ -18,14 +19,14 @@ test('opens with the opening animation, then shows the dashboard', async ({ page
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Your training')
 })
 
-test('navigates between the four tabs', async ({ page }) => {
+test('navigates between the tabs', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByTestId('opening')).toBeHidden({ timeout: 5_000 })
   await page.getByRole('link', { name: 'Blueprints' }).click()
   await expect(page.getByRole('heading', { name: 'Blueprints' })).toBeVisible()
   await page.getByRole('link', { name: 'History' }).click()
   await expect(page.getByRole('heading', { name: 'The work you put in.' })).toBeVisible()
-  await page.getByRole('link', { name: 'Settings' }).click()
+  await openSettings(page)
   await page.getByRole('combobox', { name: 'Language' }).selectOption('de')
   await expect(page.getByRole('link', { name: 'Verlauf' })).toBeVisible()
 })

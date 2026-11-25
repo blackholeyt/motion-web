@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { showFullView } from './helpers'
+import { showFullView, openSettings } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -132,10 +132,12 @@ test('no screen scrolls sideways on a phone', async ({ page }) => {
   }
   await open(page)
   await fitsWidth('Dashboard')
-  for (const tab of ['Blueprints', 'History', 'Settings']) {
+  for (const tab of ['Progress', 'Blueprints', 'History']) {
     await page.getByRole('link', { name: tab }).click()
     await fitsWidth(tab)
   }
+  await openSettings(page)
+  await fitsWidth('Settings')
   await startPush(page)
   await fitsWidth('Workout')
 })

@@ -46,6 +46,19 @@
   }
 }
 
+.barTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.elapsed {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--secondary-text);
+}
+
 .bar h1 {
   margin: 0;
   font-size: 1.0625rem;
@@ -490,10 +503,6 @@
   padding-bottom: calc(var(--safe-bottom) + 8px);
 }
 
-/* The rest bar is fixed to the bottom: about 61px plus the home indicator. */
-.focusView.withRest {
-  padding-bottom: calc(var(--safe-bottom) + 68px);
-}
 
 .focusNav {
   display: flex;
@@ -531,14 +540,23 @@
 .focusSegments {
   display: flex;
   flex: 1;
-  gap: 3px;
+  gap: 6px;
   align-items: center;
   min-width: 0;
   height: 12px;
 }
 
+.segmentGroup {
+  display: flex;
+  flex: 1 1 0;
+  gap: 2px;
+  align-items: center;
+  min-width: 6px;
+}
+
 .focusSegment {
   flex: 1;
+  min-width: 2px;
   height: 4px;
   border-radius: 2px;
   background: var(--border);
@@ -763,5 +781,149 @@
 
   .focusCheck {
     min-height: 64px;
+  }
+}
+
+/* ± buttons below the big inputs, so a change of 2.5 kg or one rep needs no keyboard. */
+.stepper {
+  display: flex;
+  gap: 6px;
+}
+
+.stepper button {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--tap);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+}
+
+.stepper button:active {
+  background: color-mix(in srgb, var(--action) 16%, transparent);
+}
+
+/* The rest on the focus card: ring, big time, −15 / +15 / skip. */
+.restPanel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px 8px 10px;
+  border-radius: var(--radius-row);
+  background: color-mix(in srgb, var(--action) 12%, var(--background));
+}
+
+.restPanelDone {
+  background: var(--completed-surface);
+}
+
+.restRing {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  transform: rotate(-90deg);
+}
+
+.restRingTrack,
+.restRingValue {
+  fill: none;
+  stroke-width: 5;
+}
+
+.restRingTrack {
+  stroke: var(--border);
+}
+
+.restRingValue {
+  stroke: var(--action);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.25s linear;
+}
+
+.restPanelText {
+  flex: 1;
+  min-width: 0;
+}
+
+.restPanelText span {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.restPanelText small {
+  font-size: 0.8125rem;
+  color: var(--secondary-text);
+}
+
+.restPanelText strong {
+  font-family: var(--font-rounded);
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.restPanelDone strong {
+  font-size: 1.125rem;
+}
+
+.restPanelActions {
+  display: flex;
+  gap: 4px;
+}
+
+.restAdjust {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  color: var(--action);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) {
+  .restAdjust:hover,
+  .stepper button:hover {
+    background: color-mix(in srgb, var(--action) 10%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .restRingValue {
+    transition: none;
+  }
+}
+
+@media (max-height: 700px) {
+  .restPanel {
+    padding: 4px 4px 4px 8px;
+  }
+
+  .restRing {
+    width: 36px;
+    height: 36px;
+  }
+
+  .restPanelText strong {
+    font-size: 1.5rem;
+  }
+
+  .stepper button {
+    min-height: 40px;
   }
 }

@@ -1,37 +1,30 @@
-import { CalendarPlus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { CalendarPlus, Settings as SettingsIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useT } from '../../i18n'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { db } from '../../data/db'
-import { live } from '../../data/repo'
-import type { Exercise } from '../../data/types'
-import { loadBests, trainingWeeks } from '../../domain/statistics'
-import { strengthTrend, trendWeeks } from '../../domain/strengthTrend'
 import { usePreferences, useProfile } from '../../store/profile'
 import { completedHistory, useProgress } from '../../store/progress'
-import { SectionTitle } from '../../ui/components'
-import { GoalEditor } from '../exercises/GoalEditor'
+import { useIsPhone } from '../../ui/useMediaQuery'
 import { ProgressCard } from '../progress/ProgressCard'
 import { BodyWeightCard } from '../body/BodyWeightCard'
-import { ConsistencyCard } from './ConsistencyCard'
-import { LoadBestsCard } from './LoadBestsCard'
 import { DraftLinks } from '../workout/DraftLinks'
+import { LastWorkoutCard } from './LastWorkoutCard'
 import { PastWorkoutPicker } from './PastWorkoutPicker'
 import { StartCard } from './StartCard'
-import { StrengthTrendCard } from './StrengthTrendCard'
 import { WorkoutPicker } from './WorkoutPicker'
 import styles from './dashboard.module.css'
 
+/** Today: start the next session, see the last one. Statistics live on the Progress tab. */
 export function DashboardScreen() {
   const { t, locale } = useT()
   const profile = useProfile()
+  const phone = useIsPhone()
   const [now, setNow] = useState(() => new Date())
   const [choosing, setChoosing] = useState(false)
   const [logging, setLogging] = useState(false)
-  const [goal, setGoal] = useState<Exercise | null>(null)
   const preferences = usePreferences()
   const progress = useProgress()
-  const library = useLiveQuery(async () => live(await db.exercises.toArray()), [])
   const history = useLiveQuery(completedHistory, [])
 
   // Refresh once a minute, like the iOS TimelineView, so "Today" and due dates roll over.
@@ -40,13 +33,20 @@ export function DashboardScreen() {
     return () => window.clearInterval(handle)
   }, [])
 
-  const trend = useMemo(() => strengthTrend(history ?? [], library ?? [], now), [history, library, now])
   const date = new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'short', day: 'numeric' }).format(now)
   const greeting = profile && profile.name !== 'Motion' ? t('{0},\nyour training in perspective.', [profile.name]) : t('Your training,\nin perspective.')
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <p className={styles.date}>{date}</p>
+        <div className={styles.headerTop}>
+          <p className={styles.date}>{date}</p>
+          {/* Phones have no Settings tab; the sidebar on larger screens has one. */}
+          {phone && (
+            <Link to="/settings" className={styles.settingsLink} aria-label={t('Settings')} title={t('Settings')}>
+              <SettingsIcon size={22} strokeWidth={1.75} aria-hidden="true" />
+            </Link>
+          )}
+        </div>
         <h1 className={styles.greeting}>{greeting}</h1>
       </header>
       <DraftLinks returnTo="/" />
@@ -56,21 +56,9 @@ export function DashboardScreen() {
           <CalendarPlus size={18} aria-hidden="true" /> {t('Log past workout')}
         </button>
       </div>
+      {history && <LastWorkoutCard history={history} now={now} />}
       {progress && <ProgressCard progress={progress} />}
       {preferences.bodyWeightTrackingVisible && <BodyWeightCard />}
-      <section className={styles.section}>
-        <SectionTitle title={t('Calendar weeks')} subtitle={t('Monday–Sunday · 5 full weeks and this week')} />
-        <ConsistencyCard weeks={trainingWeeks((history ?? []).map(({ workout }) => workout.performed_at), now)} />
-      </section>
-      <section className={styles.section}>
-        <SectionTitle title={t('Strength trend')} subtitle={t('Top working load per session over the last {0} weeks. Recorded results, not a strength estimate.', [trendWeeks])} />
-        <StrengthTrendCard trend={trend} unit={profile?.load_unit ?? 'kg'} />
-      </section>
-      <section className={styles.section}>
-        <SectionTitle title={t('Recorded load bests')} subtitle={t('Heaviest completed external-load working sets. Not a strength estimate. Tap to edit a load goal.')} />
-        <LoadBestsCard bests={loadBests(history ?? [], library ?? [], now)} library={library ?? []} unit={profile?.load_unit ?? 'kg'} onEdit={setGoal} />
-      </section>
-      <GoalEditor exercise={goal} onClose={() => setGoal(null)} />
       <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
       <PastWorkoutPicker open={logging} onClose={() => setLogging(false)} />
     </div>

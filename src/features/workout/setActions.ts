@@ -36,7 +36,7 @@ export function setViewProps(row: Row, { session, history, context, onError, onC
     context,
     onInput: (quantity, reps) => run(engine.updateSetInput(workoutID, setID, quantity, reps, context)),
     onComplete: () => onComplete(setID),
-    onUseLast: () => void run(engine.reuseValues(workoutID, setID, { previous }, context)),
+    onUseLast: () => run(engine.reuseValues(workoutID, setID, { previous }, context)),
     onCopyPrevious: () => void run(engine.reuseValues(workoutID, setID, { fromRowAbove: true }, context)),
     onClear: () => void run(engine.clearValues(workoutID, setID, context)),
     onClassify: () => void run(engine.toggleWarmUp(workoutID, setID, context)),

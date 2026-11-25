@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { showFullView } from './helpers'
+import { showFullView, openSettings } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -55,9 +55,10 @@ test('the demo runs on synthetic data and leaves personal data untouched', async
   await dismissHint(page)
   await page.getByTestId('onboardingProfileSkip').click()
   await page.getByTestId('onboardingExplore').click()
-  await page.getByRole('link', { name: 'Settings' }).click()
+  await openSettings(page)
   await page.getByTestId('enterDemo').click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Demo Alex')
+  await page.getByRole('link', { name: 'Progress' }).click()
   await expect(page.getByTestId('record-Deadlift')).toContainText('115 kg')
   await page.getByTestId('exitDemo').click()
   await page.getByRole('link', { name: 'Dashboard' }).click()

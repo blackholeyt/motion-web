@@ -1,17 +1,19 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { History as HistoryIcon, LayoutGrid, ListChecks, Settings as SettingsIcon } from 'lucide-react'
+import { TrendingUp, History as HistoryIcon, LayoutGrid, ListChecks, Settings as SettingsIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { useT } from '../i18n'
 import styles from './shell.module.css'
 
-const tabs: { to: string; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }> }[] = [
+const tabs: { to: string; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }>; sidebarOnly?: boolean }[] = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid },
+  { to: '/progress', label: 'Progress', icon: TrendingUp },
   { to: '/blueprints', label: 'Blueprints', icon: ListChecks },
   { to: '/history', label: 'History', icon: HistoryIcon },
-  { to: '/settings', label: 'Settings', icon: SettingsIcon },
+  // Rarely needed while training: on phones it opens from the gear on the dashboard.
+  { to: '/settings', label: 'Settings', icon: SettingsIcon, sidebarOnly: true },
 ]
 
-/** Bottom tab bar on phones, a sidebar from tablet width; same four tabs as the iOS app. */
+/** Bottom tab bar on phones, a sidebar from tablet width. */
 export function AppShell() {
   const { t } = useT()
   return (
@@ -20,8 +22,13 @@ export function AppShell() {
         <span className={styles.brand} aria-hidden="true">
           MOTION
         </span>
-        {tabs.map(({ to, label, icon: Icon }) => (
-          <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `${styles.tab} ${isActive ? styles.active : ''}`}>
+        {tabs.map(({ to, label, icon: Icon, sidebarOnly }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) => `${styles.tab} ${isActive ? styles.active : ''} ${sidebarOnly ? styles.sidebarOnly : ''}`}
+          >
             <Icon size={24} strokeWidth={1.75} />
             <span>{t(label)}</span>
           </NavLink>
