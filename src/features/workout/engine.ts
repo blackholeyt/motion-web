@@ -227,6 +227,27 @@ async function normalize(workoutID: string, context: WorkoutContext) {
   await update<Workout>('workouts', workoutID, { rest_timer: rest, draft_updated_at: nowISO() })
 }
 
+/**
+ * The steps every undoable edit shares: load the draft, decide whether the edit applies,
+ * save an undo point, write the change and clean up (normalize).
+ * `plan` returns the write, or nothing when the edit does not apply (then nothing is saved).
+ */
+async function undoableEdit(workoutID: string, context: WorkoutContext, plan: (session: Session) => (() => Promise<unknown>) | undefined) {
+  await transaction(async () => {
+    const session = await requireDraft(workoutID)
+    const write = plan(session)
+    if (!write) return
+    await checkpoint(session, context)
+    await write()
+    await normalize(workoutID, context)
+  })
+}
+
+/** An undoable edit of one set; `plan` also gets the set's row. */
+function undoableSetEdit(workoutID: string, setID: string, context: WorkoutContext, plan: (row: Row, session: Session) => (() => Promise<unknown>) | undefined) {
+  return undoableEdit(workoutID, context, (session) => plan(findRow(session, setID), session))
+}
+
 function findRow(session: Session, setID: string): Row {
   for (const { rows } of session.all) {
     const row = rows.find((candidate) => candidate.set.id === setID)
@@ -237,25 +258,23 @@ function findRow(session: Session, setID: string): Row {
 
 // MARK: - Set input
 
-export async function updateSetInput(workoutID: string, setID: string, quantity: string, reps: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function updateSetInput(workoutID: string, setID: string, quantity: string, reps: string, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row, session) => {
     if (row.set.is_skipped || row.set.is_removed) return
+    const unchanged = quantity === quantityText(row.set, row.exercise.measurement, context.unit, context.locale) && reps === repsText(row.set)
+    if (unchanged) return
     const unit = setUnit(row.set, context.unit)
-    if (quantity === quantityText(row.set, row.exercise.measurement, context.unit, context.locale) && reps === repsText(row.set)) return
-    await checkpoint(session, context)
-    await update<SetLog>('set_logs', setID, { ...valuesForInput(row.set, row.exercise.measurement, quantity, reps, unit, context.trackReps, context.locale), is_completed: false })
-    if (session.workout.rest_timer?.sourceSetID === setID) await update<Workout>('workouts', workoutID, { rest_timer: timer.cancel(timer.restored(session.workout.rest_timer)) })
-    await normalize(workoutID, context)
+    return async () => {
+      await update<SetLog>('set_logs', setID, { ...valuesForInput(row.set, row.exercise.measurement, quantity, reps, unit, context.trackReps, context.locale), is_completed: false })
+      // Changed values invalidate a rest timer that this set started.
+      if (session.workout.rest_timer?.sourceSetID === setID) await update<Workout>('workouts', workoutID, { rest_timer: timer.cancel(timer.restored(session.workout.rest_timer)) })
+    }
   })
 }
 
 /** "Use last" from history, or "Copy previous set" from the row above. */
-export async function reuseValues(workoutID: string, setID: string, source: { previous?: HistoricalSet; fromRowAbove?: boolean }, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function reuseValues(workoutID: string, setID: string, source: { previous?: HistoricalSet; fromRowAbove?: boolean }, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row, session) => {
     if (row.set.is_completed || row.set.is_skipped || row.set.is_removed) return
     const unit = setUnit(row.set, context.unit)
     let quantity = ''
@@ -277,12 +296,10 @@ export async function reuseValues(workoutID: string, setID: string, source: { pr
     } else return
     if (row.exercise.measurement !== 'Duration') quantity = exactKg === null ? '' : loadInput(unit, exactKg, context.locale)
     if (!needsReps(row.exercise.measurement, context.trackReps)) reps = repsText(row.set)
-    await checkpoint(session, context)
     const values = valuesForInput(row.set, row.exercise.measurement, quantity, reps, unit, context.trackReps, context.locale)
     // Preserve the exact canonical value even when its display is rounded.
     if (exactKg !== null) values.weight_kg = exactKg
-    await update<SetLog>('set_logs', setID, { ...values, is_completed: false })
-    await normalize(workoutID, context)
+    return () => update<SetLog>('set_logs', setID, { ...values, is_completed: false })
   })
 }
 
@@ -293,14 +310,10 @@ export function rowAbove(session: Session, row: Row): Row | undefined {
   return previous && !previous.set.is_skipped && previous.set.is_warm_up === row.set.is_warm_up ? previous : undefined
 }
 
-export async function clearValues(workoutID: string, setID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function clearValues(workoutID: string, setID: string, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row) => {
     if (row.set.is_completed || row.set.is_skipped) return
-    await checkpoint(session, context)
-    await update<SetLog>('set_logs', setID, valuesForInput(row.set, row.exercise.measurement, '', '', setUnit(row.set, context.unit), true, context.locale))
-    await normalize(workoutID, context)
+    return () => update<SetLog>('set_logs', setID, valuesForInput(row.set, row.exercise.measurement, '', '', setUnit(row.set, context.unit), true, context.locale))
   })
 }
 
@@ -347,83 +360,63 @@ export async function toggleCompletion(workoutID: string, setID: string, context
   })
 }
 
-export async function toggleWarmUp(workoutID: string, setID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function toggleWarmUp(workoutID: string, setID: string, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row) => {
     if (row.set.is_completed) return
-    await checkpoint(session, context)
-    await update<SetLog>('set_logs', setID, { is_warm_up: !row.set.is_warm_up })
-    await normalize(workoutID, context)
+    return () => update<SetLog>('set_logs', setID, { is_warm_up: !row.set.is_warm_up })
   })
 }
 
-export async function toggleSkip(workoutID: string, setID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function toggleSkip(workoutID: string, setID: string, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row) => {
     if (row.set.is_removed) return
-    await checkpoint(session, context)
-    await update<SetLog>('set_logs', setID, { is_skipped: !row.set.is_skipped, is_completed: false })
-    await normalize(workoutID, context)
+    return () => update<SetLog>('set_logs', setID, { is_skipped: !row.set.is_skipped, is_completed: false })
   })
 }
 
 /** Removal only marks the set, so Undo edit can restore it. */
-export async function removeSet(workoutID: string, setID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    const row = findRow(session, setID)
+export function removeSet(workoutID: string, setID: string, context: WorkoutContext) {
+  return undoableSetEdit(workoutID, setID, context, (row) => {
     if (row.set.is_removed) return
-    await checkpoint(session, context)
-    await update<SetLog>('set_logs', setID, { is_removed: true, is_completed: false })
-    await normalize(workoutID, context)
+    return () => update<SetLog>('set_logs', setID, { is_removed: true, is_completed: false })
   })
 }
 
-export async function addSet(workoutID: string, exerciseID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
+export function addSet(workoutID: string, exerciseID: string, context: WorkoutContext) {
+  return undoableEdit(workoutID, context, (session) => {
     const owner = session.all.find(({ exercise }) => exercise.id === exerciseID)
     if (!owner) return
-    await checkpoint(session, context)
-    await insertOne<SetLog>('set_logs', emptySet(workoutID, exerciseID, Math.max(0, ...owner.rows.map(({ set }) => set.set_index)) + 1))
-    await normalize(workoutID, context)
+    const nextIndex = Math.max(0, ...owner.rows.map(({ set }) => set.set_index)) + 1
+    return () => insertOne<SetLog>('set_logs', emptySet(workoutID, exerciseID, nextIndex))
   })
 }
 
-export async function setSuperset(workoutID: string, exerciseID: string, group: SupersetGroup | null, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
-    await checkpoint(session, context)
-    await update<WorkoutExercise>('workout_exercises', exerciseID, { superset_group: group })
-    await normalize(workoutID, context)
-  })
+export function setSuperset(workoutID: string, exerciseID: string, group: SupersetGroup | null, context: WorkoutContext) {
+  return undoableEdit(workoutID, context, () => () => update<WorkoutExercise>('workout_exercises', exerciseID, { superset_group: group }))
 }
 
-export async function removeExercise(workoutID: string, exerciseID: string, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
+export function removeExercise(workoutID: string, exerciseID: string, context: WorkoutContext) {
+  return undoableEdit(workoutID, context, (session) => {
     const owner = session.all.find(({ exercise }) => exercise.id === exerciseID)
     if (!owner) return
-    await checkpoint(session, context)
-    await update<WorkoutExercise>('workout_exercises', exerciseID, { is_removed: true })
-    for (const { set } of owner.rows) if (set.is_completed) await update<SetLog>('set_logs', set.id, { is_completed: false })
-    await normalize(workoutID, context)
+    return async () => {
+      await update<WorkoutExercise>('workout_exercises', exerciseID, { is_removed: true })
+      for (const { set } of owner.rows) if (set.is_completed) await update<SetLog>('set_logs', set.id, { is_completed: false })
+    }
   })
 }
 
-export async function moveExercise(workoutID: string, exerciseID: string, offset: number, context: WorkoutContext) {
-  await transaction(async () => {
-    const session = await requireDraft(workoutID)
+export function moveExercise(workoutID: string, exerciseID: string, offset: number, context: WorkoutContext) {
+  return undoableEdit(workoutID, context, (session) => {
     const index = session.exercises.findIndex(({ exercise }) => exercise.id === exerciseID)
     const other = session.exercises[index + offset]
     if (index < 0 || !other) return
     const current = session.exercises[index]!.exercise
-    await checkpoint(session, context)
-    await update<WorkoutExercise>('workout_exercises', current.id, { sort_order: other.exercise.sort_order })
-    await update<WorkoutExercise>('workout_exercises', other.exercise.id, { sort_order: current.sort_order })
-    await normalize(workoutID, context)
+    // Swap the two positions.
+    return async () => {
+      await update<WorkoutExercise>('workout_exercises', current.id, { sort_order: other.exercise.sort_order })
+      await update<WorkoutExercise>('workout_exercises', other.exercise.id, { sort_order: current.sort_order })
+    }
   })
 }
 

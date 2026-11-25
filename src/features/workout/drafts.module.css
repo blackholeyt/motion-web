@@ -50,5 +50,5 @@
 
 .discard {
   font-size: 0.875rem;
-  color: #ff6b6b;
+  color: var(--destructive);
 }

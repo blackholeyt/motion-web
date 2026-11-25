@@ -122,3 +122,18 @@ test('every set shows its kind as a badge', async ({ page }) => {
   await bench.scrollIntoViewIfNeeded()
   await page.screenshot({ path: `${shots}/set-badges.png` })
 })
+
+test('no screen scrolls sideways on a phone', async ({ page }) => {
+  const fitsWidth = async (name: string) => {
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    expect(overflow, `${name} is wider than the screen`).toBeLessThanOrEqual(0)
+  }
+  await open(page)
+  await fitsWidth('Dashboard')
+  for (const tab of ['Blueprints', 'History', 'Settings']) {
+    await page.getByRole('link', { name: tab }).click()
+    await fitsWidth(tab)
+  }
+  await startPush(page)
+  await fitsWidth('Workout')
+})

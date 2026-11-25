@@ -47,6 +47,7 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
   const guidance = exercise.guidance
   const target = guidance ? targetLabel(guidance, t) : null
   const run = (action: Promise<unknown>): Promise<void> => action.then(() => undefined, (failure: Error) => onError(failure.message))
+  const showReps = needsReps(exercise.measurement, context.trackReps)
   const nextInGroup = exercise.superset_group
     ? session.rows.find((row) => !row.set.is_completed && !row.set.is_skipped && row.exercise.superset_group === exercise.superset_group)
     : undefined
@@ -57,10 +58,10 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
         {exercise.exercise_name}
       </h2>
       {rows.length === 0 && <p className={styles.muted}>{t('No sets. Add a set to continue.')}</p>}
-      <div className={styles.columns} aria-hidden="true">
+      <div className={`${styles.columns} ${showReps ? '' : styles.withoutReps}`} aria-hidden="true">
         <span>{t('Set')}</span>
         <span>{t(quantityLabel(exercise.measurement))}</span>
-        {needsReps(exercise.measurement, context.trackReps) && <span>{t('Reps')}</span>}
+        {showReps && <span>{t('Reps')}</span>}
         <span>{t('Done')}</span>
       </div>
       {rows.map((row) => (
