@@ -349,9 +349,13 @@ function countFile(backup: LegacyBackup, sessions: LegacySession[]): ImportCount
   return file
 }
 
+/*
+ * The add... helpers are deliberately not async: they run inside a Dexie transaction, which ends early
+ * if an await waits on a plain promise. The ids already on this device are read by prepare and passed in.
+ */
+
 /** Library exercises this device does not have yet. */
-async function addLibrary(backup: LegacyBackup, add: Add, added: ImportCounts) {
-  const exerciseIDs = await keys('exercises')
+function addLibrary(backup: LegacyBackup, add: Add, added: ImportCounts, exerciseIDs: Set<string>) {
   for (const exercise of backup.library) {
     const id = lower(exercise.id)
     if (exerciseIDs.has(id)) continue
@@ -376,9 +380,7 @@ async function addLibrary(backup: LegacyBackup, add: Add, added: ImportCounts) {
 }
 
 /** Routines with their entries; an entry id derives from routine and exercise. */
-async function addRoutines(backup: LegacyBackup, add: Add, added: ImportCounts) {
-  const blueprintIDs = await keys('blueprints')
-  const entryIDs = await keys('blueprint_exercises')
+function addRoutines(backup: LegacyBackup, add: Add, added: ImportCounts, blueprintIDs: Set<string>, entryIDs: Set<string>) {
   for (const routine of backup.routines) {
     const id = lower(routine.id)
     if (blueprintIDs.has(id)) continue
@@ -411,8 +413,7 @@ async function addRoutines(backup: LegacyBackup, add: Add, added: ImportCounts) 
 }
 
 /** Daily records: one per day, an existing day stays unchanged. */
-async function addDailyRecords(backup: LegacyBackup, add: Add, added: ImportCounts, day: (key: string, path: string) => string) {
-  const weightIDs = await keys('body_weights')
+function addDailyRecords(backup: LegacyBackup, add: Add, added: ImportCounts, day: (key: string, path: string) => string, weightIDs: Set<string>, rewardIDs: Set<string>) {
   backup.weights.forEach((weight, index) => {
     const key = day(weight.dayKey, `weights[${index}]`)
     const id = stableID('body_weights', key)
@@ -420,7 +421,6 @@ async function addDailyRecords(backup: LegacyBackup, add: Add, added: ImportCoun
     add<BodyWeight>('body_weights', { id, day: key, recorded_at: iso(weight.recordedAt), kilograms: weight.kilograms })
     added.bodyWeights++
   })
-  const rewardIDs = await keys('weight_rewards')
   backup.weightRewards.forEach((reward, index) => {
     const key = day(reward.dayKey, `weightRewards[${index}]`)
     const id = stableID('weight_rewards', key)
@@ -454,8 +454,8 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   const added = emptyCounts()
   added.healthWorkouts = file.healthWorkouts
 
-  await addLibrary(backup, add, added)
-  await addRoutines(backup, add, added)
+  addLibrary(backup, add, added, await keys('exercises'))
+  addRoutines(backup, add, added, await keys('blueprints'), await keys('blueprint_exercises'))
 
   const workouts = new Map((await db.workouts.toArray()).map((workout) => [workout.id, workout]))
   // Older CSV files have no ids for most workouts. Like MotionBackupCSV.restore, a workout with the
@@ -563,7 +563,7 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   countSessions(added, newSessions)
   added.records = countRecords(backup, newSessions)
 
-  await addDailyRecords(backup, add, added, day)
+  addDailyRecords(backup, add, added, day, await keys('body_weights'), await keys('weight_rewards'))
 
   // The plan is only adopted when this device has none.
   if (backup.trainingPlan && live(await db.training_plans.toArray()).length === 0) {
