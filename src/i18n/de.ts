@@ -661,4 +661,5 @@ export const de: Record<string, string> = {
   'Search workouts or exercises': 'Trainings oder Übungen suchen',
   '{0} workouts#one': '1 Training',
   'No workouts match “{0}”.': 'Keine Trainings zu „{0}“.',
+  'Loading…': 'Lädt …',
 }

@@ -1,16 +1,17 @@
 import { ArrowUpRight, CalendarDays, Dumbbell, Ellipsis, Info } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { startOfDay } from '../../domain/measurement'
 import { consume, nextTicket } from '../../domain/schedule'
 import { useT } from '../../i18n'
-import { useBlueprints, usePlan } from '../../store/hooks'
-import { planProblem, savePlan } from '../../store/plan'
+import { useBlueprints } from '../../store/hooks'
+import { currentPlan, planProblem, savePlan } from '../../store/plan'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Menu } from '../../ui/controls'
 import { TrainingBlueprintChoices, TrainingPlanEditor } from '../plan/TrainingPlanEditor'
 import styles from './dashboard.module.css'
+import { SkeletonBlock } from '../../ui/Skeleton'
 
 /** DashboardStartButton.swift: the jade "YOUR NEXT SESSION" card. */
 export function StartButton({ title, subtitle, onClick, testID }: { title: string; subtitle?: string; onClick: () => void; testID: string }) {
@@ -35,13 +36,19 @@ export function StartButton({ title, subtitle, onClick, testID }: { title: strin
 export function StartCard({ now, onChoose }: { now: Date; onChoose: () => void }) {
   const { t, locale } = useT()
   const navigate = useNavigate()
-  const plan = usePlan()
-  const blueprints = useBlueprints() ?? []
+  // undefined while loading, null without a plan.
+  const plan = useLiveQuery(async () => (await currentPlan()) ?? null, [])
+  const loadedBlueprints = useBlueprints()
+  const blueprints = loadedBlueprints ?? []
   const [editing, setEditing] = useState(false)
   const [replacing, setReplacing] = useState(false)
   const [skipping, setSkipping] = useState(false)
   const state = plan?.schedule
   const problem = useLiveQuery(async () => (state?.enabled ? planProblem(state, blueprints) : null), [state, blueprints])
+  // Plan, blueprints and the plan check load separately. Until all three are in for the first time,
+  // a placeholder keeps the generic "Start workout" card from flashing before the planned session.
+  const loaded = useRef(false)
+  if (plan !== undefined && loadedBlueprints !== undefined && problem !== undefined) loaded.current = true
   const ticket = state ? nextTicket(state, now) : null
   const entry = ticket && state?.entries.find((candidate) => candidate.id === ticket.entryID)
   const blueprint = entry && blueprints.find((candidate) => candidate.id === entry.blueprintID)
@@ -50,6 +57,8 @@ export function StartCard({ now, onChoose }: { now: Date; onChoose: () => void }
     const cardio = blueprints.find((candidate) => candidate.id === blueprintID)?.cardio_type
     navigate(cardio ? `/cardio?blueprint=${blueprintID}` : `/workout/new?blueprint=${blueprintID}`, { state: { planTicket: ticket, returnTo: '/' } })
   }
+
+  if (!loaded.current) return <SkeletonBlock height={168} radius="var(--radius-start)" testID="startCardLoading" />
 
   return (
     <div className={styles.startCard}>

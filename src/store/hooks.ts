@@ -6,7 +6,8 @@ import { libraryExercises } from './library'
 import { currentPlan } from './plan'
 
 export const useBlueprints = () => useLiveQuery(allBlueprints, [])
-export const useBlueprint = (id: string | undefined) => useLiveQuery(async () => (id ? db.blueprints.get(id) : undefined), [id])
+/** undefined while loading, null when there is no such blueprint. */
+export const useBlueprint = (id: string | undefined) => useLiveQuery(async () => (id ? ((await db.blueprints.get(id)) ?? null) : null), [id])
 export const useEntries = (id: string | undefined) => useLiveQuery(async () => (id ? entriesFor(id) : []), [id])
 export const useLibrary = () => useLiveQuery(libraryExercises, [])
 export const usePlan = () => useLiveQuery(currentPlan, [])

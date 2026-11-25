@@ -11,6 +11,7 @@ import { RecordNotice } from '../progress/RecordNotice'
 import { updateOnboarding, useOnboarding } from '../onboarding/state'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { ContinueButton } from '../../ui/components'
+import { Loading, SkeletonBar, SkeletonBlock } from '../../ui/Skeleton'
 import { TextButton } from '../../ui/controls'
 import { Toast, type ToastMessage } from '../../ui/Toast'
 import { RestNotificationSettings } from '../settings/RestNotificationSettings'
@@ -56,7 +57,7 @@ export function WorkoutScreen() {
 
   useWakeLock(!!session && !session.workout.is_completed, session?.workout.id)
 
-  if (session === undefined || history === undefined) return null
+  if (session === undefined || history === undefined) return <WorkoutLoading />
   if (session === null || (session.workout.is_completed && !saved)) return <UnavailableScreen onContinue={() => navigate('/')} />
 
   if (saved && reward && tips?.savedWorkoutTipDone !== false) {
@@ -332,6 +333,17 @@ function useWakeLock(active: boolean, workoutID: string | undefined) {
       void platform.wakeLock.release()
     }
   }, [active, workoutID])
+}
+
+/** While the workout loads: the top bar, the set progress and one big card, like the focus view. */
+function WorkoutLoading() {
+  return (
+    <Loading page>
+      <SkeletonBar />
+      <SkeletonBlock height={8} radius="999px" />
+      <SkeletonBlock height="min(520px, 62dvh)" radius="var(--radius-card)" />
+    </Loading>
+  )
 }
 
 function UnavailableScreen({ onContinue }: { onContinue: () => void }) {

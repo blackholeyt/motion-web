@@ -10,6 +10,7 @@ import { useBlueprint, useEntries, useLibrary } from '../../store/hooks'
 import { createExercise } from '../../store/library'
 import { usePreferences } from '../../store/profile'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
+import { Loading, SkeletonBlock } from '../../ui/Skeleton'
 import { Group, Menu, PrimaryButton, RowButton, SelectRow, Stepper, TextButton, TextRow } from '../../ui/controls'
 import { ExerciseBrowser } from '../exercises/ExerciseBrowser'
 import { GuidanceEditor } from './GuidanceEditor'
@@ -38,8 +39,15 @@ export function BlueprintDetailScreen() {
     if (blueprint) setName(blueprint.name)
   }, [blueprint?.id])
 
-  if (blueprint === undefined) return null
-  if (blueprint.deleted_at) return <p>{t('Workout unavailable')}</p>
+  if (blueprint === undefined)
+    return (
+      <Loading>
+        <SkeletonBlock height={34} width="55%" />
+        <SkeletonBlock height={52} radius="var(--radius-button)" />
+        <SkeletonBlock height={220} radius="var(--radius-button)" />
+      </Loading>
+    )
+  if (blueprint === null || blueprint.deleted_at) return <p>{t('Workout unavailable')}</p>
 
   const available = library.filter((exercise) => !entries.some(({ entry }) => entry.exercise_id === exercise.id))
   const add = async (exercise: Exercise, sets = 3) => {

@@ -1,0 +1,53 @@
+/*
+ * Placeholders while local data loads. They fade in only after a short delay, so the usual
+ * load of a few milliseconds shows nothing at all and only a slow one shows the shapes.
+ */
+.block {
+  display: block;
+  width: 100%;
+  background: color-mix(in srgb, var(--secondary-text) 14%, transparent);
+  animation:
+    appear 0.25s ease-out 0.15s both,
+    pulse 1.4s ease-in-out 0.4s infinite;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: calc(var(--safe-top) + 16px) calc(var(--safe-right) + 20px) 24px calc(var(--safe-left) + 20px);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    filter: brightness(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: appear 0.01s linear 0.15s both;
+  }
+}
