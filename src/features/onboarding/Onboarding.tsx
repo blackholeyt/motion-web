@@ -10,6 +10,7 @@ import { Choice, Continue, OnboardingPage, Quiet } from './OnboardingPage'
 import { MiniDemo } from './MiniDemo'
 import { OnboardingProfile } from './OnboardingProfile'
 import { updateOnboarding, type OnboardingIntent, type OnboardingProgress } from './state'
+import { useGuardedAction } from './useGuardedAction'
 import { cloudConfigured } from '../../sync/client'
 import { ImportSheet } from '../import/ImportSheet'
 import styles from './onboarding.module.css'
@@ -50,6 +51,7 @@ const welcomeDetails = [
 function Welcome() {
   const { t } = useT()
   const finish = useFinish()
+  const { run, dialog } = useGuardedAction()
   const [page, setPage] = useState(0)
   const [demo, setDemo] = useState(false)
   const [backup, setBackup] = useState(false)
@@ -73,7 +75,7 @@ function Welcome() {
             </Continue>
           )}
           {page === 1 && <Quiet onClick={() => setPage(2)}>{t('More ways to start')}</Quiet>}
-          <Quiet onClick={() => finish('/', true)} testID="onboardingExplore">
+          <Quiet onClick={() => void run(() => finish('/', true))} testID="onboardingExplore">
             {t('Explore first')}
           </Quiet>
         </>
@@ -99,10 +101,11 @@ function Welcome() {
       {page === 2 && (
         <div className={styles.choices}>
           <Choice title={t('Restore backup')} icon={CalendarClock} onClick={() => setBackup(true)} testID="onboardingRestore" />
-          <Choice title={t('Cardio')} icon={Footprints} onClick={() => finish('/cardio')} />
+          <Choice title={t('Cardio')} icon={Footprints} onClick={() => void run(() => finish('/cardio'))} />
         </div>
       )}
-      <ImportSheet open={backup} onClose={() => setBackup(false)} onImported={() => void finish('/')} />
+      <ImportSheet open={backup} onClose={() => setBackup(false)} onImported={() => void run(() => finish('/'))} />
+      {dialog}
     </OnboardingPage>
   )
 }
@@ -114,6 +117,7 @@ const templateDetails = ['We’ll help you find a starting template.', 'Choose t
 function TemplatePages({ progress }: { progress: OnboardingProgress }) {
   const { t } = useT()
   const finish = useFinish()
+  const { run, dialog } = useGuardedAction()
   const [page, setPage] = useState(0)
   const equipment = (planEquipment.includes(progress.equipment as PlanEquipment) ? progress.equipment : 'Machines & cables') as PlanEquipment
   const minutes = progress.minutes
@@ -123,13 +127,14 @@ function TemplatePages({ progress }: { progress: OnboardingProgress }) {
   const movements = planMovements(plan)
   const movement = movements[page - 3]
   const last = page >= 3 + movements.length - 1
-  const use = async () => {
-    // A stable ID per confirmation means a retry never creates a second copy.
-    const id = progress.confirmedPlan === plan.id && progress.routineID ? progress.routineID : crypto.randomUUID()
-    updateOnboarding({ confirmedPlan: plan.id, routineID: id })
-    const blueprint = await copyStarterPlan(plan, id)
-    finish(`/blueprints/${blueprint.id}`)
-  }
+  const use = () =>
+    run(async () => {
+      // A stable ID per confirmation means a retry never creates a second copy.
+      const id = progress.confirmedPlan === plan.id && progress.routineID ? progress.routineID : crypto.randomUUID()
+      updateOnboarding({ confirmedPlan: plan.id, routineID: id })
+      const blueprint = await copyStarterPlan(plan, id)
+      await finish(`/blueprints/${blueprint.id}`)
+    })
   return (
     <OnboardingPage
       category="YOUR TEMPLATE"
@@ -202,6 +207,7 @@ function TemplatePages({ progress }: { progress: OnboardingProgress }) {
           </>
         )}
       </div>
+      {dialog}
     </OnboardingPage>
   )
 }
@@ -209,13 +215,15 @@ function TemplatePages({ progress }: { progress: OnboardingProgress }) {
 function OwnRoutine({ progress }: { progress: OnboardingProgress }) {
   const { t } = useT()
   const finish = useFinish()
+  const { run, dialog } = useGuardedAction()
   const [name, setName] = useState(progress.manualName)
-  const create = async () => {
-    const id = progress.routineID ?? crypto.randomUUID()
-    updateOnboarding({ manualName: name, routineID: id })
-    const blueprint = await createBlueprint(name, id)
-    finish(`/blueprints/${blueprint.id}`)
-  }
+  const create = () =>
+    run(async () => {
+      const id = progress.routineID ?? crypto.randomUUID()
+      updateOnboarding({ manualName: name, routineID: id })
+      const blueprint = await createBlueprint(name, id)
+      await finish(`/blueprints/${blueprint.id}`)
+    })
   return (
     <OnboardingPage
       category="YOUR ROUTINE"
@@ -232,6 +240,7 @@ function OwnRoutine({ progress }: { progress: OnboardingProgress }) {
       <div className={styles.panel}>
         <input aria-label={t('Routine name')} placeholder={t('Routine name')} value={name} onChange={(event) => setName(event.target.value)} data-testid="newRoutineName" autoFocus />
       </div>
+      {dialog}
     </OnboardingPage>
   )
 }
@@ -239,6 +248,7 @@ function OwnRoutine({ progress }: { progress: OnboardingProgress }) {
 function Freestyle() {
   const { t } = useT()
   const finish = useFinish()
+  const { run, dialog } = useGuardedAction()
   return (
     <OnboardingPage
       category="FREESTYLE"
@@ -247,7 +257,7 @@ function Freestyle() {
       icon={Shuffle}
       back={() => updateOnboarding({ intent: null })}
       footer={
-        <Continue onClick={() => finish('/workout/new?freestyle=1')} testID="startFreestyle">
+        <Continue onClick={() => void run(() => finish('/workout/new?freestyle=1'))} testID="startFreestyle">
           <Play size={16} aria-hidden="true" /> {t('Start workout')}
         </Continue>
       }
@@ -255,6 +265,7 @@ function Freestyle() {
       <p className={styles.muted} style={{ textAlign: 'center' }}>
         {t('Your workout starts only when you choose Start workout.')}
       </p>
+      {dialog}
     </OnboardingPage>
   )
 }

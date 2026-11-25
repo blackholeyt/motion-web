@@ -6,9 +6,9 @@ import { loadInput } from '../../domain/measurement'
 import { useT } from '../../i18n'
 import { checkIn } from '../../store/body'
 import { updateProfile } from '../../store/profile'
-import { ConfirmDialog } from '../../ui/Sheet'
 import { Continue, OnboardingPage, Quiet } from './OnboardingPage'
 import { updateOnboarding } from './state'
+import { useGuardedAction } from './useGuardedAction'
 import styles from './onboarding.module.css'
 
 const titles = ['Make Motion yours', 'Your preferred unit', 'Your starting point', 'A goal of your own', 'Choose your direction', 'Your target weight']
@@ -31,7 +31,7 @@ export function OnboardingProfile() {
   const [target, setTarget] = useState('')
   const [wantsGoal, setWantsGoal] = useState(false)
   const [goal, setGoal] = useState<BodyWeightGoal>('lose')
-  const [error, setError] = useState<string | null>(null)
+  const { run, dialog } = useGuardedAction()
   const current = parseBodyWeight(weight, unit)
   const destination = parseBodyWeight(target, unit)
 
@@ -56,15 +56,12 @@ export function OnboardingProfile() {
     if (destination !== null) setTarget(loadInput(next, destination, locale))
     setUnit(next)
   }
-  const save = async () => {
-    try {
+  const save = () =>
+    run(async () => {
       await updateProfile({ name: name.trim() || 'Motion', body_weight_unit: unit, target_weight_kg: wantsGoal ? destination : null, ...(wantsGoal ? { body_weight_goal: goal } : {}) })
       if (current !== null) await checkIn(current)
       updateOnboarding({ profileStepDone: true })
-    } catch (failure) {
-      setError((failure as Error).message)
-    }
-  }
+    })
   const next = () => {
     if (step === 5 || (step === 3 && !wantsGoal)) void save()
     else if (step === 3 && wantsGoal && current === null) setStep(2)
@@ -143,7 +140,7 @@ export function OnboardingProfile() {
           {t(problem)}
         </p>
       )}
-      <ConfirmDialog open={error !== null} title={t('Couldn’t save')} message={error ? t(error) : ''} onDismiss={() => setError(null)} actions={[{ label: t('OK'), role: 'cancel', onSelect: () => setError(null) }]} />
+      {dialog}
     </OnboardingPage>
   )
 }

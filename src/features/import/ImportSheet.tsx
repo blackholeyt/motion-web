@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import type { WeightUnit } from '../../data/types'
 import { useT, type Translate } from '../../i18n'
 import { formatNumber, loadLabel } from '../../domain/measurement'
 import { ImportError, type ImportErrorCode, type ImportIssue } from '../../import/errors'
@@ -81,15 +82,22 @@ function place(path: string, t: Translate): string {
     .join(' › ')
 }
 
+/** The step the sheet starts (and restarts) with: the demo cannot import, so it shows why. */
+const firstStep = (sandbox: unknown): Step => (sandbox ? { kind: 'failed', error: new ImportError('sandbox') } : { kind: 'choose' })
+
+const formatDate = (locale: string, iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+
 export function ImportSheet({ open, onClose, onImported }: { open: boolean; onClose: () => void; onImported?: () => void }) {
   const { t, locale } = useT()
   const sandbox = useSandbox()
-  const [step, setStep] = useState<Step>(() => (sandbox ? { kind: 'failed', error: new ImportError('sandbox') } : { kind: 'choose' }))
+  const [step, setStep] = useState<Step>(() => firstStep(sandbox))
   const input = useRef<HTMLInputElement>(null)
+  // Set synchronously, so a second tap or a second file before the next render cannot start a second job.
+  const working = useRef(false)
   const close = () => {
-    if (step.kind === 'reading' || step.kind === 'importing') return
+    if (working.current) return
     const imported = step.kind === 'done'
-    setStep(sandbox ? { kind: 'failed', error: new ImportError('sandbox') } : { kind: 'choose' })
+    setStep(firstStep(sandbox))
     onClose()
     if (imported) onImported?.()
   }
@@ -98,7 +106,8 @@ export function ImportSheet({ open, onClose, onImported }: { open: boolean; onCl
     else setStep({ kind: 'failed', error: new ImportError('unreadable') })
   }
   const read = async (file: File | undefined) => {
-    if (!file) return
+    if (!file || working.current) return
+    working.current = true
     setStep({ kind: 'reading' })
     try {
       const source = await readImportFile(file)
@@ -106,14 +115,20 @@ export function ImportSheet({ open, onClose, onImported }: { open: boolean; onCl
       setStep({ kind: 'preview', source, summary })
     } catch (error) {
       fail(error)
+    } finally {
+      working.current = false
     }
   }
   const start = async (source: BackupFile, summary: ImportSummary) => {
+    if (working.current) return
+    working.current = true
     setStep({ kind: 'importing', source, summary })
     try {
       setStep({ kind: 'done', summary: source.kind === 'web' ? await runRestore(source.source) : await runImport(source.source) })
     } catch (error) {
       fail(error)
+    } finally {
+      working.current = false
     }
   }
   const chooser = (
@@ -214,7 +229,7 @@ function CountTable({ summary, t, report }: { summary: ImportSummary; t: Transla
 }
 
 function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: Translate; locale: string; children: React.ReactNode }) {
-  const date = (iso: string) => new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+  const date = (iso: string) => formatDate(locale, iso)
   return (
     <div className={styles.stack} data-testid="importPreview">
       <p className={styles.lead}>
@@ -261,19 +276,23 @@ function Preview({ summary, t, locale, children }: { summary: ImportSummary; t: 
   )
 }
 
+type SampleSet = SampleWorkout['exercises'][number]['sets'][number]
+
+/** "80 kg × 8 (Warm-up, open)": the load and reps (or the duration) of one set, plus its notes. */
+function describeSet(value: SampleSet, measurement: string, unit: WeightUnit, locale: string, t: Translate): string {
+  const parts: string[] = []
+  if (measurement === 'Duration') parts.push(`${formatNumber(value.duration ?? 0, locale, 0)} s`)
+  else {
+    if (value.weight > 0 || measurement === 'Load & reps') parts.push(loadLabel(unit, value.weight, locale))
+    if (value.reps !== null) parts.push(`× ${value.reps}`)
+  }
+  const notes = [value.warmUp ? t('Warm-up') : null, value.completed ? null : t('open')].filter(Boolean)
+  return `${parts.join(' ')}${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`
+}
+
 function Sample({ sample, t, date }: { sample: SampleWorkout; t: Translate; date: (iso: string) => string }) {
   const { locale } = useT()
   const unit = useProfile()?.load_unit ?? 'kg'
-  const set = (value: SampleWorkout['exercises'][number]['sets'][number], measurement: string) => {
-    const parts: string[] = []
-    if (measurement === 'Duration') parts.push(`${formatNumber(value.duration ?? 0, locale, 0)} s`)
-    else {
-      if (value.weight > 0 || measurement === 'Load & reps') parts.push(loadLabel(unit, value.weight, locale))
-      if (value.reps !== null) parts.push(`× ${value.reps}`)
-    }
-    const notes = [value.warmUp ? t('Warm-up') : null, value.completed ? null : t('open')].filter(Boolean)
-    return `${parts.join(' ')}${notes.length > 0 ? ` (${notes.join(', ')})` : ''}`
-  }
   return (
     <div className={styles.sample}>
       <div className={styles.sampleHead}>
@@ -286,7 +305,7 @@ function Sample({ sample, t, date }: { sample: SampleWorkout; t: Translate; date
       {sample.exercises.map((exercise, index) => (
         <p key={index} className={styles.sampleLine}>
           <span>{exercise.name}</span>
-          <span className={styles.muted}>{exercise.sets.map((value) => set(value, exercise.measurement)).join(' · ') || t('No sets')}</span>
+          <span className={styles.muted}>{exercise.sets.map((value) => describeSet(value, exercise.measurement, unit, locale, t)).join(' · ') || t('No sets')}</span>
         </p>
       ))}
     </div>
