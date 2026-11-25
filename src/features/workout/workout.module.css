@@ -182,6 +182,11 @@
   color: var(--secondary-text);
 }
 
+/* Without a reps column, "Done" must still sit above the checkmark, not in the middle. */
+.columns.withoutReps {
+  grid-template-columns: 1fr auto;
+}
+
 .columns span:first-child {
   display: none;
 }

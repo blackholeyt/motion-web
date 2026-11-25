@@ -48,29 +48,10 @@ export function WorkoutScreen() {
   const tips = useOnboarding()
   const [notes, setNotes] = useState<string | null>(null)
 
-  // Keep the screen on while training, where the browser allows it.
-  useEffect(() => {
-    if (!session || session.workout.is_completed) return
-    void platform.wakeLock.acquire()
-    const reacquire = () => document.visibilityState === 'visible' && void platform.wakeLock.acquire()
-    document.addEventListener('visibilitychange', reacquire)
-    return () => {
-      document.removeEventListener('visibilitychange', reacquire)
-      void platform.wakeLock.release()
-    }
-  }, [session?.workout.id, session?.workout.is_completed])
+  useWakeLock(!!session && !session.workout.is_completed, session?.workout.id)
 
   if (session === undefined || history === undefined) return null
-  if (session === null || (session.workout.is_completed && !saved)) {
-    return (
-      <div className={styles.unavailable}>
-        <CheckCircle2 size={40} aria-hidden="true" />
-        <h1>{t('Workout unavailable')}</h1>
-        <p>{t('This draft has been removed.')}</p>
-        <TextButton onClick={() => navigate('/')}>{t('Continue')}</TextButton>
-      </div>
-    )
-  }
+  if (session === null || (session.workout.is_completed && !saved)) return <UnavailableScreen onContinue={() => navigate('/')} />
 
   if (saved && reward && tips?.savedWorkoutTipDone !== false) {
     return (
@@ -89,19 +70,12 @@ export function WorkoutScreen() {
 
   if (saved) {
     return (
-      <div className={styles.saved} data-testid="workoutSaved">
-        <CheckCircle2 size={44} className={styles.savedIcon} aria-hidden="true" />
-        <h1>{t('Workout saved.')}</h1>
-        <p>{t('Next time, you can use these values as your starting point.')}</p>
-        <ContinueButton
-          onClick={() => {
-            updateOnboarding({ savedWorkoutTipDone: true })
-            navigate(returnTo, { replace: true })
-          }}
-        >
-          {t('Continue')}
-        </ContinueButton>
-      </div>
+      <SavedScreen
+        onContinue={() => {
+          updateOnboarding({ savedWorkoutTipDone: true })
+          navigate(returnTo, { replace: true })
+        }}
+      />
     )
   }
 
@@ -128,6 +102,14 @@ export function WorkoutScreen() {
     if (!result.completed && record?.setID === setID) setRecord(null)
     if (result.completed) updateOnboarding({ firstSetTipDone: true })
   }
+  const save = async () => {
+    setConfirmFinish(false)
+    const result = await engine.finishWorkout(id, context)
+    if (!result) return
+    platform.notifications.cancel(`motion.rest.${id}`)
+    setReward(result)
+    setSaved(true)
+  }
   const finish = async () => {
     await flushAll()
     const fresh = await loadSession(id)
@@ -135,14 +117,10 @@ export function WorkoutScreen() {
     if (fresh.rows.every(({ set }) => set.is_completed)) await save()
     else setConfirmFinish(true)
   }
-  const save = async () => {
-    setConfirmFinish(false)
-    const result = await engine.finishWorkout(id, context)
-    if (result) {
-      platform.notifications.cancel(`motion.rest.${id}`)
-      setReward(result)
-      setSaved(true)
-    }
+  const removeSet = () => {
+    const setID = removing
+    setRemoving(null)
+    if (setID) void engine.removeSet(id, setID, context).catch(report)
   }
   const focusNext = (setID: string) => {
     const order = session.rows.filter(({ set }) => !set.is_skipped).map(({ set }) => set.id)
@@ -156,14 +134,14 @@ export function WorkoutScreen() {
       <header className={styles.bar}>
         <TextButton
           onClick={async () => {
-            await flushAll()
+            await flushAll().catch(report)
             navigate(returnTo)
           }}
         >
           <ChevronLeft size={20} aria-hidden="true" /> {t('Back')}
         </TextButton>
         <h1>{t(workout.name)}</h1>
-        <TextButton strong onClick={finish} disabled={!engine.canFinish(session, context)} testID="finishWorkout">
+        <TextButton strong onClick={() => void finish().catch(report)} disabled={!engine.canFinish(session, context)} testID="finishWorkout">
           {t('Finish')}
         </TextButton>
       </header>
@@ -257,7 +235,7 @@ export function WorkoutScreen() {
         message={t('Use Undo edit in workout options to restore this set.')}
         onDismiss={() => setRemoving(null)}
         actions={[
-          { label: t('Remove set'), role: 'destructive', onSelect: () => { const setID = removing!; setRemoving(null); void engine.removeSet(id, setID, context).catch(report) } },
+          { label: t('Remove set'), role: 'destructive', onSelect: removeSet },
           { label: t('Cancel'), role: 'cancel', onSelect: () => setRemoving(null) },
         ]}
       />
@@ -274,7 +252,7 @@ export function WorkoutScreen() {
         ])}
         onDismiss={() => setConfirmFinish(false)}
         actions={[
-          { label: t('Save completed sets'), onSelect: save },
+          { label: t('Save completed sets'), onSelect: () => void save().catch(report) },
           { label: t('Keep training'), role: 'cancel', onSelect: () => setConfirmFinish(false) },
         ]}
       />
@@ -288,6 +266,44 @@ export function WorkoutScreen() {
       <Sheet open={notifications} onClose={() => setNotifications(false)} title={t('Rest notifications')} leading={<TextButton onClick={() => setNotifications(false)}>{t('Done')}</TextButton>}>
         <RestNotificationSettings />
       </Sheet>
+    </div>
+  )
+}
+
+/** Keeps the screen on while training, where the browser allows it. */
+function useWakeLock(active: boolean, workoutID: string | undefined) {
+  useEffect(() => {
+    if (!active) return
+    void platform.wakeLock.acquire()
+    const reacquire = () => document.visibilityState === 'visible' && void platform.wakeLock.acquire()
+    document.addEventListener('visibilitychange', reacquire)
+    return () => {
+      document.removeEventListener('visibilitychange', reacquire)
+      void platform.wakeLock.release()
+    }
+  }, [active, workoutID])
+}
+
+function UnavailableScreen({ onContinue }: { onContinue: () => void }) {
+  const { t } = useT()
+  return (
+    <div className={styles.unavailable}>
+      <CheckCircle2 size={40} aria-hidden="true" />
+      <h1>{t('Workout unavailable')}</h1>
+      <p>{t('This draft has been removed.')}</p>
+      <TextButton onClick={onContinue}>{t('Continue')}</TextButton>
+    </div>
+  )
+}
+
+function SavedScreen({ onContinue }: { onContinue: () => void }) {
+  const { t } = useT()
+  return (
+    <div className={styles.saved} data-testid="workoutSaved">
+      <CheckCircle2 size={44} className={styles.savedIcon} aria-hidden="true" />
+      <h1>{t('Workout saved.')}</h1>
+      <p>{t('Next time, you can use these values as your starting point.')}</p>
+      <ContinueButton onClick={onContinue}>{t('Continue')}</ContinueButton>
     </div>
   )
 }
