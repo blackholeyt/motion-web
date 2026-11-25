@@ -269,3 +269,67 @@
   flex-direction: column;
   gap: 12px;
 }
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--tap);
+  margin-bottom: -8px;
+}
+
+.settingsLink {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin-right: -10px;
+  border-radius: 50%;
+  color: var(--secondary-text);
+}
+
+.lastWorkout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.lastText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lastText small {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--secondary-text);
+}
+
+.lastText strong {
+  font-size: 1.125rem;
+}
+
+.lastText span {
+  font-size: 0.875rem;
+  color: var(--secondary-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lastWorkout svg {
+  flex: none;
+  color: var(--secondary-text);
+}

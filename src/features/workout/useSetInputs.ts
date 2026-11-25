@@ -1,5 +1,5 @@
 import { useEffect, useImperativeHandle, useRef, useState, type ChangeEvent, type ForwardedRef, type InputHTMLAttributes, type KeyboardEvent, type RefObject } from 'react'
-import { needsReps, quantityLabel } from '../../domain/measurement'
+import { formatNumber, loadInput, needsReps, parseNumber, quantityLabel } from '../../domain/measurement'
 import { comparisonText, quantityText, repsText, setUnit, type HistoricalSet, type Row, type SetBadge } from '../../domain/sets'
 import { useT, type Translate } from '../../i18n'
 import type { MenuItem } from '../../ui/controls'
@@ -15,7 +15,7 @@ export interface SetRowHandle {
 export interface SetActions {
   onInput: (quantity: string, reps: string) => Promise<void>
   onComplete: () => void | Promise<unknown>
-  onUseLast: () => void
+  onUseLast: () => void | Promise<void>
   onCopyPrevious: () => void
   onClear: () => void
   onClassify: () => void
@@ -109,6 +109,33 @@ export function useSetInputs(props: SetViewProps, handle: ForwardedRef<SetRowHan
     action()
   }
 
+  // Last time's values are suggested as placeholders; completing an empty set takes them over.
+  const suggestedQuantity =
+    previous && !set.is_completed
+      ? measurement === 'Duration'
+        ? previous.durationSeconds != null ? formatNumber(previous.durationSeconds, context.locale) : null
+        : measurement === 'Bodyweight reps' && previous.weight === 0 ? null : loadInput(unit, previous.weight, context.locale)
+      : null
+  const suggestedReps = previous && !set.is_completed && previous.reps ? String(previous.reps) : null
+  const empty = quantity.trim() === '' && (!showReps || reps.trim() === '')
+  const usesSuggestion = !!previous && empty && !skipped && !set.is_completed
+
+  /** ± buttons: change the text by `delta`, starting from the suggestion when the field is empty. */
+  const stepValue = (field: 'quantity' | 'reps', delta: number) => {
+    const current = field === 'quantity' ? quantity : reps
+    const base = parseNumber(current.trim() === '' ? ((field === 'quantity' ? suggestedQuantity : suggestedReps) ?? '0') : current) ?? 0
+    const next = Math.max(0, Math.round((base + delta) * 100) / 100)
+    const text = field === 'quantity' ? formatNumber(next, context.locale) : String(Math.round(next))
+    if (field === 'quantity') {
+      setQuantity(text)
+      scheduleSave(text, reps)
+    } else {
+      setReps(text)
+      scheduleSave(quantity, text)
+    }
+  }
+  const quantityStep = measurement === 'Duration' ? 5 : unit === 'lb' ? 5 : 2.5
+
   const kindLabel = t(set.is_warm_up ? 'Warm-up set' : 'Working set')
   const menuItems = setMenu(t, { completed: set.is_completed, skipped, warmUp: set.is_warm_up, hasPrevious: !!previous, canCopyPrevious: props.canCopyPrevious, hasValues: !!(quantity || reps) }, props)
   const hasComparison = !!(previous || set.is_warm_up)
@@ -120,7 +147,7 @@ export function useSetInputs(props: SetViewProps, handle: ForwardedRef<SetRowHan
     enterKeyHint: showReps ? 'next' : 'done',
     value: quantity,
     disabled: skipped,
-    placeholder: measurement === 'Bodyweight reps' ? t('0 (optional)') : quantityUnit,
+    placeholder: suggestedQuantity ?? (measurement === 'Bodyweight reps' ? t('0 (optional)') : quantityUnit),
     'aria-label': t('Set {0}, {1} in {2}', [set.set_index, t(quantityLabel(measurement)), quantityUnit]),
     'data-testid': `setLoad-${set.set_index}`,
     ...typingEvents,
@@ -137,7 +164,7 @@ export function useSetInputs(props: SetViewProps, handle: ForwardedRef<SetRowHan
     enterKeyHint: 'next',
     value: reps,
     disabled: skipped,
-    placeholder: t('Reps'),
+    placeholder: suggestedReps ?? t('Reps'),
     'aria-label': t('Set {0}, repetitions', [set.set_index]),
     'data-testid': `setReps-${set.set_index}`,
     ...typingEvents,
@@ -161,10 +188,16 @@ export function useSetInputs(props: SetViewProps, handle: ForwardedRef<SetRowHan
     menuItems,
     quantityInput,
     repsInput,
+    usesSuggestion,
+    quantityStep,
+    stepQuantity: (direction: 1 | -1) => stepValue('quantity', direction * quantityStep),
+    stepReps: (direction: 1 | -1) => stepValue('reps', direction),
     comparison: hasComparison ? comparisonText(set, measurement, previous, unit, context.trackReps, context.locale, t) : null,
     /** Writes pending keystrokes first, then toggles completion. Resolves when the toggle is done. */
     complete: async () => {
       await flush()
+      // An untouched set with a previous result is completed with last time's values.
+      if (usesSuggestion) await props.onUseLast()
       await props.onComplete()
     },
   }

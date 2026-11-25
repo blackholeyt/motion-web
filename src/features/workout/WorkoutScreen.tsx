@@ -12,6 +12,7 @@ import { updateOnboarding, useOnboarding } from '../onboarding/state'
 import { ConfirmDialog, Sheet } from '../../ui/Sheet'
 import { ContinueButton } from '../../ui/components'
 import { TextButton } from '../../ui/controls'
+import { Toast, type ToastMessage } from '../../ui/Toast'
 import { RestNotificationSettings } from '../settings/RestNotificationSettings'
 import * as engine from './engine'
 import { ExercisePicker } from './ExercisePicker'
@@ -37,10 +38,12 @@ export function WorkoutScreen() {
     [identities, session?.workout.is_retrospective, id],
   )
   const rowRefs = useRef(new Map<string, SetRowHandle>())
-  const [error, setError] = useState<{ message: string; values?: string[] } | null>(null)
+  const [toast, setToast] = useState<ToastMessage | null>(null)
+  const toastID = useRef(0)
+  const showToast = (message: Omit<ToastMessage, 'id'>) => setToast({ ...message, id: ++toastID.current })
+  const setError = (error: { message: string; values?: string[] }) => showToast({ text: t(error.message, error.values), tone: 'error' })
   const [workoutOptions, setWorkoutOptions] = useState(false)
   const [picker, setPicker] = useState<{ replacing: string | null } | null>(null)
-  const [removing, setRemoving] = useState<string | null>(null)
   const [confirmFinish, setConfirmFinish] = useState(false)
   const [notifications, setNotifications] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -124,10 +127,12 @@ export function WorkoutScreen() {
     if (fresh.rows.every(({ set }) => set.is_completed)) await save()
     else setConfirmFinish(true)
   }
-  const removeSet = () => {
-    const setID = removing
-    setRemoving(null)
-    if (setID) void engine.removeSet(id, setID, context).catch(report)
+  // Removing is undoable, so it happens at once and offers Undo instead of asking first.
+  const removeSet = (setID: string) => {
+    void engine
+      .removeSet(id, setID, context)
+      .then(() => showToast({ text: t('Set removed'), action: { label: t('Undo'), onSelect: () => void engine.undo(id, context).catch(report) } }))
+      .catch(report)
   }
   const focusNext = (setID: string) => {
     const order = session.rows.filter(({ set }) => !set.is_skipped).map(({ set }) => set.id)
@@ -150,7 +155,10 @@ export function WorkoutScreen() {
         >
           <ChevronLeft size={20} aria-hidden="true" /> {t('Back')}
         </TextButton>
-        <h1>{t(workout.name)}</h1>
+        <div className={styles.barTitle}>
+          <h1>{t(workout.name)}</h1>
+          {!workout.is_retrospective && <Elapsed since={workout.performed_at} />}
+        </div>
         <div className={styles.barEnd}>
           <button
             type="button"
@@ -180,10 +188,11 @@ export function WorkoutScreen() {
           context={context}
           rowRefs={rowRefs}
           recordOpen={recordShown}
-          restBar={!workout.is_retrospective}
+          restTimer={!workout.is_retrospective}
+          onNotifications={() => setNotifications(true)}
           onError={(message, values) => setError({ message, values })}
           onComplete={complete}
-          onRemoveSet={setRemoving}
+          onRemoveSet={removeSet}
           onShowFull={() => setView('full')}
         />
       )}
@@ -242,7 +251,7 @@ export function WorkoutScreen() {
             rowRefs={rowRefs}
             onError={(message, values) => setError({ message, values })}
             onComplete={complete}
-            onRemoveSet={setRemoving}
+            onRemoveSet={removeSet}
             onReplace={() => setPicker({ replacing: group.exercise.id })}
             onEnter={focusNext}
             onAddSet={() => engine.addSet(id, group.exercise.id, context).catch(report)}
@@ -266,47 +275,48 @@ export function WorkoutScreen() {
           <p className={styles.muted}>{t('Optional: how it felt, technique reminders or plans for next time.')}</p>
         </section>
       </div>}
-      {!workout.is_retrospective && <RestTimerBar workout={workout} onNotifications={() => setNotifications(true)} />}
+      {!focus && !workout.is_retrospective && <RestTimerBar workout={workout} onNotifications={() => setNotifications(true)} />}
 
       {picker && <ExercisePicker workoutID={id} replacing={picker.replacing} context={context} onClose={() => setPicker(null)} />}
       <ConfirmDialog
-        open={removing !== null}
-        title={t('Remove this set?')}
-        message={t('Use Undo edit in workout options to restore this set.')}
-        onDismiss={() => setRemoving(null)}
-        actions={[
-          { label: t('Remove set'), role: 'destructive', onSelect: removeSet },
-          { label: t('Cancel'), role: 'cancel', onSelect: () => setRemoving(null) },
-        ]}
-      />
-      <ConfirmDialog
         open={confirmFinish}
         title={t('Finish this session?')}
-        message={t('{0} completed · {1} unfinished · {2} skipped · {3} removed. {4} working and {5} warm-up sets. Warm-ups stay in history; only compatible working results enter progression.', [
-          counts.completed,
-          counts.unfinished,
-          counts.skipped,
-          counts.removed,
-          counts.working,
-          counts.warmUp,
-        ])}
+        message={
+          counts.unfinished > 0
+            ? t('{0} sets are still open. Only completed sets are saved.', [counts.unfinished])
+            : t('{0} of {1} sets completed.', [counts.completed, session.rows.length])
+        }
         onDismiss={() => setConfirmFinish(false)}
         actions={[
           { label: t('Save completed sets'), onSelect: () => void save().catch(report) },
           { label: t('Keep training'), role: 'cancel', onSelect: () => setConfirmFinish(false) },
         ]}
       />
-      <ConfirmDialog
-        open={error !== null}
-        title={t('Workout')}
-        message={error ? t(error.message, error.values) : ''}
-        onDismiss={() => setError(null)}
-        actions={[{ label: t('OK'), role: 'cancel', onSelect: () => setError(null) }]}
-      />
+      <Toast message={toast} onDismiss={() => setToast(null)} />
       <Sheet open={notifications} onClose={() => setNotifications(false)} title={t('Rest notifications')} leading={<TextButton onClick={() => setNotifications(false)}>{t('Done')}</TextButton>}>
         <RestNotificationSettings />
       </Sheet>
     </div>
+  )
+}
+
+/** Time since the workout started, e.g. 32:10. Hidden for a draft left open for hours. */
+function Elapsed({ since }: { since: string }) {
+  const { t } = useT()
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const handle = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(handle)
+  }, [])
+  const seconds = Math.floor((now - Date.parse(since)) / 1000)
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds >= 5 * 3600) return null
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const text = hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}` : `${minutes}:${String(seconds % 60).padStart(2, '0')}`
+  return (
+    <span className={styles.elapsed} aria-label={t('Training time {0}', [text])} data-testid="elapsed">
+      {text}
+    </span>
   )
 }
 

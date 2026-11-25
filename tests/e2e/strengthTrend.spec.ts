@@ -1,3 +1,4 @@
+import { openSettings } from './helpers'
 import { expect, test } from '@playwright/test'
 
 test.use({ locale: 'en-US' })
@@ -16,12 +17,15 @@ test('the strength trend starts with the biggest change and switches between mus
   // The iPhone profile shows the install hint over the lower part of the screen.
   const hint = page.getByTestId('install-hint')
   if (await hint.isVisible()) await hint.getByRole('button', { name: 'Not now' }).first().click()
+  // The trend lives on the Progress tab.
+  await page.getByRole('link', { name: 'Progress' }).click()
   const card = page.getByTestId('strengthTrend')
   await expect(card).toContainText('No strength trend yet.')
 
-  await page.getByRole('link', { name: 'Settings' }).click()
+  await openSettings(page)
   await page.getByTestId('enterDemo').click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Demo Alex')
+  await page.getByRole('link', { name: 'Progress' }).click()
 
   // Muscles first: arms (triceps pushdown 20 → 32.5 kg) moved the most.
   const subject = page.getByTestId('trendSubject')

@@ -78,12 +78,17 @@ test('ticking a set scrolls on to the next unfinished set', async ({ page }) => 
   await expect(page.getByTestId('set-Bench Press-2')).toBeInViewport({ ratio: 1 })
   await expect(page.getByTestId('restCountdown')).toContainText('Rest')
 
-  // A set that cannot be completed (no reps) keeps the card and shows the usual dialog.
+  // The rest shows big on the card on screen, with −15 / +15.
+  const before = await page.getByTestId('restPanel').getByTestId('restCountdown').textContent()
+  await page.getByTestId('restPlus').click()
+  await expect(page.getByTestId('restPanel').getByTestId('restCountdown')).not.toHaveText(before ?? '')
+
+  // A set that cannot be completed (no reps) keeps the card and shows a short note instead of a dialog.
   const second = page.getByTestId('set-Bench Press-2')
   await second.getByTestId('setLoad-2').fill('60')
   await second.getByTestId('complete-2').click()
-  await expect(page.getByRole('alertdialog')).toBeVisible()
-  await page.getByRole('button', { name: 'OK' }).click()
+  await expect(page.getByTestId('toast')).toBeVisible()
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
   expect(await activeIndex(page)).toBe(1)
   await expect(page.getByTestId('completedSetCount')).toHaveText('1 / 9')
 })
@@ -162,7 +167,7 @@ for (const [name, viewport, safe] of [
   ['iPhone 15', { width: 393, height: 852 }, { top: SAFE_TOP, bottom: SAFE_BOTTOM }],
   ['iPhone SE', { width: 375, height: 667 }, { top: 20, bottom: 0 }],
 ] as const) {
-  test(`the card fits ${name} above the rest bar without horizontal overflow`, async ({ page }) => {
+  test(`the card fits ${name} without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize(viewport)
     await startPush(page, safe)
     const card = page.getByTestId('set-Bench Press-1')
@@ -181,12 +186,11 @@ for (const [name, viewport, safe] of [
     }
     const cardBox = (await card.boundingBox())!
     const checkBox = await bounds('check')
-    const bar = await bounds('restBar')
     const nav = await bounds('focusPrevious')
     expect(cardBox.x).toBeGreaterThanOrEqual(0)
     expect(cardBox.x + cardBox.width).toBeLessThanOrEqual(viewport.width)
     expect(checkBox.height).toBeGreaterThanOrEqual(64)
-    expect(checkBox.y + checkBox.height).toBeLessThanOrEqual(bar.y)
+    expect(checkBox.y + checkBox.height).toBeLessThanOrEqual(viewport.height - safe.bottom)
     expect(cardBox.y).toBeGreaterThanOrEqual(nav.y + nav.height - 1)
     expect(nav.height).toBeGreaterThanOrEqual(44)
     await page.screenshot({ path: `test-results/iphone-focus/${name.replace(' ', '-')}.png` })

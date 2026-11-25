@@ -25,3 +25,23 @@ export function indexAtScroll(scrollTop: number, cardHeight: number, count: numb
   if (cardHeight <= 0 || count <= 0) return 0
   return Math.min(count - 1, Math.max(0, Math.round(scrollTop / cardHeight)))
 }
+
+/** The part of a set row the progress bar groups by. */
+interface Groupable {
+  exercise: { id: string; superset_group: string | null }
+}
+
+/**
+ * Consecutive sets of one exercise (or one superset) form a block in the progress bar, so a long
+ * workout reads as a few exercises instead of many tiny segments.
+ */
+export function segmentGroups(rows: Groupable[]): { key: string; indices: number[] }[] {
+  const groups: { key: string; indices: number[] }[] = []
+  rows.forEach((row, index) => {
+    const id = row.exercise.superset_group ? `superset-${row.exercise.superset_group}` : row.exercise.id
+    const last = groups[groups.length - 1]
+    if (last && last.key.startsWith(`${id}#`)) last.indices.push(index)
+    else groups.push({ key: `${id}#${index}`, indices: [index] })
+  })
+  return groups
+}

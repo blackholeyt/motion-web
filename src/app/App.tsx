@@ -7,6 +7,7 @@ import { BlueprintDetailScreen } from '../features/blueprints/BlueprintDetailScr
 import { BlueprintsScreen } from '../features/blueprints/BlueprintsScreen'
 import { StarterPlansScreen } from '../features/blueprints/StarterPlansScreen'
 import { DashboardScreen } from '../features/dashboard/DashboardScreen'
+import { ProgressScreen } from '../features/dashboard/ProgressScreen'
 import { HistoryScreen } from '../features/history/HistoryScreen'
 import { OpeningProvider } from '../features/opening/OpeningContext'
 import { SettingsScreen } from '../features/settings/SettingsScreen'
@@ -47,6 +48,7 @@ export function App() {
               <Route path="blueprints" element={<BlueprintsScreen />} />
               <Route path="blueprints/starter" element={<StarterPlansScreen />} />
               <Route path="blueprints/:id" element={<BlueprintDetailScreen />} />
+              <Route path="progress" element={<ProgressScreen />} />
               <Route path="history" element={<HistoryScreen />} />
               <Route path="settings" element={<SettingsScreen />} />
               <Route path="*" element={<Navigate to="/" replace />} />

@@ -62,7 +62,8 @@ test('the rest timer follows the clock across reloads and time spent in the back
   await showFullView(page)
   await expect(page.getByTestId('restCompleteNotice')).toHaveText('Rest complete')
   await page.clock.fastForward(5_000)
-  await expect(page.getByTestId('restCountdown')).toHaveText('Rest timer')
+  // Without a running rest the bar is hidden.
+  await expect(page.getByTestId('restBar')).toHaveCount(0)
   await expect(page.getByTestId('completedSetCount')).toHaveText('1 / 9')
 
   // The next completed set starts a fresh rest from the current time.

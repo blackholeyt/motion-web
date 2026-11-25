@@ -173,3 +173,122 @@
   font-size: 0.8125rem;
   white-space: pre-wrap;
 }
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--secondary-text);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  /* 16px or more, so iOS does not zoom in. */
+  font-size: 1rem;
+}
+
+.search input:focus {
+  outline: none;
+}
+
+.month {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.monthTitle {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  padding: calc(var(--safe-top) + 8px) 0 8px;
+  background: var(--background);
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.monthTitle small {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--secondary-text);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 4px 24px;
+}
+
+.detail p {
+  margin: 0;
+}
+
+.detailNotes {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  font-size: 0.9375rem;
+  white-space: pre-wrap;
+}
+
+.detailNotes svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--secondary-text);
+}
+
+.detailExercise {
+  padding: 12px 16px;
+  border-radius: var(--radius-button);
+  background: var(--surface);
+}
+
+.detailExercise h3 {
+  margin: 0 0 8px;
+  font-size: 1.0625rem;
+}
+
+.detailExercise ol {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detailExercise li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.detailIndex {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--background);
+  font-size: 0.8125rem;
+  color: var(--secondary-text);
+}

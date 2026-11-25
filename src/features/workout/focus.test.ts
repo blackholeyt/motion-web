@@ -1,4 +1,4 @@
-import { currentSetIndex, indexAtScroll, nextOpenIndex } from './focus'
+import { currentSetIndex, indexAtScroll, nextOpenIndex, segmentGroups } from './focus'
 
 const row = (is_completed: boolean, is_skipped = false) => ({ set: { is_completed, is_skipped } })
 
@@ -30,5 +30,18 @@ describe('focus view positions', () => {
     expect(indexAtScroll(5000, 500, 3)).toBe(2)
     expect(indexAtScroll(-20, 500, 3)).toBe(0)
     expect(indexAtScroll(100, 0, 3)).toBe(0)
+  })
+})
+
+describe('segmentGroups', () => {
+  const row = (id: string, superset_group: string | null = null) => ({ exercise: { id, superset_group } })
+
+  it('puts consecutive sets of one exercise into one block', () => {
+    expect(segmentGroups([row('a'), row('a'), row('b'), row('b'), row('b')]).map((group) => group.indices)).toEqual([[0, 1], [2, 3, 4]])
+  })
+
+  it('keeps a superset together and splits an exercise that comes back later', () => {
+    const rows = [row('a', 'A'), row('b', 'A'), row('a', 'A'), row('c'), row('a')]
+    expect(segmentGroups(rows).map((group) => group.indices)).toEqual([[0, 1, 2], [3], [4]])
   })
 })

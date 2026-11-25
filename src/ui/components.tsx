@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
+import { Info } from 'lucide-react'
+import { useId, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react'
 import styles from './components.module.css'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
@@ -23,11 +24,25 @@ export function ContinueButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
   return <button type="button" {...props} className={styles.continueButton} />
 }
 
-export function SectionTitle({ title, subtitle }: { title: string; subtitle: string }) {
+/**
+ * Heading of a dashboard section. A long explanation goes in `info`: it stays behind a small ⓘ
+ * button so the screen shows results first.
+ */
+export function SectionTitle({ title, subtitle, info }: { title: string; subtitle?: string; info?: string }) {
+  const [open, setOpen] = useState(false)
+  const infoID = useId()
   return (
     <div className={styles.sectionTitle}>
-      <h2>{title}</h2>
-      <p>{subtitle}</p>
+      <div className={styles.sectionTitleRow}>
+        <h2>{title}</h2>
+        {info && (
+          <button type="button" className={styles.infoButton} aria-expanded={open} aria-controls={infoID} aria-label={`${title}: info`} onClick={() => setOpen(!open)}>
+            <Info size={16} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      {subtitle && <p>{subtitle}</p>}
+      {info && open && <p id={infoID}>{info}</p>}
     </div>
   )
 }

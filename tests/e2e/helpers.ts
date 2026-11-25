@@ -9,3 +9,12 @@ export async function showFullView(page: Page) {
   if ((await toggle.getAttribute('data-view')) === 'focus') await toggle.click()
   await page.getByTestId('workoutNotes').waitFor()
 }
+
+/**
+ * Settings sit in the sidebar on wide screens; phones open them from the gear on the dashboard,
+ * so go through the dashboard first.
+ */
+export async function openSettings(page: Page) {
+  await page.getByRole('link', { name: 'Dashboard' }).click()
+  await page.getByRole('link', { name: 'Settings' }).click()
+}
