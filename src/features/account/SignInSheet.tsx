@@ -54,7 +54,7 @@ export function SignInSheet({ open, onClose }: { open: boolean; onClose: () => v
   if (!open) return null
   return (
     <Sheet open onClose={close} title={t('Sign in')} leading={<TextButton onClick={close}>{t('Cancel')}</TextButton>}>
-      <p className={styles.intro}>{t('Back up your training and use it on several devices. Your data stays on this device as well and works offline.')} {t('New accounts also need the access code from Mathis.')}</p>
+      <p className={styles.intro}>{t('Back up your training and use it on several devices. Your data stays on this device as well and works offline.')} {t('New accounts also need the access code from Mats.')}</p>
       <Group footer={t('You can withdraw this at any time by deleting your account in Settings.')}>
         <ConsentCheck checked={cloud} onChange={setCloud} testID="signInConsent">
           {t('I agree that my training and health data are backed up in my account on Supabase servers in Frankfurt (EU).')}

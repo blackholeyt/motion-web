@@ -17,7 +17,7 @@ function explain(failure: unknown): string {
 }
 
 /**
- * After the first sign-in of an account: the fixed access code Mathis hands out (docs/DATENSCHUTZ.md,
+ * After the first sign-in of an account: the fixed access code Mats hands out (docs/DATENSCHUTZ.md,
  * section 5). It is asked once per account; the server checks it and locks after ten wrong tries.
  */
 export function AccessCodeSheet() {
@@ -52,7 +52,7 @@ export function AccessCodeSheet() {
   return (
     <Sheet open onClose={() => void cancel()} title={t('Access code')} leading={<TextButton onClick={() => void cancel()}>{t('Cancel')}</TextButton>}>
       <p className={styles.intro}>
-        {t('Motion is for friends only. Enter the access code you got from Mathis. You need it only once for this account.')}
+        {t('Motion is for friends only. Enter the access code you got from Mats. You need it only once for this account.')}
       </p>
       <Group footer={accessNeeded.email ? t('Signed in as {email}.', { email: accessNeeded.email }) : undefined}>
         <div className={controls.field}>

@@ -1,7 +1,7 @@
 /*
  * Privacy notice and "About this project" for the private, non-commercial operation (decision of
  * 03.11.2026). Since 24.11.2026 anyone can sign in, but an account works only with the access code
- * Mathis hands out (since 25.11.2026). No surname or postal address is published.
+ * Mats hands out (since 25.11.2026). No surname or postal address is published.
  * The longer drafts for a public release (with imprint and placeholders) are in commit 22223c3;
  * docs/DATENSCHUTZ.md, section 5, lists what a public release would need.
  *
@@ -25,8 +25,8 @@ export const about: LegalSection[] = [
   {
     heading: 'Ein privates Projekt',
     paragraphs: [
-      'Motion ist ein privates, nicht kommerzielles Projekt von Mathis. Es gibt keine Werbung, keine Käufe und keine Einnahmen.',
-      'Motion ist für Mathis und seine Freunde gedacht. Ein Konto funktioniert nur mit einem Zugangscode, den Mathis persönlich weitergibt. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
+      'Motion ist ein privates, nicht kommerzielles Projekt von Mats. Es gibt keine Werbung, keine Käufe und keine Einnahmen.',
+      'Motion ist für Mats und seine Freunde gedacht. Ein Konto funktioniert nur mit einem Zugangscode, den Mats persönlich weitergibt. Ohne Konto funktioniert Motion vollständig auf deinem Gerät.',
     ],
   },
   {
@@ -39,7 +39,7 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Wer dahintersteckt',
     paragraphs: [
-      `Motion ist ein privates, nicht kommerzielles Projekt von Mathis. Fragen, Auskunft oder Löschwünsche: ${contactEmail}.`,
+      `Motion ist ein privates, nicht kommerzielles Projekt von Mats. Fragen, Auskunft oder Löschwünsche: ${contactEmail}.`,
     ],
   },
   {
@@ -72,7 +72,7 @@ export const privacyPolicy: LegalSection[] = [
     paragraphs: [
       'Mit einem Konto werden deine E-Mail-Adresse, eine zufällige Konto-ID, Zeitpunkt und Version deiner Einwilligung sowie alle oben genannten Trainings- und Gesundheitsdaten bei Supabase (Supabase Inc., USA) gespeichert, damit sie gesichert sind und auf mehreren Geräten zur Verfügung stehen. Die Datenbank liegt in Frankfurt am Main. Bei der Anmeldung protokolliert Supabase technisch nötige Daten wie IP-Adresse und Zeitpunkt.',
       'Schlafwerte aus frühen Versionen von Motion bleiben, falls es welche gibt, in deinem Konto, bis du es löschst. Motion erfasst keine neuen Schlafwerte mehr.',
-      'Das passiert nur mit deiner ausdrücklichen Einwilligung, die du beim Anmelden gibst. Mathis kann die Daten im Supabase-Dashboard technisch einsehen, schaut sie aber nicht an und gibt sie an niemanden weiter.',
+      'Das passiert nur mit deiner ausdrücklichen Einwilligung, die du beim Anmelden gibst. Mats kann die Daten im Supabase-Dashboard technisch einsehen, schaut sie aber nicht an und gibt sie an niemanden weiter.',
     ],
   },
   {
@@ -85,7 +85,7 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Zugangscode',
     paragraphs: [
-      'Ein neues Konto braucht einmal den Zugangscode von Mathis. Dafür wird gespeichert, ob und wann dein Konto freigeschaltet wurde. Die Freischaltung wird mit dem Konto gelöscht.',
+      'Ein neues Konto braucht einmal den Zugangscode von Mats. Dafür wird gespeichert, ob und wann dein Konto freigeschaltet wurde. Die Freischaltung wird mit dem Konto gelöscht.',
       'Gibst du einen falschen Code ein, werden deine Konto-ID und der Zeitpunkt festgehalten, damit niemand den Code durch Ausprobieren erraten kann. Einträge, die älter als einen Tag sind, werden bei der nächsten Code-Prüfung gelöscht.',
     ],
   },
