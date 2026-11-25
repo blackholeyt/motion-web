@@ -333,3 +333,35 @@
   flex: none;
   color: var(--secondary-text);
 }
+
+/*
+ * Phones: a compact header and start card, so "Start workout" sits higher on the screen, within
+ * easy reach of the thumb. From tablet width the roomier layout above stays.
+ */
+@media (max-width: 767px) {
+  .today {
+    gap: 20px;
+    padding-top: 0;
+  }
+
+  .today .header {
+    gap: 2px;
+  }
+
+  .today .greeting {
+    font-size: 1.375rem;
+    line-height: 1.2;
+  }
+
+  .start {
+    padding: 20px;
+  }
+
+  .startTop {
+    margin-bottom: 14px;
+  }
+
+  .startTitle {
+    font-size: 1.625rem;
+  }
+}

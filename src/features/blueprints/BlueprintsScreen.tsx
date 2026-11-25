@@ -16,6 +16,7 @@ import { draftValid, newCardioDraft } from '../../domain/cardio'
 import { createCardioBlueprint } from '../../store/cardio'
 import { useProfile } from '../../store/profile'
 import styles from './blueprints.module.css'
+import { SkeletonBlock } from '../../ui/Skeleton'
 
 type Section = 'blueprints' | 'goals' | 'exercises' | 'cardio'
 const titles: Record<Section, string> = { blueprints: 'Blueprints', goals: 'PR Goals', exercises: 'Exercises', cardio: 'Cardio' }
@@ -87,6 +88,13 @@ function BlueprintList({ onPlan }: { onPlan: () => void }) {
       <button type="button" className={styles.item} onClick={() => navigate('/workout/new?freestyle=1')}>
         <Shuffle size={20} aria-hidden="true" /> <span>{t('Start Freestyle')}</span>
       </button>
+      {blueprints === undefined &&
+        [0, 1, 2].map((index) => (
+          <span key={index} className={styles.skeletonRow}>
+            <SkeletonBlock height={16} width="45%" />
+            <SkeletonBlock height={12} width="25%" />
+          </span>
+        ))}
       {(blueprints ?? []).map((blueprint) => (
         <button key={blueprint.id} type="button" className={styles.blueprint} onClick={() => navigate(blueprint.cardio_type ? `/cardio?blueprint=${blueprint.id}` : `/blueprints/${blueprint.id}`, { state: { returnTo: '/blueprints' } })}>
           <span className={styles.blueprintName}>{blueprint.name}</span>

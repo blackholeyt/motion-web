@@ -14,6 +14,7 @@ import { PastWorkoutPicker } from './PastWorkoutPicker'
 import { StartCard } from './StartCard'
 import { WorkoutPicker } from './WorkoutPicker'
 import styles from './dashboard.module.css'
+import { SkeletonBlock } from '../../ui/Skeleton'
 
 /** Today: start the next session, see the last one. Statistics live on the Progress tab. */
 export function DashboardScreen() {
@@ -36,7 +37,7 @@ export function DashboardScreen() {
   const date = new Intl.DateTimeFormat(locale, { weekday: 'long', month: 'short', day: 'numeric' }).format(now)
   const greeting = profile && profile.name !== 'Motion' ? t('{0},\nyour training in perspective.', [profile.name]) : t('Your training,\nin perspective.')
   return (
-    <div className={styles.screen}>
+    <div className={`${styles.screen} ${styles.today}`}>
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <p className={styles.date}>{date}</p>
@@ -56,8 +57,8 @@ export function DashboardScreen() {
           <CalendarPlus size={18} aria-hidden="true" /> {t('Log past workout')}
         </button>
       </div>
-      {history && <LastWorkoutCard history={history} now={now} />}
-      {progress && <ProgressCard progress={progress} />}
+      {history ? <LastWorkoutCard history={history} now={now} /> : <SkeletonBlock height={76} radius="var(--radius-card)" />}
+      {progress ? <ProgressCard progress={progress} /> : <SkeletonBlock height={132} radius="var(--radius-card)" />}
       {preferences.bodyWeightTrackingVisible && <BodyWeightCard />}
       <WorkoutPicker open={choosing} onClose={() => setChoosing(false)} />
       <PastWorkoutPicker open={logging} onClose={() => setLogging(false)} />

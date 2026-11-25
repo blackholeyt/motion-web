@@ -141,3 +141,16 @@ test('no screen scrolls sideways on a phone', async ({ page }) => {
   await startPush(page)
   await fitsWidth('Workout')
 })
+
+test('the start card sits high on the dashboard, within reach of the thumb', async ({ page }) => {
+  await open(page)
+  const start = page.getByTestId('dashboardStartWorkout')
+  await expect(start).toBeVisible()
+  await expect(page.getByTestId('startCardLoading')).toHaveCount(0)
+  const bounds = await box(start)
+  // Before the compact phone header the card ended at about 393 px on an iPhone 15.
+  expect(bounds.y + bounds.height).toBeLessThan(365)
+  const viewport = page.viewportSize()!
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width)
+  await page.screenshot({ path: `${shots}/dashboard.png` })
+})

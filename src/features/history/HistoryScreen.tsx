@@ -15,6 +15,7 @@ import { AIAnalysisSheet } from './AIAnalysisSheet'
 import { HistoryEditor } from './HistoryEditor'
 import { WorkoutDetailSheet } from './WorkoutDetailSheet'
 import styles from './history.module.css'
+import { Loading, SkeletonBlock } from '../../ui/Skeleton'
 
 /** WorkoutHistoryView.swift: newest first, grouped by month; tap to look, then edit. */
 export function HistoryScreen() {
@@ -63,7 +64,7 @@ export function HistoryScreen() {
       <header className={styles.headerRow}>
         <div>
           <h1 className={styles.title}>{t('The work you put in.')}</h1>
-          <p className={styles.muted}>{t('{0} saved sessions', [workouts?.length ?? 0])}</p>
+          {workouts ? <p className={styles.muted}>{t('{0} saved sessions', [workouts.length])}</p> : <SkeletonBlock height={18} width={140} />}
         </div>
         {Boolean(workouts?.length) && (
           <button type="button" className={styles.aiButton} onClick={() => setAnalysing(true)} data-testid="openAIAnalysis">
@@ -76,6 +77,13 @@ export function HistoryScreen() {
           <Search size={18} aria-hidden="true" />
           <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t('Search workouts or exercises')} aria-label={t('Search workouts or exercises')} data-testid="historySearch" />
         </label>
+      )}
+      {workouts === undefined && (
+        <Loading>
+          {[0, 1, 2].map((index) => (
+            <SkeletonBlock key={index} height={84} radius="var(--radius-row)" />
+          ))}
+        </Loading>
       )}
       {months.map((month) => (
         <section key={month.label} className={styles.month}>

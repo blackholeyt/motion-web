@@ -14,6 +14,7 @@ import { Group, PrimaryButton, TextButton } from '../../ui/controls'
 import { Celebration, durationLabel } from '../progress/Celebration'
 import { CardioFields } from './CardioFields'
 import styles from './cardio.module.css'
+import { Loading, SkeletonBar, SkeletonBlock } from '../../ui/Skeleton'
 
 /** CardioSessionView: a blueprint, a planned slot or a freestyle activity. */
 export function CardioScreen() {
@@ -21,7 +22,14 @@ export function CardioScreen() {
   const blueprintID = params.get('blueprint')
   const blueprint = useLiveQuery(async () => (blueprintID ? ((await db.blueprints.get(blueprintID)) ?? null) : null), [blueprintID])
   const profile = useProfile()
-  if (blueprint === undefined || !profile) return null
+  if (blueprint === undefined || !profile)
+    return (
+      <Loading page>
+        <SkeletonBar />
+        <SkeletonBlock height={34} width="60%" />
+        <SkeletonBlock height={260} radius="var(--radius-card)" />
+      </Loading>
+    )
   return <CardioSession key={blueprint?.id ?? 'freestyle'} blueprint={blueprint} activity={params.get('activity') ?? 'Running'} />
 }
 
