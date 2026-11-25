@@ -144,7 +144,13 @@ async function expectFits(page: Page, phone: (typeof phones)[number]) {
       unsafe: [...root.querySelectorAll('button, h1, dl, ul, [role="img"], [role="progressbar"]')].filter(visible).filter((element) => {
         const rect = element.getBoundingClientRect()
         return rect.top < insets.top || rect.bottom > window.innerHeight - insets.bottom || rect.left < 0 || rect.right > window.innerWidth
-      }).map(describe),
+      }).map((element) => {
+        // Geometry in the message, so a failure says where the element ended up.
+        const rect = element.getBoundingClientRect()
+        const frame = root.getBoundingClientRect()
+        const r = (value: number) => Math.round(value)
+        return `${describe(element)} @ ${insets.name}: element ${r(rect.left)},${r(rect.top)}–${r(rect.right)},${r(rect.bottom)}; screen ${r(frame.left)},${r(frame.top)}–${r(frame.right)},${r(frame.bottom)}; window ${window.innerWidth}×${window.innerHeight}`
+      }),
     }
   }, phone)
   expect(layout.root.scroll).toBeLessThanOrEqual(layout.root.client)
