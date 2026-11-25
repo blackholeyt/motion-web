@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { appleSeconds, legacyBackup } from '../../src/test/legacyBackup'
+import { showFullView } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -186,6 +187,7 @@ test('a first session shows its key figures and XP', async ({ page }) => {
   await page.getByTestId('plan-push').click()
   await page.getByTestId('usePlan-push').click()
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await logSets(page, { 'Bench Press': '60' })
   await usePhone(page, phones[0]!)
   await expect(page.getByTestId('finishStats')).toContainText('1,440 kg')
@@ -206,6 +208,7 @@ test('records and weeks fit every phone without scrolling', async ({ page }) => 
   await page.getByRole('link', { name: 'Blueprints' }).click()
   await page.getByRole('button', { name: /^Push/ }).click()
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await logSets(page, Object.fromEntries(lifts.map((lift) => [lift.name, String(lift.load + 10)])), [1, 2])
   for (const phone of phones) {
     await usePhone(page, phone)

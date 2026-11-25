@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { showFullView } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -30,6 +31,7 @@ test('the introduction leads to a first workout that earns XP', async ({ page })
   await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Full Body · Start Simple')
 
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await expect(page.getByTestId('firstSetTip')).toBeVisible()
   const row = page.getByTestId('set-Leg Press-1')
   await row.getByTestId('setLoad-1').fill('80')

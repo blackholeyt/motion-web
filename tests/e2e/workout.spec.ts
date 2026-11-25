@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { showFullView } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -42,6 +43,7 @@ test('a complete workout works offline and survives a restart mid-session', asyn
   await page.getByTestId('usePlan-push').click()
   await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue('Push')
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await expect(page.getByTestId('completedSetCount')).toHaveText('0 / 9')
 
   await enterSet(page, 'Bench Press', 1, '60', '8')
@@ -56,6 +58,7 @@ test('a complete workout works offline and survives a restart mid-session', asyn
   await page.close()
   const reopened = await page.context().newPage()
   await reopened.goto(url)
+  await showFullView(reopened)
   await expect(reopened.getByTestId('completedSetCount')).toHaveText('1 / 9')
   await expect(reopened.getByTestId('set-Bench Press-1').getByTestId('setLoad-1')).toHaveValue('60')
   await expect(reopened.getByTestId('set-Bench Press-2').getByTestId('setLoad-2')).toHaveValue('62,5')
@@ -78,12 +81,14 @@ test('a complete workout works offline and survives a restart mid-session', asyn
   await reopened.getByRole('link', { name: 'Blueprints' }).click()
   await reopened.getByRole('button', { name: /^Push/ }).click()
   await reopened.getByTestId('startWorkout').click()
+  await showFullView(reopened)
   await expect(reopened.getByTestId('set-Bench Press-2').getByTestId('previous-2')).toContainText('Previous: 62.5 kg × 6 reps')
   await reopened.context().setOffline(false)
 })
 
 test('an unfinished workout is offered for resuming', async ({ page }) => {
   await page.goto('./#/workout/new?freestyle=1')
+  await showFullView(page)
   await expect(page.getByTestId('addExercise')).toBeVisible()
   await page.getByTestId('addExercise').click()
   await page.getByRole('textbox', { name: 'Custom exercise name' }).fill('Sled Push')
@@ -95,6 +100,7 @@ test('an unfinished workout is offered for resuming', async ({ page }) => {
   await page.getByTestId('Freestyle strength').click()
   await expect(page.getByRole('alertdialog')).toContainText('Unfinished workout')
   await page.getByRole('button', { name: 'Resume unfinished workout' }).click()
+  await showFullView(page)
   await expect(page.getByRole('heading', { name: 'Sled Push' })).toBeVisible()
 })
 
@@ -114,6 +120,7 @@ test('the demo is ready before anything can be opened, and its workouts stay ope
   await page.getByRole('link', { name: 'Blueprints' }).click()
   await page.getByRole('button', { name: /^Push/ }).click()
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await expect(page.getByTestId('completedSetCount')).toHaveText('0 / 9')
   await expect(page).toHaveURL(/#\/workout\/[0-9a-f-]+$/)
   const workout = page.url()

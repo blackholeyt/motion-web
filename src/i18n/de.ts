@@ -615,4 +615,13 @@ export const de: Record<string, string> = {
   'Too many wrong codes. Wait 15 minutes and try again.': 'Zu viele falsche Codes. Warte 15 Minuten und versuch es dann noch einmal.',
   'You are offline. Connect to the internet to unlock your account.': 'Du bist offline. Verbinde dich mit dem Internet, um dein Konto freizuschalten.',
   'New accounts also need the access code from Mathis.': 'Neue Konten brauchen außerdem den Zugangscode von Mathis.',
+
+  // Focus view of the active workout.
+  'Set {0} of {1}': 'Satz {0} von {1}',
+  'Complete set': 'Satz abschließen',
+  'Previous set': 'Vorheriger Satz',
+  'Next set': 'Nächster Satz',
+  'Set cards': 'Satzkarten',
+  'Show all sets': 'Alle Sätze anzeigen',
+  'Focus view': 'Fokus-Ansicht',
 }

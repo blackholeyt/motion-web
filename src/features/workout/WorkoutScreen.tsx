@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { CalendarClock, CheckCircle2, ChevronDown, ChevronLeft, Plus, Shuffle, Undo2 } from 'lucide-react'
+import { CalendarClock, CheckCircle2, ChevronDown, ChevronLeft, Layers, List, Plus, Shuffle, Undo2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useT } from '../../i18n'
@@ -16,9 +16,10 @@ import { RestNotificationSettings } from '../settings/RestNotificationSettings'
 import * as engine from './engine'
 import { ExercisePicker } from './ExercisePicker'
 import { ExerciseSection } from './ExerciseSection'
+import { FocusView, type CompletionOutcome } from './FocusView'
 import { RestTimerBar } from './RestTimerBar'
 import { identityKey, loadHistory, loadSession } from './session'
-import type { SetRowHandle } from './SetRow'
+import type { SetRowHandle } from './useSetInputs'
 import { useWorkoutContext } from './useWorkoutContext'
 import styles from './workout.module.css'
 
@@ -47,6 +48,8 @@ export function WorkoutScreen() {
   const [record, setRecord] = useState<{ record: RecordAchievement; setID: string } | null>(null)
   const tips = useOnboarding()
   const [notes, setNotes] = useState<string | null>(null)
+  // Every workout opens in the minimal focus view; the choice is deliberately not remembered.
+  const [view, setView] = useState<'focus' | 'full'>('focus')
 
   useWakeLock(!!session && !session.workout.is_completed, session?.workout.id)
 
@@ -88,19 +91,23 @@ export function WorkoutScreen() {
   const flushAll = async () => {
     for (const handle of rowRefs.current.values()) await handle.flush()
   }
-  const complete = async (setID: string) => {
+  const complete = async (setID: string): Promise<CompletionOutcome> => {
     const result = await engine.toggleCompletion(id, setID, context).catch((failure) => {
       report(failure)
       return null
     })
-    if (!result) return
-    if (result.error) return setError({ message: result.error, values: result.errorValues })
+    if (!result) return 'none'
+    if (result.error) {
+      setError({ message: result.error, values: result.errorValues })
+      return 'none'
+    }
     if (result.record) {
       setRecord({ record: result.record, setID })
-      return
+      return 'record'
     }
     if (!result.completed && record?.setID === setID) setRecord(null)
     if (result.completed) updateOnboarding({ firstSetTipDone: true })
+    return result.completed ? 'done' : 'none'
   }
   const save = async () => {
     setConfirmFinish(false)
@@ -129,8 +136,11 @@ export function WorkoutScreen() {
     else (document.activeElement as HTMLElement | null)?.blur()
   }
 
+  const focus = view === 'focus'
+  const recordShown = !!record && session.rows.some(({ set }) => set.id === record.setID && set.is_completed)
+
   return (
-    <div className={styles.screen}>
+    <div className={`${styles.screen} ${focus ? styles.focusScreen : ''}`}>
       <header className={styles.bar}>
         <TextButton
           onClick={async () => {
@@ -141,11 +151,43 @@ export function WorkoutScreen() {
           <ChevronLeft size={20} aria-hidden="true" /> {t('Back')}
         </TextButton>
         <h1>{t(workout.name)}</h1>
-        <TextButton strong onClick={() => void finish().catch(report)} disabled={!engine.canFinish(session, context)} testID="finishWorkout">
-          {t('Finish')}
-        </TextButton>
+        <div className={styles.barEnd}>
+          <button
+            type="button"
+            className={styles.viewToggle}
+            aria-label={t(focus ? 'Show all sets' : 'Focus view')}
+            title={t(focus ? 'Show all sets' : 'Focus view')}
+            onClick={() => setView(focus ? 'full' : 'focus')}
+            data-testid="viewToggle"
+            data-view={view}
+          >
+            {focus ? <List size={20} aria-hidden="true" /> : <Layers size={20} aria-hidden="true" />}
+          </button>
+          <TextButton strong onClick={() => void finish().catch(report)} disabled={!engine.canFinish(session, context)} testID="finishWorkout">
+            {t('Finish')}
+          </TextButton>
+        </div>
       </header>
-      <div className={styles.content}>
+      {focus && recordShown && record && (
+        <div className={styles.focusNotice}>
+          <RecordNotice record={record.record} unit={context.unit} onDismiss={() => setRecord(null)} />
+        </div>
+      )}
+      {focus && (
+        <FocusView
+          session={session}
+          history={history}
+          context={context}
+          rowRefs={rowRefs}
+          recordOpen={recordShown}
+          restBar={!workout.is_retrospective}
+          onError={(message, values) => setError({ message, values })}
+          onComplete={complete}
+          onRemoveSet={setRemoving}
+          onShowFull={() => setView('full')}
+        />
+      )}
+      {!focus && <div className={styles.content}>
         {workout.is_retrospective && (
           <div className={styles.card}>
             <span className={styles.inline}>
@@ -187,9 +229,7 @@ export function WorkoutScreen() {
             </button>
           )}
         </div>
-        {record && session.rows.some(({ set }) => set.id === record.setID && set.is_completed) && (
-          <RecordNotice record={record.record} unit={context.unit} onDismiss={() => setRecord(null)} />
-        )}
+        {recordShown && record && <RecordNotice record={record.record} unit={context.unit} onDismiss={() => setRecord(null)} />}
         {session.exercises.map((group, index) => (
           <ExerciseSection
             key={group.exercise.id}
@@ -225,7 +265,7 @@ export function WorkoutScreen() {
           />
           <p className={styles.muted}>{t('Optional: how it felt, technique reminders or plans for next time.')}</p>
         </section>
-      </div>
+      </div>}
       {!workout.is_retrospective && <RestTimerBar workout={workout} onNotifications={() => setNotifications(true)} />}
 
       {picker && <ExercisePicker workoutID={id} replacing={picker.replacing} context={context} onClose={() => setPicker(null)} />}
