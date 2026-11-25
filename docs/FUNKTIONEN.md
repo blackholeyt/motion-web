@@ -1,6 +1,6 @@
 # Funktionen der alten App (Motion, iOS)
 
-Quelle: `/Users/mathis/Documents/Xcode/Tracker`, Branch `motion-baseline`, Stand Commit `7b4bf9f` (02.11.2026).
+Quelle: `~/Documents/Xcode/Tracker`, Branch `motion-baseline`, Stand Commit `7b4bf9f` (02.11.2026).
 Alle Dateiverweise beziehen sich auf den Ordner `Tracker/` im alten Projekt, sofern nicht anders angegeben.
 
 Die Oberflächentexte der alten App sind englisch (Basissprache). Etwa 70 % sind zusätzlich ins Deutsche übersetzt (`Localizable.xcstrings`). Texte stehen hier im englischen Original in Anführungszeichen, damit sie 1:1 übernommen werden können.

@@ -47,7 +47,7 @@ describe('older iOS CSV files (phase 5b)', () => {
     expect(draft.undoHistory).toHaveLength(1)
     expect(backup.routines[0]!.exercises[0]).toMatchObject({ targetSets: 3, warmUpSets: 1, guidance: { minimumReps: 6, maximumReps: 8 } })
     expect(backup.library[0]!.metadata).toMatchObject({ equipment: 'Barbell' })
-    expect(backup.profile).toMatchObject({ name: 'Mathis', targetWeightKilograms: 72 })
+    expect(backup.profile).toMatchObject({ name: 'Alex', targetWeightKilograms: 72 })
     expect(backup.preferences).toBeNull()
     expect(backup.exportedAt + 978_307_200).toBe(unix('2026-03-02T07:05:00Z'))
   })
@@ -64,7 +64,7 @@ describe('older iOS CSV files (phase 5b)', () => {
     expect(push).toMatchObject({ name: 'Push', performed_at: '2026-03-01T10:00:00.250Z', earned_xp: 150, blueprint_id: olderIDs.routine.toLowerCase() })
     expect(await db.set_logs.where('workout_id').equals(olderIDs.done.toLowerCase()).count()).toBe(3)
     expect((await db.body_weights.toArray())[0]).toMatchObject({ day: '2026-03-01', kilograms: 74.2 })
-    expect((await db.profiles.toArray())[0]).toMatchObject({ name: 'Mathis', target_weight_kg: 72 })
+    expect((await db.profiles.toArray())[0]).toMatchObject({ name: 'Alex', target_weight_kg: 72 })
     expect(getSettings().appearance).toBe('light')
     expect(await db.legacy_imports.count()).toBe(1)
 

@@ -1,12 +1,13 @@
 # Datenschutz und Konto (Phase 6)
 
-Stand: 24.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die App technisch tut. Seit 24.11.2026 ist die Registrierung offen (Abschnitt 5).
+Stand: 25.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die App technisch tut. Seit 24.11.2026 ist die Registrierung offen, seit 25.11.2026 braucht jedes neue Konto den Zugangscode (Abschnitt 5).
 
 ## 1. Überblick
 | Baustein | Wo | Code |
 |---|---|---|
 | Einwilligung beim ersten Start | Vor der Einführung, vor allem anderen | `src/features/privacy/ConsentScreen.tsx`, `src/privacy/consent.ts` |
 | Einwilligung zur Cloud | Im Anmeldefenster, Pflicht vor Google oder E-Mail-Code | `src/features/account/SignInSheet.tsx` |
+| Zugangscode | Nach der ersten Anmeldung eines neuen Kontos | `src/features/account/AccessCodeSheet.tsx`, Migration `20261125120000_access_code.sql` |
 | Datenschutzhinweis, „Über dieses Projekt“ | Aus der Einwilligung und unter Einstellungen → Hilfe & Datenschutz | `src/privacy/legal.ts`, `src/features/privacy/LegalSheet.tsx` |
 | Export JSON und CSV | Einstellungen → Sicherung, und im Löschen-Fenster | `src/store/backup.ts`, `src/store/csvExport.ts` |
 | Konto löschen | Einstellungen → Konto → „Konto löschen“ | `src/sync/account.ts` (`deleteAccount`), Migration `20261103120000_delete_account.sql` |
@@ -19,7 +20,7 @@ Stand: 24.11.2026. Das ist keine Rechtsberatung. Die Texte beschreiben, was die 
 
 Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-Sicherung oder meldet sich ab und nutzt Motion ohne Konto.
 
-**Anmelden:** Google und „Code senden“ bleiben gesperrt, bis die Cloud-Einwilligung angehakt ist.
+**Anmelden:** Google und „Code senden“ bleiben gesperrt, bis die Cloud-Einwilligung angehakt ist. Ein neues Konto fragt danach einmal nach dem Zugangscode.
 
 **Gespeichert wird:** auf dem Gerät unter `localStorage["motion.consent.v1"]` (Version, Zeitpunkt, Zeitpunkt der Cloud-Einwilligung). Die Cloud-Einwilligung steht zusätzlich beim Login selbst in `auth.users.raw_user_meta_data.privacy_consent` und verschwindet mit dem Konto.
 
@@ -46,13 +47,13 @@ Wer schon angemeldet ist (frühere Versionen), bestätigt zusätzlich die Cloud-
 Spalten: `type, date, time, workout, exercise, set, set_type, weight_kg, reps, duration_seconds, distance_km, pace_s_per_km, value, completed, notes`. `value` ist bei `workout` die XP, bei `body_weight` die Kilogramm.
 
 ## 5. Betrieb: offene Anmeldung mit Zugangscode (Entscheidungen vom 24. und 25.11.2026)
-**Neu seit 25.11.2026: Zugangscode.** Anmelden kann sich jeder, aber ein Konto kann erst Daten speichern oder lesen, wenn es einmal den festen Zugangscode eingegeben hat, den Mathis persönlich weitergibt (Migration `20261125120000_access_code.sql`). Die Datenbank prüft das selbst: Ohne Freischaltung verweigern zusätzliche Regeln (RLS, restriktiv) auf allen Tabellen jeden Zugriff. Gespeichert ist nur ein gesalzener SHA-256-Hash im nicht öffentlichen Schema `private`. Nach 10 falschen Codes eines Kontos in 15 Minuten (oder 100 aller Konten in einer Stunde) ist gesperrt. Damit ist der Nutzerkreis wieder auf die Leute begrenzt, denen Mathis den Code gibt.
+**Neu seit 25.11.2026: Zugangscode.** Anmelden kann sich jeder, aber ein Konto kann erst Daten speichern oder lesen, wenn es einmal den festen Zugangscode eingegeben hat, den Mathis persönlich weitergibt (Migration `20261125120000_access_code.sql`). Die Datenbank prüft das selbst: Ohne Freischaltung verweigern zusätzliche Regeln (RLS, restriktiv) auf allen Tabellen jeden Zugriff. Gespeichert ist nur ein gesalzener SHA-256-Hash im nicht öffentlichen Schema `private`. Nach 10 falschen Codes eines Kontos in 15 Minuten (oder 100 aller Konten in einer Stunde) ist gesperrt. Damit ist der Nutzerkreis wieder auf die Leute begrenzt, denen Mathis den Code gibt. Der Datenschutzhinweis nennt beides, was dafür gespeichert wird: die Freischaltung (`public.access_grants`, Konto-ID und Zeitpunkt, verschwindet mit dem Konto) und Fehlversuche (`private.access_attempts`, Konto-ID und Zeitpunkt; Einträge älter als einen Tag löscht die nächste Code-Prüfung).
 
 - Code setzen oder ändern (SQL Editor): `select private.set_access_code('dein Code');` (mindestens 6 Zeichen; Groß-/Kleinschreibung und Leerzeichen am Rand zählen nicht). Ein neuer Code sperrt niemanden aus, der schon freigeschaltet ist.
 - Freischaltung entziehen: `delete from public.access_grants where user_id = (select id from auth.users where email = 'freund@example.com');`
 - Leere Konten von Fremden ohne Code schaden nicht; sie lassen sich bei Bedarf im Dashboard löschen.
 
-**Neu seit 24.11.2026:** Auf Wunsch von Mathis ist die Einladungspflicht weg. Wer die Adresse kennt, kann sich mit E-Mail-Code oder Google selbst ein Konto anlegen (`shouldCreateUser: true`, in Supabase „Allow new users to sign up“ an, Google-Projekt veröffentlicht statt Testmodus). Damit ist der Kreis nicht mehr geschlossen, und die Ausnahme unten trägt nicht mehr sicher. Die Punkte unter „Wenn Motion doch öffentlich wird“ gelten deshalb jetzt als offene Aufgaben, vor allem Impressum, AVV mit Supabase und ein Mailanbieter mit AVV statt Gmail.
+**Neu seit 24.11.2026:** Auf Wunsch von Mathis ist die Einladungspflicht weg. Wer die Adresse kennt, kann sich mit E-Mail-Code oder Google selbst ein Konto anlegen (`shouldCreateUser: true`, in Supabase „Allow new users to sign up“ an, Google-Projekt veröffentlicht statt Testmodus). Für einen Tag war der Kreis damit offen. Seit dem Zugangscode (oben) ist er wieder auf Leute mit Code begrenzt. Ob die Ausnahme unten damit sicher trägt, ist nicht rechtlich geprüft; wer auf Nummer sicher gehen will, erledigt die Punkte unter „Wenn Motion doch öffentlich wird“, vor allem Impressum, AVV mit Supabase und einen Mailanbieter mit AVV statt Gmail.
 
 Bisherige Begründung (03.11.2026): Motion lief für Mathis und ein, zwei Freunde, nicht öffentlich. Für einen rein privaten Kreis gilt die DSGVO nach Art. 2 Abs. 2 lit. c nicht („ausschließlich persönliche oder familiäre Tätigkeiten“), und eine Impressumspflicht nach § 5 DDG besteht nur für geschäftsmäßige Angebote. Diese Ausnahme trägt aber nur, solange der Kreis wirklich geschlossen ist. Deshalb:
 
@@ -60,8 +61,10 @@ Bisherige Begründung (03.11.2026): Motion lief für Mathis und ein, zwei Freund
 - ~~**Google-Login im Testmodus**~~ (bis 24.11.2026): nur eingetragene Test-Nutzer kamen durch.
 - **Texte:** kurzer, ehrlicher Datenschutzhinweis und „Über dieses Projekt“ statt Impressum, ohne Namen und Anschrift. Kontakt: motion.web.support@gmail.com. Kein Entwurfshinweis mehr (`legalDraft = false`); ein Test stellt sicher, dass keine Anschrift in den Texten steht.
 
-### Einen Freund einladen (nicht mehr nötig)
-Seit der offenen Registrierung meldet sich ein Freund einfach selbst an. Der alte Weg funktioniert weiter:
+### Einen Freund einladen
+Seit dem 25.11.2026: Link https://blackholeyt.github.io/motion-web/ und Zugangscode schicken. Der Freund meldet sich selbst an (E-Mail-Code oder Google) und gibt einmal den Code ein.
+
+Der alte Weg über das Dashboard funktioniert weiter; der Freund braucht danach trotzdem den Zugangscode:
 1. Supabase → **Authentication → Users → Add user → Create new user**.
 2. E-Mail-Adresse des Freundes eintragen, Passwort leer lassen bzw. ein zufälliges setzen, **Auto Confirm User** anhaken, erstellen. Es wird keine Mail verschickt.
 3. Wenn er sich mit Google anmelden will: dieselbe Adresse in der Google Cloud Console unter **Google Auth Platform → Audience → Test users** eintragen.
@@ -91,7 +94,7 @@ Dann gilt die DSGVO voll, und ein Impressum ist nötig. Die ausführlichen Entw�
 3. **GitHub Pages:** Datenschutzangaben von GitHub zu Pages prüfen (Zugriffsprotokolle mit IP-Adressen), ggf. eigene Domain.
 4. **Impressum** mit Name und ladungsfähiger Anschrift (oder einem kostenpflichtigen Anschriftsdienst).
 5. **Minderjährigkeit:** Veröffentlichung mit den Eltern absprechen; für Verträge wie den DPA kann ihre Zustimmung nötig sein.
-6. **Aufsichtsbehörde** nennen (in NRW: LDI NRW), `consentVersion` erhöhen, Registrierung wieder öffnen.
+6. **Aufsichtsbehörde** nennen (in NRW: LDI NRW), `consentVersion` erhöhen, ggf. den Zugangscode abschaffen.
 
 ## 6. Abnahme: nach dem Löschen keine Daten mehr
 Automatisch in jeder CI-Runde, auf den echten Migrationen in einem eingebetteten Postgres:

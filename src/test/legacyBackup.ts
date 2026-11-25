@@ -122,7 +122,7 @@ export function legacyBackup() {
         exercises: [],
       },
     ],
-    profile: { name: 'Mathis', weightUnit: 'kg', exerciseLoadUnit: 'kg', distanceUnitPreference: 'km', targetWeightKilograms: 70, celebratedWeightGoals: ['gain:68000'], createdAt: appleSeconds('2026-04-11T09:00:00Z') },
+    profile: { name: 'Alex', weightUnit: 'kg', exerciseLoadUnit: 'kg', distanceUnitPreference: 'km', targetWeightKilograms: 70, celebratedWeightGoals: ['gain:68000'], createdAt: appleSeconds('2026-04-11T09:00:00Z') },
     weights: [
       { dayKey: '1-2026-11-1', recordedAt: appleSeconds('2026-11-01T06:30:00Z'), kilograms: 67.05 },
       { dayKey: '1-2026-11-2', recordedAt: appleSeconds('2026-11-02T06:30:00Z'), kilograms: 67.2 },

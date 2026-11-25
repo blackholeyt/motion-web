@@ -1,8 +1,7 @@
 /*
  * Privacy notice and "About this project" for the private, non-commercial operation (decision of
  * 03.11.2026). Since 24.11.2026 anyone can sign in, but an account works only with the access code
- * Mathis hands out (since 25.11.2026). No name or postal address is published; docs/DATENSCHUTZ.md,
- * section 5, lists what a wider release needs.
+ * Mathis hands out (since 25.11.2026). No surname or postal address is published.
  * The longer drafts for a public release (with imprint and placeholders) are in commit 22223c3;
  * docs/DATENSCHUTZ.md, section 5, lists what a public release would need.
  *
@@ -57,7 +56,8 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Auf deinem Gerät',
     paragraphs: [
-      'Motion speichert im Speicher des Browsers bzw. der installierten App: Trainings und Sätze, Routinen, Trainingsplan, Übungen, Ausdauer-Einheiten, Körpergewicht, XP, dein Profil (Name, Einheiten, Zielgewicht), Einstellungen und deine Einwilligung.',
+      'Motion speichert im Speicher des Browsers bzw. der installierten App: Trainings und Sätze mit deinen Notizen, Routinen, Trainingsplan, Übungen und deine Ziele dafür, Ausdauer-Einheiten, Körpergewicht, XP, dein Profil (Name, Einheiten, Zielgewicht), Einstellungen, eine Liste importierter Sicherungen (Dateiname, Zeitpunkt, Anzahl der Einträge) und deine Einwilligung.',
+      'Pausen-Benachrichtigungen erzeugt dein Gerät selbst. Dafür werden keine Daten an einen Server geschickt.',
       'Löschen: Einstellungen → „Daten auf diesem Gerät löschen“, oder die Website-Daten bzw. die App entfernen.',
     ],
   },
@@ -70,7 +70,8 @@ export const privacyPolicy: LegalSection[] = [
   {
     heading: 'Konto und Cloud-Sicherung',
     paragraphs: [
-      'Mit einem Konto werden deine E-Mail-Adresse, eine zufällige Konto-ID, Zeitpunkt und Version deiner Einwilligung sowie alle oben genannten Trainings- und Gesundheitsdaten bei Supabase gespeichert, damit sie gesichert sind und auf mehreren Geräten zur Verfügung stehen. Die Datenbank liegt in Frankfurt am Main. Bei der Anmeldung protokolliert Supabase technisch nötige Daten wie IP-Adresse und Zeitpunkt.',
+      'Mit einem Konto werden deine E-Mail-Adresse, eine zufällige Konto-ID, Zeitpunkt und Version deiner Einwilligung sowie alle oben genannten Trainings- und Gesundheitsdaten bei Supabase (Supabase Inc., USA) gespeichert, damit sie gesichert sind und auf mehreren Geräten zur Verfügung stehen. Die Datenbank liegt in Frankfurt am Main. Bei der Anmeldung protokolliert Supabase technisch nötige Daten wie IP-Adresse und Zeitpunkt.',
+      'Schlafwerte aus frühen Versionen von Motion bleiben, falls es welche gibt, in deinem Konto, bis du es löschst. Motion erfasst keine neuen Schlafwerte mehr.',
       'Das passiert nur mit deiner ausdrücklichen Einwilligung, die du beim Anmelden gibst. Mathis kann die Daten im Supabase-Dashboard technisch einsehen, schaut sie aber nicht an und gibt sie an niemanden weiter.',
     ],
   },
@@ -79,6 +80,13 @@ export const privacyPolicy: LegalSection[] = [
     paragraphs: [
       'Der Anmeldecode kommt per E-Mail über ein Gmail-Konto von Motion (Google). Dabei werden deine E-Mail-Adresse und der Code verarbeitet.',
       'Bei „Mit Google fortfahren“ übermittelt Google deine E-Mail-Adresse, deinen Namen und dein Profilbild; Motion verwendet davon nur die E-Mail-Adresse. Google erfährt dabei, dass du dich bei Motion anmeldest.',
+    ],
+  },
+  {
+    heading: 'Zugangscode',
+    paragraphs: [
+      'Ein neues Konto braucht einmal den Zugangscode von Mathis. Dafür wird gespeichert, ob und wann dein Konto freigeschaltet wurde. Die Freischaltung wird mit dem Konto gelöscht.',
+      'Gibst du einen falschen Code ein, werden deine Konto-ID und der Zeitpunkt festgehalten, damit niemand den Code durch Ausprobieren erraten kann. Einträge, die älter als einen Tag sind, werden bei der nächsten Code-Prüfung gelöscht.',
     ],
   },
   {

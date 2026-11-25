@@ -52,7 +52,7 @@ export function motionV17(): string {
     { 0: 'exercise', 1: 'w2e0', 3: "'Bench Press", 4: 'w2', 13: 'false', 19: olderIDs.bench, 20: olderIDs.draftBench, 25: '0', 30: 'false', 40: 'Load & reps' },
     { 0: 'set', 4: 'w2e0', 5: '1', 6: '0', 8: 'false', 26: "'60", 27: "'", 30: 'false', 31: olderIDs.draftSet, 32: 'false', 35: 'kg', 42: 'false' },
     { 0: 'workout', 1: 'w3', 2: String(unix('2026-02-27T17:00:00Z')), 3: "'Running", 8: 'true', 9: '100', 10: 'false', 12: 'false', 14: 'Running', 15: '1800', 16: '5', 17: '360', 18: olderIDs.health, 49: 'false' },
-    { 0: 'profile', 2: String(unix('2025-12-01T09:00:00Z')), 3: "'Mathis", 11: 'kg', 33: 'kg', 34: 'km', 50: '72' },
+    { 0: 'profile', 2: String(unix('2025-12-01T09:00:00Z')), 3: "'Alex", 11: 'kg', 33: 'kg', 34: 'km', 50: '72' },
     { 0: 'body_weight', 1: '1-2026-3-1', 2: String(unix('2026-03-01T06:30:00Z')), 6: '74.2' },
     { 0: 'weight_reward', 1: '1-2026-3-1', 2: String(unix('2026-03-01T06:30:00Z')), 9: '25' },
     { 0: 'nutrition', 51: '{}' },
@@ -66,7 +66,7 @@ export function motionV1(name = 'Legs', iso = '2025-06-01T18:00:00Z'): string {
     { 0: 'exercise', 1: 'w0e0', 3: "'Squat", 4: 'w0' },
     { 0: 'set', 4: 'w0e0', 5: '1', 6: '100', 7: '5', 8: 'true' },
     { 0: 'set', 4: 'w0e0', 5: '2', 6: '100', 7: '', 8: 'false' },
-    { 0: 'profile', 2: String(unix('2025-05-01T09:00:00Z')), 3: "'Mathis", 11: 'lb' },
+    { 0: 'profile', 2: String(unix('2025-05-01T09:00:00Z')), 3: "'Alex", 11: 'lb' },
   ])
 }
 

@@ -161,12 +161,12 @@ describe('sync between two devices of one account', () => {
 
   it('never lets the default profile of a new device replace the account’s profile', async () => {
     const phone = await device()
-    await phone.use(() => updateProfile({ name: 'Mathis' }))
+    await phone.use(() => updateProfile({ name: 'Alex' }))
     await phone.sync()
     const tablet = await device()
     await tablet.use(() => ensureProfile())
     await tablet.sync()
-    expect((await tablet.database.profiles.toArray()).map((profile) => profile.name)).toEqual(['Mathis'])
+    expect((await tablet.database.profiles.toArray()).map((profile) => profile.name)).toEqual(['Alex'])
   })
 })
 
@@ -263,14 +263,14 @@ describe('database version 2', () => {
       { ...base, id: 'a', day: '2026-11-01', recorded_at: base.created_at, kilograms: 67, updated_at: '2026-11-01T08:00:00.000Z', deleted_at: '2026-11-01T08:30:00.000Z' },
       { ...base, id: 'b', day: '2026-11-01', recorded_at: base.created_at, kilograms: 68, updated_at: '2026-11-01T08:10:00.000Z' },
     ])
-    await old.table('profiles').put({ ...base, id: 'p', name: 'Mathis', updated_at: base.created_at })
+    await old.table('profiles').put({ ...base, id: 'p', name: 'Alex', updated_at: base.created_at })
     await old.table('outbox').bulkPut([{ key: 'body_weights:a', table: 'body_weights', record_id: 'a', queued_at: base.created_at }])
     old.close()
 
     const upgraded = new MotionDatabase(name)
     await upgraded.open()
     expect(await upgraded.body_weights.toArray()).toEqual([expect.objectContaining({ id: stableID('body_weights', '2026-11-01'), kilograms: 68, deleted_at: null })])
-    expect((await upgraded.profiles.toArray()).map((profile) => [profile.id, profile.name])).toEqual([[stableID('profiles'), 'Mathis']])
+    expect((await upgraded.profiles.toArray()).map((profile) => [profile.id, profile.name])).toEqual([[stableID('profiles'), 'Alex']])
     const queued = (await upgraded.outbox.toArray()).map((entry) => entry.key).sort()
     expect(queued).toEqual([`body_weights:${stableID('body_weights', '2026-11-01')}`, `profiles:${stableID('profiles')}`].sort())
   })
