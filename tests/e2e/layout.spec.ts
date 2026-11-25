@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
+import { showFullView } from './helpers'
 
 test.use({ locale: 'en-US' })
 
@@ -39,6 +40,7 @@ async function startPush(page: Page) {
   await page.getByTestId('plan-push').click()
   await page.getByTestId('usePlan-push').click()
   await page.getByTestId('startWorkout').click()
+  await showFullView(page)
   await expect(page.getByTestId('completedSetCount')).toHaveText('0 / 9')
 }
 

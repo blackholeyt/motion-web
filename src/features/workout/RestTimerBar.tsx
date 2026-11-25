@@ -67,7 +67,7 @@ export function RestTimerBar({ workout, onNotifications }: { workout: Workout; o
   const subtitle = shown.phase !== 'idle' ? (state.exerciseName ?? t('Ready for your next set')) : t('Starts after a completed set')
 
   return (
-    <div className={styles.restBar}>
+    <div className={styles.restBar} data-testid="restBar">
       <div className={styles.restText}>
         <strong data-testid={shown.phase === 'complete' ? 'restCompleteNotice' : 'restCountdown'}>{title}</strong>
         <span>{subtitle}</span>

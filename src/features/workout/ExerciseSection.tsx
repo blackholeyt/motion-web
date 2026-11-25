@@ -3,7 +3,7 @@ import { Fragment, useState, type RefObject } from 'react'
 import type { SupersetGroup } from '../../data/types'
 import { targetLabel } from '../../domain/guidance'
 import { needsReps, quantityLabel, supportsWeightComparisons } from '../../domain/measurement'
-import { setBadge, type ExerciseRows } from '../../domain/sets'
+import type { ExerciseRows } from '../../domain/sets'
 import { useT } from '../../i18n'
 import { ConfirmDialog } from '../../ui/Sheet'
 import { Menu, SelectRow } from '../../ui/controls'
@@ -11,6 +11,7 @@ import { supersetOptions } from '../blueprints/BlueprintDetailScreen'
 import type { WorkoutContext } from './engine'
 import * as engine from './engine'
 import { previousFor, type History, type Session } from './session'
+import { setViewProps, runEngine } from './setActions'
 import { SetRow, type SetRowHandle } from './SetRow'
 import styles from './workout.module.css'
 import { LearningTip } from '../onboarding/LearningTip'
@@ -25,7 +26,7 @@ interface Props {
   isLast: boolean
   rowRefs: RefObject<Map<string, SetRowHandle>>
   onError: (message: string, values?: string[]) => void
-  onComplete: (setID: string) => void
+  onComplete: (setID: string) => void | Promise<unknown>
   onRemoveSet: (setID: string) => void
   onReplace: () => void
   onEnter: (setID: string) => void
@@ -46,7 +47,7 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
   const workoutID = session.workout.id
   const guidance = exercise.guidance
   const target = guidance ? targetLabel(guidance, t) : null
-  const run = (action: Promise<unknown>): Promise<void> => action.then(() => undefined, (failure: Error) => onError(failure.message))
+  const run = (action: Promise<unknown>) => runEngine(onError, action)
   const showReps = needsReps(exercise.measurement, context.trackReps)
   const nextInGroup = exercise.superset_group
     ? session.rows.find((row) => !row.set.is_completed && !row.set.is_skipped && row.exercise.superset_group === exercise.superset_group)
@@ -77,20 +78,7 @@ export function ExerciseSection({ group, session, history, context, isFirst, isL
               if (handle) rowRefs.current?.set(row.set.id, handle)
               else rowRefs.current?.delete(row.set.id)
             }}
-            row={row}
-            badge={setBadge(row, session.exercises)}
-            previous={previousFor(row, session, history)}
-            canCopyPrevious={engine.rowAbove(session, row) !== undefined}
-            context={context}
-            onInput={(quantity, reps) => run(engine.updateSetInput(workoutID, row.set.id, quantity, reps, context))}
-            onComplete={() => onComplete(row.set.id)}
-            onUseLast={() => run(engine.reuseValues(workoutID, row.set.id, { previous: previousFor(row, session, history) }, context))}
-            onCopyPrevious={() => run(engine.reuseValues(workoutID, row.set.id, { fromRowAbove: true }, context))}
-            onClear={() => run(engine.clearValues(workoutID, row.set.id, context))}
-            onClassify={() => run(engine.toggleWarmUp(workoutID, row.set.id, context))}
-            onSkip={() => run(engine.toggleSkip(workoutID, row.set.id, context))}
-            onRemove={() => onRemoveSet(row.set.id)}
-            onEnter={() => onEnter(row.set.id)}
+            {...setViewProps(row, { session, history, context, onError, onComplete, onRemoveSet, onEnter })}
           />
         </Fragment>
       ))}
