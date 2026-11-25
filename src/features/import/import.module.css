@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
   padding-bottom: 24px;
 }
 
@@ -17,12 +18,14 @@
 
 .muted {
   margin: 0;
+  overflow-wrap: anywhere;
   font-size: 0.8125rem;
   color: var(--secondary-text);
 }
 
 .notice {
   margin: 0;
+  overflow-wrap: anywhere;
   padding: 12px 14px;
   border-radius: var(--radius-button);
   background: var(--surface);
@@ -40,6 +43,7 @@
 
 .failure p {
   margin: 6px 0 0;
+  overflow-wrap: anywhere;
   font-size: 0.875rem;
   color: var(--secondary-text);
 }
@@ -56,7 +60,7 @@
 
 .counts th,
 .counts td {
-  padding: 10px 12px;
+  padding: 10px 8px;
   text-align: right;
   border-bottom: 1px solid var(--border);
 }
@@ -71,6 +75,7 @@
 
 .counts tbody th {
   text-align: left;
+  overflow-wrap: anywhere;
   font-weight: 400;
 }
 
@@ -81,6 +86,8 @@
 
 .issue,
 .sample {
+  min-width: 0;
+  overflow-wrap: anywhere;
   display: flex;
   flex-direction: column;
   gap: 2px;

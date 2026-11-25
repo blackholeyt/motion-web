@@ -1,5 +1,6 @@
 import { derivedID } from '../data/ids'
 import { ImportError, type ImportIssue } from './errors'
+import { cardioActivities, maximumIssues, measurements, uuidPattern } from './shared'
 import {
   appleEpochOffset,
   type LegacyBackup,
@@ -81,11 +82,7 @@ const allowedColumns: Record<string, number[]> = {
   workout_award: [0, 1, 9],
 }
 
-const maximumIssues = 50
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const numberPattern = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/
-const measurements = ['Load & reps', 'Bodyweight reps', 'Assisted reps', 'Duration']
-const cardioActivities = ['Running', 'Bicycle', 'Swimming', 'Walking', 'Rowing', 'Elliptical', 'Other cardio']
 
 const sameRow = (row: string[], header: string[]) => row.length === header.length && row.every((value, index) => value === header[index])
 

@@ -1,4 +1,5 @@
 import { ImportError, type ImportIssue } from './errors'
+import { cardioActivities, maximumIssues, measurements, uuidPattern } from './shared'
 
 /*
  * The iOS full backup ("motion.full-backup", version 1) as written by MotionBackup.swift.
@@ -189,7 +190,6 @@ type Spec = Leaf | { optional: Spec } | { list: Spec } | { [key: string]: Spec }
 
 const opt = (spec: Spec) => ({ optional: spec })
 const list = (spec: Spec) => ({ list: spec })
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const guidanceSpec: Spec = {
   measurement: opt('string'),
@@ -324,7 +324,6 @@ const backupFields: Record<string, Spec> = {
 const backupSpec: Spec = backupFields
 const olderCSVSpec: Spec = { ...backupFields, preferences: opt(backupFields.preferences!) }
 
-const maximumIssues = 50
 
 function leafMatches(leaf: Leaf, value: unknown): boolean {
   switch (leaf) {
@@ -380,8 +379,6 @@ export function decodeBackup(object: unknown, { fromOlderCSV = false } = {}): Le
 // Rules ----------------------------------------------------------------------------------------
 
 export const appleEpochOffset = 978_307_200
-const measurements = ['Load & reps', 'Bodyweight reps', 'Assisted reps', 'Duration']
-const cardioActivities = ['Running', 'Bicycle', 'Swimming', 'Walking', 'Rowing', 'Elliptical', 'Other cardio']
 const progressionsFor: Record<string, string[]> = {
   Duration: ['Not selected', 'Keep targets steady', 'Build duration'],
   'Load & reps': ['Not selected', 'Keep targets steady', 'Build repetitions first', 'Build external load'],

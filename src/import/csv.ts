@@ -1,4 +1,5 @@
 import { ImportError } from './errors'
+import { stripBOM } from './shared'
 
 /*
  * CSV side of the iOS import. "Export CSV" writes the full backup as one row per record
@@ -12,7 +13,7 @@ const maximumIndex = 100_000
 
 /** WorkoutCSVImporter.parse: RFC 4180 with an optional BOM; a stray quote rejects the file. */
 export function parseCSV(text: string): string[][] {
-  const source = (text.startsWith('﻿') ? text.slice(1) : text).replace(/\r\n/g, '\n')
+  const source = stripBOM(text).replace(/\r\n/g, '\n')
   const rows: string[][] = []
   let row: string[] = []
   let field = ''

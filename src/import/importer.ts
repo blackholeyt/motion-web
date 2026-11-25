@@ -33,6 +33,7 @@ import { ensureProfile } from '../store/profile'
 import { csvKind, decodeCompleteCSV, parseCSV } from './csv'
 import { decodeOlderCSV, decodeWorkoutCSV } from './olderCSV'
 import { ImportError, type ImportIssue } from './errors'
+import { emptyCounts, maximumIssues, stripBOM, uuidPattern } from './shared'
 import {
   appleEpochOffset,
   decodeBackup,
@@ -105,7 +106,6 @@ export interface ImportSummary {
 
 // Reading the file ------------------------------------------------------------------------------
 
-/** JSON or CSV, recognised by content; every CSV format turns into the same backup object. */
 /** A file for the import sheet: a backup of the iOS app or Motion Web's own backup. */
 export type BackupFile = { kind: 'ios'; source: ImportSource } | { kind: 'web'; source: WebBackupSource }
 
@@ -114,7 +114,7 @@ export async function readImportFile(file: File): Promise<BackupFile> {
 }
 
 export async function readBackupText(text: string, fileName: string, size = new TextEncoder().encode(text).length): Promise<BackupFile> {
-  const json = text.replace(/^\uFEFF/, '')
+  const json = stripBOM(text)
   if (json.trimStart().startsWith('{') && size <= maximumJSONBytes) {
     let object: unknown = null
     try {
@@ -127,14 +127,15 @@ export async function readBackupText(text: string, fileName: string, size = new 
   return { kind: 'ios', source: await readImportText(text, fileName, size) }
 }
 
+/** JSON or CSV, recognised by content; every CSV format turns into the same backup object. */
 export async function readImportText(text: string, fileName: string, size = new TextEncoder().encode(text).length): Promise<ImportSource> {
-  const isJSON = text.replace(/^﻿/, '').trimStart().startsWith('{')
+  const isJSON = stripBOM(text).trimStart().startsWith('{')
   if (size > (isJSON ? maximumJSONBytes : maximumCSVBytes)) throw new ImportError('tooLarge')
   let object: unknown
   let origin: ImportOrigin = { kind: 'backup' }
   if (isJSON) {
     try {
-      object = JSON.parse(text.replace(/^﻿/, ''))
+      object = JSON.parse(stripBOM(text))
     } catch {
       throw new ImportError('unreadable')
     }
@@ -174,7 +175,6 @@ const lower = (value: string) => value.toLowerCase()
 const lowerOrNull = (value: string | null | undefined) => (value ? value.toLowerCase() : null)
 const iso = (seconds: number) => new Date((seconds + appleEpochOffset) * 1000).toISOString()
 const isoOrNull = (seconds: number | null | undefined) => (seconds === null || seconds === undefined ? null : iso(seconds))
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** "1-2026-11-2" → "2026-11-02". Only Gregorian days of the common era exist in the web app. */
 export function webDay(key: string): string | null {
@@ -270,19 +270,6 @@ const isHealth = (session: LegacySession) => Boolean(session.healthWorkoutID)
 
 // Counting --------------------------------------------------------------------------------------
 
-const emptyCounts = (): ImportCounts => ({
-  workouts: 0,
-  drafts: 0,
-  sets: 0,
-  exercises: 0,
-  routines: 0,
-  bodyWeights: 0,
-  xpReceipts: 0,
-  records: 0,
-  xp: 0,
-  healthWorkouts: 0,
-})
-
 /** Completed sets that count in the old app's history: not removed, not skipped, in a live exercise. */
 const doneSets = (session: LegacySession) =>
   session.isCompleted ? session.exercises.flatMap((exercise) => (exercise.isRemoved ? [] : exercise.sets.filter((set) => set.isCompleted && !set.isRemoved))) : []
@@ -342,29 +329,14 @@ interface Prepared {
   profile: Partial<Profile> | null
 }
 
+type Add = <T extends SyncedRecord>(table: SyncedTable, draft: Draft<T>) => T
+
 async function keys(table: SyncedTable): Promise<Set<string>> {
   return new Set((await db.table(table).toCollection().primaryKeys()) as string[])
 }
 
-/**
- * Reads only the local database, so it can run inside the import transaction and again for the
- * preview. Throws when a day cannot be converted or a new workout reuses ids of another workout.
- */
-async function prepare(source: ImportSource): Promise<Prepared> {
-  const { backup } = source
-  const issues: ImportIssue[] = []
-  const day = (key: string, path: string) => {
-    const converted = webDay(key)
-    if (!converted) issues.push({ path, reason: 'unsupported calendar day' })
-    return converted ?? ''
-  }
-  const writes: Writes = {}
-  const add = <T extends SyncedRecord>(table: SyncedTable, draft: Draft<T>) => {
-    const record = stamp<T>(draft)
-    ;(writes[table] ??= []).push(record)
-    return record
-  }
-  const sessions = backup.workouts.filter((session) => !isHealth(session))
+/** What the file holds, not counting Health and Strava workouts (those are only counted as skipped). */
+function countFile(backup: LegacyBackup, sessions: LegacySession[]): ImportCounts {
   const file = emptyCounts()
   countSessions(file, sessions)
   file.exercises = backup.library.length
@@ -374,11 +346,16 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   file.records = countRecords(backup, sessions)
   file.xp += backup.weightRewards.reduce((sum, reward) => sum + reward.earnedXP, 0)
   file.healthWorkouts = backup.workouts.length - sessions.length
-  const added = emptyCounts()
-  added.healthWorkouts = file.healthWorkouts
+  return file
+}
 
-  // Library
-  const exerciseIDs = await keys('exercises')
+/*
+ * The add... helpers are deliberately not async: they run inside a Dexie transaction, which ends early
+ * if an await waits on a plain promise. The ids already on this device are read by prepare and passed in.
+ */
+
+/** Library exercises this device does not have yet. */
+function addLibrary(backup: LegacyBackup, add: Add, added: ImportCounts, exerciseIDs: Set<string>) {
   for (const exercise of backup.library) {
     const id = lower(exercise.id)
     if (exerciseIDs.has(id)) continue
@@ -400,10 +377,10 @@ async function prepare(source: ImportSource): Promise<Prepared> {
     exerciseIDs.add(id)
     added.exercises++
   }
+}
 
-  // Routines with their entries; an entry id derives from routine and exercise.
-  const blueprintIDs = await keys('blueprints')
-  const entryIDs = await keys('blueprint_exercises')
+/** Routines with their entries; an entry id derives from routine and exercise. */
+function addRoutines(backup: LegacyBackup, add: Add, added: ImportCounts, blueprintIDs: Set<string>, entryIDs: Set<string>) {
   for (const routine of backup.routines) {
     const id = lower(routine.id)
     if (blueprintIDs.has(id)) continue
@@ -433,6 +410,52 @@ async function prepare(source: ImportSource): Promise<Prepared> {
     blueprintIDs.add(id)
     added.routines++
   }
+}
+
+/** Daily records: one per day, an existing day stays unchanged. */
+function addDailyRecords(backup: LegacyBackup, add: Add, added: ImportCounts, day: (key: string, path: string) => string, weightIDs: Set<string>, rewardIDs: Set<string>) {
+  backup.weights.forEach((weight, index) => {
+    const key = day(weight.dayKey, `weights[${index}]`)
+    const id = stableID('body_weights', key)
+    if (!key || weightIDs.has(id)) return
+    add<BodyWeight>('body_weights', { id, day: key, recorded_at: iso(weight.recordedAt), kilograms: weight.kilograms })
+    added.bodyWeights++
+  })
+  backup.weightRewards.forEach((reward, index) => {
+    const key = day(reward.dayKey, `weightRewards[${index}]`)
+    const id = stableID('weight_rewards', key)
+    if (!key || rewardIDs.has(id)) return
+    add<WeightReward>('weight_rewards', { id, day: key, awarded_at: iso(reward.awardedAt), earned_xp: reward.earnedXP })
+    added.xpReceipts++
+    added.xp += reward.earnedXP
+  })
+}
+
+/**
+ * Reads only the local database, so it can run inside the import transaction and again for the
+ * preview. Throws when a day cannot be converted or a new workout reuses ids of another workout.
+ */
+async function prepare(source: ImportSource): Promise<Prepared> {
+  const { backup } = source
+  const issues: ImportIssue[] = []
+  const day = (key: string, path: string) => {
+    const converted = webDay(key)
+    if (!converted) issues.push({ path, reason: 'unsupported calendar day' })
+    return converted ?? ''
+  }
+  const writes: Writes = {}
+  const add = <T extends SyncedRecord>(table: SyncedTable, draft: Draft<T>) => {
+    const record = stamp<T>(draft)
+    ;(writes[table] ??= []).push(record)
+    return record
+  }
+  const sessions = backup.workouts.filter((session) => !isHealth(session))
+  const file = countFile(backup, sessions)
+  const added = emptyCounts()
+  added.healthWorkouts = file.healthWorkouts
+
+  addLibrary(backup, add, added, await keys('exercises'))
+  addRoutines(backup, add, added, await keys('blueprints'), await keys('blueprint_exercises'))
 
   const workouts = new Map((await db.workouts.toArray()).map((workout) => [workout.id, workout]))
   // Older CSV files have no ids for most workouts. Like MotionBackupCSV.restore, a workout with the
@@ -540,31 +563,14 @@ async function prepare(source: ImportSource): Promise<Prepared> {
   countSessions(added, newSessions)
   added.records = countRecords(backup, newSessions)
 
-  // Daily records: one per day, an existing day stays unchanged.
-  const weightIDs = await keys('body_weights')
-  backup.weights.forEach((weight, index) => {
-    const key = day(weight.dayKey, `weights[${index}]`)
-    const id = stableID('body_weights', key)
-    if (!key || weightIDs.has(id)) return
-    add<BodyWeight>('body_weights', { id, day: key, recorded_at: iso(weight.recordedAt), kilograms: weight.kilograms })
-    added.bodyWeights++
-  })
-  const rewardIDs = await keys('weight_rewards')
-  backup.weightRewards.forEach((reward, index) => {
-    const key = day(reward.dayKey, `weightRewards[${index}]`)
-    const id = stableID('weight_rewards', key)
-    if (!key || rewardIDs.has(id)) return
-    add<WeightReward>('weight_rewards', { id, day: key, awarded_at: iso(reward.awardedAt), earned_xp: reward.earnedXP })
-    added.xpReceipts++
-    added.xp += reward.earnedXP
-  })
+  addDailyRecords(backup, add, added, day, await keys('body_weights'), await keys('weight_rewards'))
 
   // The plan is only adopted when this device has none.
   if (backup.trainingPlan && live(await db.training_plans.toArray()).length === 0) {
     add<TrainingPlanRecord>('training_plans', { id: stableID('training_plans'), schedule: schedule(backup.trainingPlan) })
   }
 
-  if (issues.length > 0) throw new ImportError(issues.some((issue) => issue.reason.includes('belongs')) ? 'conflict' : 'invalid', { issues: issues.slice(0, 50) })
+  if (issues.length > 0) throw new ImportError(issues.some((issue) => issue.reason.includes('belongs')) ? 'conflict' : 'invalid', { issues: issues.slice(0, maximumIssues) })
 
   const profile = await profileChange(backup)
   const previous = (await db.legacy_imports.where('fingerprint').equals(source.fingerprint).first()) ?? null
