@@ -1,5 +1,17 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import styles from './sheet.module.css'
+
+/** Opens and closes a native <dialog> as a modal whenever `open` changes. */
+function useModalDialog(open: boolean) {
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    const dialog = ref.current
+    if (!dialog) return
+    if (open && !dialog.open) dialog.showModal()
+    if (!open && dialog.open) dialog.close()
+  }, [open])
+  return ref
+}
 
 /**
  * A modal sheet on the native <dialog> element: focus is trapped, Escape closes it.
@@ -22,13 +34,7 @@ export function Sheet({
   children: ReactNode
   fullScreen?: boolean
 }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const ref = useModalDialog(open)
   return (
     <dialog
       ref={ref}
@@ -61,19 +67,15 @@ export interface DialogAction {
 
 /** Alerts and confirmation dialogs ("Discard unfinished workout?"). */
 export function ConfirmDialog({ open, title, message, actions, onDismiss }: { open: boolean; title: string; message?: string; actions: DialogAction[]; onDismiss: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null)
-  useEffect(() => {
-    const dialog = ref.current
-    if (!dialog) return
-    if (open && !dialog.open) dialog.showModal()
-    if (!open && dialog.open) dialog.close()
-  }, [open])
+  const ref = useModalDialog(open)
+  // A unique id per dialog: a screen can hold several of them.
+  const titleID = useId()
   return (
     <dialog
       ref={ref}
       className={styles.alert}
       role="alertdialog"
-      aria-labelledby="confirm-title"
+      aria-labelledby={titleID}
       onCancel={(event) => {
         event.preventDefault()
         onDismiss()
@@ -82,7 +84,7 @@ export function ConfirmDialog({ open, title, message, actions, onDismiss }: { op
       {open && (
         <>
           <div className={styles.alertContent}>
-            <h2 id="confirm-title">{title}</h2>
+            <h2 id={titleID}>{title}</h2>
             {message && <p>{message}</p>}
           </div>
           <div className={styles.actions}>

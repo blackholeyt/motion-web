@@ -133,6 +133,7 @@
   margin: 0 auto;
   padding: calc(20px + env(safe-area-inset-top) + var(--banner-height, 0px)) 24px 24px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   animation: rise 0.35s ease-out;
 }
 

@@ -31,10 +31,15 @@ async function open(page: Page) {
 
 async function usePhone(page: Page, phone: (typeof phones)[number]) {
   await page.setViewportSize({ width: phone.width, height: phone.height })
-  await page.addStyleTag({
-    content: `:root { --safe-top: ${phone.top}px !important; --safe-bottom: ${phone.bottom}px !important;
-      --safe-top-measured: ${phone.top}px !important; --safe-bottom-measured: ${phone.bottom}px !important; }`,
-  })
+  // Set inline on <html>, where the app's own inset tracking writes them (safeArea.ts). WebKit did not
+  // always re-resolve the already open finish screen for an added style sheet, so it kept the old insets.
+  await page.evaluate(({ top, bottom }) => {
+    const style = document.documentElement.style
+    style.setProperty('--safe-top', `${top}px`)
+    style.setProperty('--safe-bottom', `${bottom}px`)
+    // Let the resize settle: 100dvh and the measured insets update on the next frames.
+    return new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+  }, phone)
 }
 
 const guidance = { minimumReps: 6, maximumReps: 10, notes: '', progression: 'Build external load' }
@@ -144,7 +149,13 @@ async function expectFits(page: Page, phone: (typeof phones)[number]) {
       unsafe: [...root.querySelectorAll('button, h1, dl, ul, [role="img"], [role="progressbar"]')].filter(visible).filter((element) => {
         const rect = element.getBoundingClientRect()
         return rect.top < insets.top || rect.bottom > window.innerHeight - insets.bottom || rect.left < 0 || rect.right > window.innerWidth
-      }).map(describe),
+      }).map((element) => {
+        // Geometry in the message, so a failure says where the element ended up.
+        const rect = element.getBoundingClientRect()
+        const frame = root.getBoundingClientRect()
+        const r = (value: number) => Math.round(value)
+        return `${describe(element)} @ ${insets.name}: element ${r(rect.left)},${r(rect.top)}–${r(rect.right)},${r(rect.bottom)}; screen ${r(frame.left)},${r(frame.top)}–${r(frame.right)},${r(frame.bottom)}; window ${window.innerWidth}×${window.innerHeight}`
+      }),
     }
   }, phone)
   expect(layout.root.scroll).toBeLessThanOrEqual(layout.root.client)

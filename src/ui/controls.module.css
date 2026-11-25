@@ -67,11 +67,7 @@
 }
 
 .rowButton.destructive {
-  color: #ff6b6b;
-}
-
-:global([data-theme='light']) .rowButton.destructive {
-  color: #c62828;
+  color: var(--destructive);
 }
 
 .rowButton:disabled {
@@ -122,7 +118,7 @@
   display: grid;
   place-items: center;
   width: 48px;
-  height: 36px;
+  height: var(--tap);
   border: 0;
   background: transparent;
 }
@@ -205,8 +201,10 @@
   text-align: left;
 }
 
-.menuList button:hover {
-  background: color-mix(in srgb, var(--action) 10%, transparent);
+@media (hover: hover) {
+  .menuList button:hover {
+    background: color-mix(in srgb, var(--action) 10%, transparent);
+  }
 }
 
 .menuList button:disabled {
@@ -214,7 +212,7 @@
 }
 
 .menuList .destructive {
-  color: #ff6b6b;
+  color: var(--destructive);
 }
 
 .primary {
