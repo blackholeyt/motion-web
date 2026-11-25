@@ -18,7 +18,12 @@ export function MiniDemo({ onClose, onStart }: { onClose: () => void; onStart?: 
   const [page, setPage] = useState(0)
   const [load, setLoad] = useState('40')
   const [reps, setReps] = useState('8')
-  const valid = parseNumber(load) !== null && Number.parseInt(reps, 10) > 0 && /^\d+$/.test(reps.trim())
+  // The example needs a readable load and a whole number of repetitions above zero.
+  const valid = parseNumber(load) !== null && /^\d+$/.test(reps.trim()) && Number.parseInt(reps, 10) > 0
+  const finish = () => {
+    onClose()
+    onStart?.()
+  }
   return (
     <OnboardingPage
       category="PRACTICE"
@@ -39,14 +44,7 @@ export function MiniDemo({ onClose, onStart }: { onClose: () => void; onStart?: 
             {t('Complete practice set')}
           </Continue>
         ) : (
-          <Continue
-            onClick={() => {
-              onClose()
-              onStart?.()
-            }}
-          >
-            {t('Start my own training')}
-          </Continue>
+          <Continue onClick={finish}>{t('Start my own training')}</Continue>
         )
       }
     >

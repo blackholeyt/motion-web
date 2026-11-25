@@ -5,6 +5,7 @@ import { backupFormat, backupVersion } from '../store/backup'
 import { changedAt, isOpenWorkout, workoutOf } from '../sync/merge'
 import { ImportError, type ImportIssue } from './errors'
 import type { ImportCounts, ImportSummary } from './importer'
+import { emptyCounts, maximumIssues, uuidPattern } from './shared'
 
 /*
  * Restoring the web app's own JSON backup (src/store/backup.ts). Unlike the iOS import, the records
@@ -21,9 +22,7 @@ export interface WebBackupSource {
   tables: Record<SyncedTable, Row[]>
 }
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const isTime = (value: unknown) => typeof value === 'string' && !Number.isNaN(Date.parse(value))
-const maximumIssues = 50
 
 /** Fields every record of a table needs, beyond id and timestamps, so the screens can show it. */
 const required: Partial<Record<SyncedTable, string[]>> = {
@@ -77,10 +76,6 @@ export function decodeWebBackup(object: unknown, fileName: string): WebBackupSou
   }
   if (issues.length > 0) throw new ImportError('invalid', { issues })
   return { fileName, exportedAt: new Date(header.exported_at as string).toISOString(), tables }
-}
-
-function emptyCounts(): ImportCounts {
-  return { workouts: 0, drafts: 0, sets: 0, exercises: 0, routines: 0, bodyWeights: 0, xpReceipts: 0, records: 0, xp: 0, healthWorkouts: 0 }
 }
 
 /** The same rows as the iOS import, counted over live records only. */
