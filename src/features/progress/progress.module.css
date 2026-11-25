@@ -325,8 +325,6 @@
 /* Finish flow: one screen at a time, sized to 100dvh, never scrolling. */
 
 .finish {
-  --finish-top: calc(max(var(--safe-top), var(--safe-top-measured, 0px)) + var(--banner-height, 0px));
-  --finish-bottom: max(var(--safe-bottom), var(--safe-bottom-measured, 0px));
   --finish-gap: clamp(10px, 2.6dvh, 26px);
   position: fixed;
   inset: 0;
@@ -334,7 +332,13 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  padding: var(--finish-top) var(--safe-right) var(--finish-bottom) var(--safe-left);
+  /* Insets written out here, not via an own custom property: WebKit kept a padding computed from a
+     custom property defined on this element at its old value when the insets changed (rotation). */
+  padding:
+    calc(max(var(--safe-top), var(--safe-top-measured, 0px)) + var(--banner-height, 0px))
+    var(--safe-right)
+    max(var(--safe-bottom), var(--safe-bottom-measured, 0px))
+    var(--safe-left);
   overflow: hidden;
   background: var(--background);
 }

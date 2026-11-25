@@ -149,7 +149,7 @@ async function expectFits(page: Page, phone: (typeof phones)[number]) {
         const rect = element.getBoundingClientRect()
         const frame = root.getBoundingClientRect()
         const r = (value: number) => Math.round(value)
-        return `${describe(element)} @ ${insets.name}: element ${r(rect.left)},${r(rect.top)}–${r(rect.right)},${r(rect.bottom)}; screen ${r(frame.left)},${r(frame.top)}–${r(frame.right)},${r(frame.bottom)}; window ${window.innerWidth}×${window.innerHeight}; DEBUG padTop=${getComputedStyle(root).paddingTop} finishTop=${getComputedStyle(root).getPropertyValue('--finish-top')} safeTop=${getComputedStyle(root).getPropertyValue('--safe-top')} measured=${getComputedStyle(root).getPropertyValue('--safe-top-measured')} banner=${getComputedStyle(root).getPropertyValue('--banner-height')} scrollY=${window.scrollY} rootScroll=${root.scrollTop} vv=${window.visualViewport?.offsetTop},${window.visualViewport?.pageTop},${window.visualViewport?.height},${window.visualViewport?.scale} topScroll=${(root.firstElementChild as HTMLElement).getBoundingClientRect().top}`
+        return `${describe(element)} @ ${insets.name}: element ${r(rect.left)},${r(rect.top)}–${r(rect.right)},${r(rect.bottom)}; screen ${r(frame.left)},${r(frame.top)}–${r(frame.right)},${r(frame.bottom)}; window ${window.innerWidth}×${window.innerHeight}`
       }),
     }
   }, phone)
