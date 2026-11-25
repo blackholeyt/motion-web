@@ -24,6 +24,7 @@ Quelle: https://docs.github.com/en/pages/getting-started-with-github-pages/githu
 ## Unterschiede zu Cloudflare
 - **Unterpfad:** Die App liegt unter `/motion-web/`. Das ist kein Problem, weil Vite mit relativem `base: './'` baut und Manifest, Service Worker und Icons relative Pfade nutzen.
 - **Keine 404-Weiterleitung nötig:** Motion nutzt `HashRouter` (`#/…`). Es gibt keine Pfade, die der Server kennen müsste.
+- **Öffentliche Datenschutzseite:** Der Build erzeugt aus `src/privacy/legal.ts` zusätzlich `datenschutz.html` (https://blackholeyt.github.io/motion-web/datenschutz.html). Diesen Link verlangt Google im Branding, um den Google-Login für alle freizugeben.
 - **Keine `_headers`-Datei:** GitHub Pages kann keine eigenen Header setzen; die Cloudflare-Datei ist entfernt. Updates kommen trotzdem an: Browser prüfen den Service Worker bei jedem Start am Netz am HTTP-Cache vorbei, und GitHub liefert alle Dateien mit kurzer Cache-Dauer aus. Die Referrer-Policy steht jetzt als `<meta name="referrer">` in `index.html`. `Permissions-Policy` lässt sich ohne Header nicht setzen; Motion fragt ohnehin weder Kamera, Mikrofon noch Standort an.
 - **Neue Adresse = neuer Speicher:** Der Browser behandelt `blackholeyt.github.io` als andere App als `motion-web.pages.dev`. Wer ein Konto hat, meldet sich neu an und bekommt seine Daten per Sync zurück. Daten ohne Konto vorher in der alten App exportieren (Einstellungen → Export, JSON) und in der neuen importieren. Die alte App vom Home-Bildschirm entfernen und die neue installieren.
 
