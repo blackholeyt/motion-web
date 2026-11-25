@@ -1,6 +1,6 @@
 import { db } from '../data/db'
 import { live } from '../data/repo'
-import type { BodyWeight, SetLog, Workout, WorkoutExercise } from '../data/types'
+import type { BodyWeight, Exercise, SetLog, Workout, WorkoutExercise } from '../data/types'
 
 /*
  * CSV export for spreadsheets (phase 6): one row per completed workout, set, cardio session and body
@@ -27,7 +27,18 @@ export const csvColumns = [
   'notes',
 ] as const
 
-type Row = Partial<Record<(typeof csvColumns)[number], string | number | boolean | null>>
+/** The AI analysis export adds the muscle of each exercise; the regular CSV stays unchanged. */
+export const aiCSVColumns = [...csvColumns.slice(0, 5), 'muscle', ...csvColumns.slice(5)] as const
+
+type Column = (typeof aiCSVColumns)[number]
+type Row = Partial<Record<Column, string | number | boolean | null>>
+
+export interface CSVOptions {
+  /** Only rows on or after this moment. */
+  since?: Date | null
+  /** Adds the muscle column (from the exercise library). */
+  muscle?: boolean
+}
 
 const pad = (value: number) => String(value).padStart(2, '0')
 /** Date and time on this device's clock, as the app shows them. */
@@ -48,19 +59,22 @@ function cell(value: Row[keyof Row], text: boolean): string {
   return /[",\n\r]/.test(output) ? `"${output.replace(/"/g, '""')}"` : output
 }
 
-const textColumns = new Set(['workout', 'exercise', 'notes'])
+const textColumns = new Set(['workout', 'exercise', 'muscle', 'notes'])
 
-export function toCSV(rows: Row[]): string {
-  const lines = [csvColumns.join(','), ...rows.map((row) => csvColumns.map((column) => cell(row[column], textColumns.has(column))).join(','))]
+export function toCSV(rows: Row[], columns: readonly Column[] = csvColumns): string {
+  const lines = [columns.join(','), ...rows.map((row) => columns.map((column) => cell(row[column], textColumns.has(column))).join(','))]
   return lines.join('\r\n') + '\r\n'
 }
 
-export async function buildCSVRows(): Promise<Row[]> {
+export async function buildCSVRows(options: CSVOptions = {}): Promise<Row[]> {
+  const since = options.since?.getTime() ?? null
+  const inRange = (iso: string) => since === null || new Date(iso).getTime() >= since
   const workouts = live(await db.workouts.toArray())
-    .filter((workout: Workout) => workout.is_completed)
+    .filter((workout: Workout) => workout.is_completed && inRange(workout.performed_at))
     .sort((a, b) => a.performed_at.localeCompare(b.performed_at))
   const exercises = live(await db.workout_exercises.toArray()).filter((exercise: WorkoutExercise) => !exercise.is_removed)
   const sets = live(await db.set_logs.toArray()).filter((set: SetLog) => !set.is_removed)
+  const muscleOf: (exercise: WorkoutExercise) => string | null = options.muscle ? await muscleLookup() : () => null
   const rows: { at: string; row: Row }[] = []
   for (const workout of workouts) {
     const when = { date: localDate(workout.performed_at), time: localTime(workout.performed_at), workout: workout.name }
@@ -89,6 +103,7 @@ export async function buildCSVRows(): Promise<Row[]> {
             type: 'set',
             ...when,
             exercise: exercise.exercise_name,
+            ...(options.muscle ? { muscle: muscleOf(exercise) } : {}),
             set: set.set_index,
             set_type: set.is_warm_up ? 'warm-up' : 'working',
             weight_kg: set.weight_kg,
@@ -100,11 +115,20 @@ export async function buildCSVRows(): Promise<Row[]> {
       }
     }
   }
-  for (const weight of live(await db.body_weights.toArray()) as BodyWeight[]) {
+  for (const weight of (live(await db.body_weights.toArray()) as BodyWeight[]).filter((entry) => inRange(entry.recorded_at))) {
     rows.push({ at: weight.recorded_at, row: { type: 'body_weight', date: weight.day, time: localTime(weight.recorded_at), value: weight.kilograms } })
   }
   // Stable sort: a workout's own rows keep their order.
   return rows.sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime()).map((entry) => entry.row)
+}
+
+/** Muscle by library id, falling back to the name for history-only entries. */
+async function muscleLookup() {
+  const library = live(await db.exercises.toArray()) as Exercise[]
+  const byID = new Map(library.map((exercise) => [exercise.id, exercise.muscle]))
+  const byName = new Map(library.map((exercise) => [exercise.name.trim().toLowerCase(), exercise.muscle]))
+  return (exercise: WorkoutExercise) =>
+    (exercise.exercise_id ? byID.get(exercise.exercise_id) : undefined) ?? byName.get(exercise.exercise_name.trim().toLowerCase()) ?? null
 }
 
 export async function exportCSV(now = new Date()): Promise<File> {

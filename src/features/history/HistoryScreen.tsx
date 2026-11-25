@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { History, NotebookText } from 'lucide-react'
+import { History, NotebookText, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { db } from '../../data/db'
 import { live } from '../../data/repo'
@@ -10,6 +10,7 @@ import { useProfile } from '../../store/profile'
 import { cardioSummary } from '../../domain/cardio'
 import { EmptyState } from '../../ui/components'
 import { DraftLinks } from '../workout/DraftLinks'
+import { AIAnalysisSheet } from './AIAnalysisSheet'
 import { HistoryEditor } from './HistoryEditor'
 import styles from './history.module.css'
 
@@ -18,18 +19,27 @@ export function HistoryScreen() {
   const { t } = useT()
   const workouts = useCompletedWorkouts()
   const [editing, setEditing] = useState<Workout | null>(null)
+  const [analysing, setAnalysing] = useState(false)
   return (
     <div className={styles.screen}>
       <DraftLinks returnTo="/history" />
-      <header>
-        <h1 className={styles.title}>{t('The work you put in.')}</h1>
-        <p className={styles.muted}>{t('{0} saved sessions', [workouts?.length ?? 0])}</p>
+      <header className={styles.headerRow}>
+        <div>
+          <h1 className={styles.title}>{t('The work you put in.')}</h1>
+          <p className={styles.muted}>{t('{0} saved sessions', [workouts?.length ?? 0])}</p>
+        </div>
+        {Boolean(workouts?.length) && (
+          <button type="button" className={styles.aiButton} onClick={() => setAnalysing(true)} data-testid="openAIAnalysis">
+            <Sparkles size={16} aria-hidden="true" /> {t('Analyse with AI')}
+          </button>
+        )}
       </header>
       {workouts?.map((workout) => (
         <HistoryRow key={workout.id} workout={workout} onOpen={() => setEditing(workout)} />
       ))}
       {workouts?.length === 0 && <EmptyState icon={<History size={40} />} title={t('Your story starts here')} detail={t('Finish a workout to save it here.')} />}
       {editing && <HistoryEditor workout={editing} onClose={() => setEditing(null)} />}
+      <AIAnalysisSheet open={analysing} onClose={() => setAnalysing(false)} />
     </div>
   )
 }
