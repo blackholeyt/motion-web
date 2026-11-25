@@ -111,3 +111,65 @@
   font-size: 0.8125rem;
   color: var(--secondary-text);
 }
+
+.headerRow {
+  flex-wrap: wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aiButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap);
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  background: var(--surface);
+  color: var(--action);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.aiTarget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.aiHint {
+  margin: 0 4px 16px;
+  font-size: 0.875rem;
+  color: var(--secondary-text);
+}
+
+.aiPrompt {
+  margin: 0 4px 24px;
+  font-size: 0.875rem;
+  color: var(--secondary-text);
+}
+
+.aiPrompt summary {
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  color: var(--action);
+  cursor: pointer;
+}
+
+.aiPrompt pre {
+  max-height: 40vh;
+  overflow: auto;
+  margin: 4px 0 8px;
+  padding: 12px;
+  border-radius: var(--radius-input);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+}

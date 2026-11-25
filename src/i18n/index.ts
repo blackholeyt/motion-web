@@ -19,6 +19,7 @@ const dictionaries: Record<Language, Record<string, string>> = {
     '{0} workouts from Apple Health or Strava are skipped. They stay in your file for the native app.#one':
       '1 workout from Apple Health or Strava is skipped. It stays in your file for the native app.',
     'Skipped: {0} workouts from Apple Health or Strava.#one': 'Skipped: 1 workout from Apple Health or Strava.',
+    '{0} workouts in this period#one': '1 workout in this period',
     'Offline · {0} changes waiting#one': 'Offline · {0} change waiting',
     '{0} changes are not backed up yet. If you sign out now, they stay on this device and upload the next time you sign in with this account.#one':
       '1 change is not backed up yet. If you sign out now, it stays on this device and uploads the next time you sign in with this account.',

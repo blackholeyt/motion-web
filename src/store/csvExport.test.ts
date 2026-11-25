@@ -1,7 +1,7 @@
 import { db } from '../data/db'
 import { freshDatabase } from '../test/db'
 import { checkIn } from './body'
-import { buildCSVRows, csvColumns, toCSV } from './csvExport'
+import { aiCSVColumns, buildCSVRows, csvColumns, toCSV } from './csvExport'
 
 const time = '2026-11-02T12:00:00.000Z'
 const base = { user_id: null, created_at: time, updated_at: time, deleted_at: null }
@@ -48,5 +48,18 @@ describe('CSV export', () => {
     expect(lines[1]).toContain('"Felt ""strong"", good day"')
     expect(lines[2]).toContain(",'=Bankdrücken,")
     expect(lines.at(-1)).toBe('')
+  })
+
+  it('adds the muscle and keeps only the chosen period for the AI export', async () => {
+    await seedWorkout(true)
+    await db.exercises.put({
+      ...base, id: 'bench', name: '=Bankdrücken', goal_weight_kg: null, is_pr_tracked: true, rest_seconds: null, catalogue_id: null,
+      equipment: 'Barbell', muscle: 'Chest', measurement: 'Load & reps', guidance: '', track_progress: true,
+    })
+    const rows = await buildCSVRows({ muscle: true })
+    expect(rows.filter((row) => row.type === 'set').every((row) => row.muscle === 'Chest')).toBe(true)
+    expect(toCSV(rows, aiCSVColumns).split('\r\n')[0]).toBe('type,date,time,workout,exercise,muscle,set,set_type,weight_kg,reps,duration_seconds,distance_km,pace_s_per_km,value,completed,notes')
+    expect(await buildCSVRows({ since: new Date('2026-11-03T00:00:00Z') })).toEqual([])
+    expect((await buildCSVRows()).some((row) => 'muscle' in row)).toBe(false)
   })
 })

@@ -624,4 +624,25 @@ export const de: Record<string, string> = {
   'Set cards': 'Satzkarten',
   'Show all sets': 'Alle Sätze anzeigen',
   'Focus view': 'Fokus-Ansicht',
+
+  // Analyse with AI (history).
+  'Analyse with AI': 'Mit KI analysieren',
+  'Motion prepares your training as a file and writes the question for the AI. Your muscle-building guide is the basis of the analysis. Motion itself sends nothing.':
+    'Motion bereitet dein Training als Datei vor und schreibt die Frage an die KI. Grundlage der Analyse ist dein Muskelaufbau-Leitfaden. Motion selbst verschickt nichts.',
+  'Period': 'Zeitraum',
+  'Everything': 'Alles',
+  'Last {0} weeks': 'Letzte {0} Wochen',
+  '{0} workouts in this period': '{0} Trainings in diesem Zeitraum',
+  '{0} workouts in this period#one': '1 Training in diesem Zeitraum',
+  'Preparing…': 'Wird vorbereitet …',
+  'Share with AI app': 'Mit KI-App teilen',
+  'Choose ChatGPT, Claude or Perplexity in the share sheet. File and question are attached.': 'Wähle im Teilen-Menü ChatGPT, Claude oder Perplexity. Datei und Frage sind angehängt.',
+  'Open in the browser': 'Im Browser öffnen',
+  'Open in {0}': 'In {0} öffnen',
+  'The file is downloaded and the question copied. Drag the file into the chat and paste the question (⌘V or Ctrl+V).':
+    'Die Datei wird heruntergeladen und die Frage kopiert. Zieh die Datei in den Chat und füge die Frage ein (⌘V oder Strg+V).',
+  'If the question is missing in the chat, paste it: it is on your clipboard.': 'Falls die Frage im Chat fehlt, füge sie ein: Sie ist in deiner Zwischenablage.',
+  'Chat opened. Add the file from your downloads and paste the question.': 'Chat geöffnet. Füge die Datei aus deinen Downloads hinzu und setz die Frage ein.',
+  'Show question': 'Frage ansehen',
+  'Copy question': 'Frage kopieren',
 }
